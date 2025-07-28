@@ -13,8 +13,11 @@ export const prisma =
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 // Graceful shutdown - корректное закрытие соединений
-process.on('beforeExit', async () => {
-  await prisma.$disconnect()
-})
+// Проверяем, что мы не в Edge Runtime
+if (typeof process !== 'undefined' && process.on) {
+  process.on('beforeExit', async () => {
+    await prisma.$disconnect()
+  })
+}
 
 export default prisma 

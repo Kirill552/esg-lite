@@ -1,0 +1,459 @@
+# ESG-Lite Kubernetes Deployment
+# Современная конфигурация для production с мониторингом 2025
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: esg-lite
+  labels:
+    name: esg-lite
+    environment: production
+
+---
+# ============================================================================
+# ConfigMap для environment variables
+# ============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: esg-lite-config
+  namespace: esg-lite
+data:
+  NODE_ENV: "production"
+  QUEUE_STORAGE_TYPE: "postgres"
+  BULLMQ_CONCURRENCY: "10"
+  RATE_LIMIT_MAX_REQUESTS: "25"
+  YANDEX_MONITORING_ENABLED: "true"
+  LOG_TO_FILE: "true"
+  LOG_LEVEL: "warn"
+  HEALTH_CHECK_INTERVAL: "30000"
+  TESSERACT_WORKER_COUNT: "4"
+  WORKER_CONCURRENCY: "3"
+
+---
+# ============================================================================
+# Secret для чувствительных данных
+# ============================================================================
+apiVersion: v1
+kind: Secret
+metadata:
+  name: esg-lite-secrets
+  namespace: esg-lite
+type: Opaque
+stringData:
+  DATABASE_URL: "postgresql://esg_user:YOUR_PASSWORD@YOUR_HOST:5432/esg_lite_mvp"
+  CLERK_SECRET_KEY: "sk_live_YOUR_PRODUCTION_SECRET"
+  YC_ACCESS_KEY_ID: "YOUR_YC_ACCESS_KEY_ID"
+  YC_SECRET_ACCESS_KEY: "YOUR_YC_SECRET_ACCESS_KEY"
+  YANDEX_CLOUD_FOLDER_ID: "YOUR_YANDEX_CLOUD_FOLDER_ID"
+  NEXTAUTH_SECRET: "your-super-secure-production-secret"
+  YOOKASSA_SECRET_KEY: "live_YOUR_PRODUCTION_SECRET"
+
+---
+# ============================================================================
+# PersistentVolume для логов
+# ============================================================================
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: esg-lite-logs-pv
+spec:
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs
+  nfs:
+    server: nfs-server.example.com
+    path: /var/nfs/esg-lite/logs
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: esg-lite-logs-pvc
+  namespace: esg-lite
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Gi
+  storageClassName: nfs
+
+---
+# ============================================================================
+# Deployment для Web Application
+# ============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: esg-lite-web
+  namespace: esg-lite
+  labels:
+    app: esg-lite-web
+    component: frontend
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: esg-lite-web
+  template:
+    metadata:
+      labels:
+        app: esg-lite-web
+        component: frontend
+    spec:
+      containers:
+      - name: esg-lite-web
+        image: esg-lite:latest
+        ports:
+        - containerPort: 3000
+          name: http
+        
+        # Environment Variables
+        envFrom:
+        - configMapRef:
+            name: esg-lite-config
+        - secretRef:
+            name: esg-lite-secrets
+        env:
+        - name: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+          value: "pk_live_YOUR_PRODUCTION_KEY"
+        - name: NEXT_PUBLIC_APP_URL
+          value: "https://esg-lite.example.com"
+        - name: LOG_DIRECTORY
+          value: "/app/logs"
+        
+        # Resource Limits
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        
+        # Volume Mounts
+        volumeMounts:
+        - name: logs-storage
+          mountPath: /app/logs
+        - name: temp-storage
+          mountPath: /app/temp
+        - name: yandex-key
+          mountPath: /app/authorized_key.json
+          subPath: authorized_key.json
+          readOnly: true
+        
+        # Health Checks (современный стек 2025)
+        livenessProbe:
+          httpGet:
+            path: /api/queue/health
+            port: 3000
+            httpHeaders:
+            - name: User-Agent
+              value: "k8s-liveness-probe"
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+          successThreshold: 1
+        
+        readinessProbe:
+          httpGet:
+            path: /api/queue/health
+            port: 3000
+            httpHeaders:
+            - name: User-Agent
+              value: "k8s-readiness-probe"
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+        
+        # Startup Probe для медленного старта
+        startupProbe:
+          httpGet:
+            path: /api/queue/health
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 12  # 60 секунд на старт
+          successThreshold: 1
+        
+        # Security Context для distroless образа
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65532  # nonroot user в distroless
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          capabilities:
+            drop:
+            - ALL
+      
+      # Volumes
+      volumes:
+      - name: logs-storage
+        persistentVolumeClaim:
+          claimName: esg-lite-logs-pvc
+      - name: temp-storage
+        emptyDir:
+          sizeLimit: 5Gi
+      - name: yandex-key
+        secret:
+          secretName: yandex-service-account-key
+          items:
+          - key: key.json
+            path: authorized_key.json
+      
+      # Node Selection
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      
+      # Pod Disruption Budget
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - esg-lite-web
+              topologyKey: kubernetes.io/hostname
+
+---
+# ============================================================================
+# Deployment для OCR Worker
+# ============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: esg-lite-worker
+  namespace: esg-lite
+  labels:
+    app: esg-lite-worker
+    component: worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: esg-lite-worker
+  template:
+    metadata:
+      labels:
+        app: esg-lite-worker
+        component: worker
+    spec:
+      containers:
+      - name: esg-lite-worker
+        image: esg-lite:latest
+        command: ["node", "scripts/start-ocr-worker.js"]
+        
+        # Environment Variables
+        envFrom:
+        - configMapRef:
+            name: esg-lite-config
+        - secretRef:
+            name: esg-lite-secrets
+        env:
+        - name: WORKER_MAX_JOBS
+          value: "100"
+        - name: LOG_DIRECTORY
+          value: "/app/logs"
+        
+        # Resource Limits (больше для OCR processing)
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        
+        # Volume Mounts
+        volumeMounts:
+        - name: logs-storage
+          mountPath: /app/logs
+        - name: temp-storage
+          mountPath: /app/temp
+        - name: yandex-key
+          mountPath: /app/authorized_key.json
+          subPath: authorized_key.json
+          readOnly: true
+        
+        # Health Checks для worker процесса
+        livenessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "pgrep -f 'start-ocr-worker' || exit 1"
+          initialDelaySeconds: 30
+          periodSeconds: 60
+          timeoutSeconds: 10
+          failureThreshold: 3
+        
+        readinessProbe:
+          exec:
+            command:
+            - sh
+            - -c
+            - "test -f /tmp/worker-ready || exit 1"
+          initialDelaySeconds: 15
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 2
+        
+        # Security Context
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1001
+          allowPrivilegeEscalation: false
+      
+      # Shared volumes
+      volumes:
+      - name: logs-storage
+        persistentVolumeClaim:
+          claimName: esg-lite-logs-pvc
+      - name: temp-storage
+        emptyDir:
+          sizeLimit: 10Gi
+      - name: yandex-key
+        secret:
+          secretName: yandex-service-account-key
+
+---
+# ============================================================================
+# Service для Web Application
+# ============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: esg-lite-web-service
+  namespace: esg-lite
+  labels:
+    app: esg-lite-web
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 3000
+    protocol: TCP
+    name: http
+  selector:
+    app: esg-lite-web
+
+---
+# ============================================================================
+# Ingress для внешнего доступа
+# ============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: esg-lite-ingress
+  namespace: esg-lite
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+spec:
+  tls:
+  - hosts:
+    - esg-lite.example.com
+    secretName: esg-lite-tls
+  rules:
+  - host: esg-lite.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: esg-lite-web-service
+            port:
+              number: 80
+
+---
+# ============================================================================
+# HorizontalPodAutoscaler для автомасштабирования
+# ============================================================================
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: esg-lite-web-hpa
+  namespace: esg-lite
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: esg-lite-web
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+    scaleUp:
+      stabilizationWindowSeconds: 60
+
+---
+# ============================================================================
+# PodDisruptionBudget для высокой доступности
+# ============================================================================
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: esg-lite-web-pdb
+  namespace: esg-lite
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: esg-lite-web
+
+---
+# ============================================================================
+# ServiceMonitor для Prometheus мониторинга
+# ============================================================================
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: esg-lite-metrics
+  namespace: esg-lite
+  labels:
+    app: esg-lite
+spec:
+  selector:
+    matchLabels:
+      app: esg-lite-web
+  endpoints:
+  - port: http
+    path: /api/queue/metrics
+    interval: 30s
+    scrapeTimeout: 10s

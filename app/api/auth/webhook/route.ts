@@ -52,21 +52,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Обрабатываем различные типы событий
-    const eventType = evt.type;
-    console.log(`Webhook received: ${eventType}`, evt.data);
+    const eventType = (evt as any).type;
+    console.log(`Webhook received: ${eventType}`, (evt as any).data);
 
     switch (eventType) {
       case 'user.created':
         // Создаем пользователя в нашей БД
-        await handleUserCreated(evt.data);
+        await handleUserCreated((evt as any).data);
         break;
       case 'user.updated':
         // Обновляем данные пользователя
-        await handleUserUpdated(evt.data);
+        await handleUserUpdated((evt as any).data);
         break;
       case 'user.deleted':
         // Удаляем пользователя из БД
-        await handleUserDeleted(evt.data);
+        await handleUserDeleted((evt as any).data);
         break;
       default:
         console.log(`Unhandled webhook event type: ${eventType}`);

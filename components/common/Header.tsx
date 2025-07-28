@@ -25,6 +25,18 @@ export function Header() {
                 Главная
               </Link>
               <Link 
+                href="/credits" 
+                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Кредиты
+              </Link>
+              <Link 
+                href="/subscription" 
+                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Тарифы
+              </Link>
+              <Link 
                 href="/upload" 
                 className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
               >

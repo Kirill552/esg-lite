@@ -1,0 +1,220 @@
+# ESG-Lite Production Docker Compose
+# Запуск: docker-compose -f docker-compose.prod.yml up -d
+
+version: '3.8'
+
+services:
+  # ============================================================================
+  # ESG-Lite Web Application
+  # ============================================================================
+  esg-lite-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: esg-lite-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+      
+      # Yandex Cloud
+      - YC_ACCESS_KEY_ID=${YC_ACCESS_KEY_ID}
+      - YC_SECRET_ACCESS_KEY=${YC_SECRET_ACCESS_KEY}
+      - YC_BUCKET_NAME=${YC_BUCKET_NAME}
+      - YC_REGION=${YC_REGION}
+      
+      # Monitoring 2025
+      - YANDEX_CLOUD_FOLDER_ID=${YANDEX_CLOUD_FOLDER_ID}
+      - YANDEX_MONITORING_ENABLED=true
+      - YANDEX_MONITORING_INTERVAL=300000
+      - YANDEX_MONITORING_PG_INTERVAL=600000
+      
+      # Structured Logging
+      - LOG_TO_FILE=true
+      - LOG_DIRECTORY=/app/logs
+      - LOG_MAX_FILE_SIZE=50485760  # 50MB
+      - LOG_MAX_FILES=10
+      
+      # Queue System
+      - QUEUE_STORAGE_TYPE=postgres
+      - QUEUE_DATABASE_URL=${DATABASE_URL}
+      - BULLMQ_CONCURRENCY=5
+      - RATE_LIMIT_WINDOW=90000
+      - RATE_LIMIT_MAX_REQUESTS=10
+      
+      # Health Monitoring
+      - HEALTH_CHECK_INTERVAL=30000
+      - METRICS_RETENTION_DAYS=7
+      
+    volumes:
+      - logs-volume:/app/logs
+      - temp-volume:/app/temp
+      - uploads-volume:/app/uploads
+      - ./authorized_key.json:/app/authorized_key.json:ro
+    networks:
+      - esg-lite-network
+    depends_on:
+      - postgres-health-check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/queue/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.esg-lite.rule=Host(`esg-lite.example.com`)"
+      - "traefik.http.routers.esg-lite.tls=true"
+      - "traefik.http.routers.esg-lite.tls.certresolver=letsencrypt"
+
+  # ============================================================================
+  # OCR Worker Process
+  # ============================================================================
+  esg-lite-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: esg-lite-worker
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      
+      # Worker-specific settings
+      - WORKER_CONCURRENCY=3
+      - WORKER_MAX_JOBS=100
+      - TESSERACT_WORKER_COUNT=3
+      - TESSERACT_LANGUAGE=rus+eng
+      - OCR_CONFIDENCE_THRESHOLD=0.6
+      - PDF_TEXT_MIN_LENGTH=100
+      
+      # Yandex Cloud (для загрузки файлов)
+      - YC_ACCESS_KEY_ID=${YC_ACCESS_KEY_ID}
+      - YC_SECRET_ACCESS_KEY=${YC_SECRET_ACCESS_KEY}
+      - YC_BUCKET_NAME=${YC_BUCKET_NAME}
+      - YC_REGION=${YC_REGION}
+      
+      # Structured Logging
+      - LOG_TO_FILE=true
+      - LOG_DIRECTORY=/app/logs
+      - LOG_MAX_FILE_SIZE=50485760
+      - LOG_MAX_FILES=10
+      
+      # Monitoring
+      - YANDEX_CLOUD_FOLDER_ID=${YANDEX_CLOUD_FOLDER_ID}
+      - YANDEX_MONITORING_ENABLED=true
+      
+    volumes:
+      - logs-volume:/app/logs
+      - temp-volume:/app/temp
+      - uploads-volume:/app/uploads
+      - ./authorized_key.json:/app/authorized_key.json:ro
+    networks:
+      - esg-lite-network
+    depends_on:
+      - postgres-health-check
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "start-ocr-worker"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ============================================================================
+  # Database Health Check Service
+  # ============================================================================
+  postgres-health-check:
+    image: postgres:16-alpine
+    container_name: esg-lite-db-check
+    command: >
+      sh -c "
+        until pg_isready -h ${DB_HOST:-176.108.253.195} -p ${DB_PORT:-5432} -U ${DB_USER:-esg_user}; do
+          echo 'Waiting for PostgreSQL...'
+          sleep 2
+        done
+        echo 'PostgreSQL is ready!'
+        exit 0
+      "
+    environment:
+      - PGPASSWORD=${DB_PASSWORD:-esg_user_2025!}
+    networks:
+      - esg-lite-network
+
+  # ============================================================================
+  # Log Rotator (для управления логами)
+  # ============================================================================
+  log-rotator:
+    image: alpine:latest
+    container_name: esg-lite-log-rotator
+    restart: unless-stopped
+    command: >
+      sh -c "
+        while true; do
+          echo 'Rotating logs...'
+          find /app/logs -name '*.log' -mtime +7 -delete
+          find /app/logs -name '*.log' -size +100M -exec truncate -s 50M {} \;
+          sleep 86400  # 24 hours
+        done
+      "
+    volumes:
+      - logs-volume:/app/logs
+    networks:
+      - esg-lite-network
+
+  # ============================================================================
+  # Metrics Exporter (опционально для Prometheus)
+  # ============================================================================
+  metrics-exporter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: esg-lite-metrics
+    restart: unless-stopped
+    command: ["node", "scripts/metrics-exporter.js"]
+    ports:
+      - "9090:9090"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - METRICS_PORT=9090
+      - METRICS_INTERVAL=60000
+    volumes:
+      - logs-volume:/app/logs:ro
+    networks:
+      - esg-lite-network
+    depends_on:
+      - postgres-health-check
+
+# ============================================================================
+# Networks & Volumes
+# ============================================================================
+networks:
+  esg-lite-network:
+    driver: bridge
+    name: esg-lite-network
+
+volumes:
+  logs-volume:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/log/esg-lite
+  
+  temp-volume:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /tmp/esg-lite
+      
+  uploads-volume:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /var/uploads/esg-lite

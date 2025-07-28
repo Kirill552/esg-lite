@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { PricingAlert } from '@/components/notifications/PricingAlert';
+import { CreditsWidget } from '@/components/credits/CreditsWidget';
 import { 
   Upload,
   FileText,
@@ -95,12 +97,12 @@ export default function Dashboard() {
 
   const handleViewAnalytics = () => {
     console.log('Открыть аналитику')
-    alert('Аналитика (в разработке)')
+    window.location.href = '/analytics'
   }
 
   const handleExportData = () => {
     console.log('Экспорт данных')
-    alert('Экспорт данных (в разработке)')
+    window.location.href = '/analytics'
   }
 
   const handleCreateReport = () => {
@@ -205,9 +207,9 @@ export default function Dashboard() {
       <header className="bg-white/80 backdrop-blur-md border-b border-slate-200/50 sticky top-0 z-10">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900">ESG Главная</h1>
-              <p className="text-slate-600">Управление углеродной отчётностью</p>
+            <div className="flex items-center gap-6">
+              {/* Компактная информация о кредитах */}
+              <CreditsWidget />
             </div>
             
             <div className="flex items-center gap-4">
@@ -341,6 +343,15 @@ export default function Dashboard() {
               </div>
             </Card>
           ))}
+        </div>
+
+        {/* Уведомления о ценах */}
+        <div className="mb-8">
+          <PricingAlert 
+            maxAlerts={3}
+            autoRefresh={true}
+            refreshInterval={120000} // 2 минуты
+          />
         </div>
 
         {/* Recent Reports */}

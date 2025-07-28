@@ -55,9 +55,9 @@ export async function POST(request: NextRequest) {
     const fileType = file.type === 'application/pdf' ? 'pdf' : 'csv';
     const fileKey = generateFileKey(file.name, fileType);
     const buffer = Buffer.from(await file.arrayBuffer());
-    const signedUrl = await uploadFile(fileKey, buffer, file.type);
+    const fileUrl = await uploadFile(fileKey, buffer, file.type);
 
-    console.log('✅ File uploaded to S3. Signed URL:', signedUrl);
+    console.log('✅ File uploaded to S3. URL:', fileUrl);
 
     // Генерируем уникальный ID для документа
     const documentId = `doc_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;

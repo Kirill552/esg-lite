@@ -1,7 +1,7 @@
 // lib/ocr.ts
 import { createWorker, Worker } from 'tesseract.js';
-import { getFileBuffer } from './s3';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
+import { getFileBuffer } from '@/lib/s3';
 
 const DEBUG = process.env.DEBUG_OCR === 'true';
 const log = (...args: any[]) => DEBUG && console.log('🔍 OCR:', ...args);
@@ -105,35 +105,46 @@ export async function processExcelBuffer(buf: Buffer): Promise<string> {
   try {
     log(`Processing Excel buffer. Size: ${buf.length} bytes`);
     
-    // Читаем Excel файл с помощью XLSX
-    const workbook = XLSX.read(buf, { type: 'buffer', cellText: true, cellDates: true });
-    log(`Excel workbook loaded successfully. Sheets: ${workbook.SheetNames.join(', ')}`);
+    // Читаем Excel файл с помощью ExcelJS
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(buf);
+    
+    log(`Excel workbook loaded successfully. Sheets: ${workbook.worksheets.length}`);
     
     let extractedText = '';
     
     // Обрабатываем все листы
-    workbook.SheetNames.forEach((sheetName, index) => {
-      const worksheet = workbook.Sheets[sheetName];
-      
-      // Извлекаем данные как массив массивов
-      const sheetData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+    workbook.worksheets.forEach((worksheet, index) => {
+      const sheetName = worksheet.name || `Sheet ${index + 1}`;
       
       extractedText += `\n=== ЛИСТ: ${sheetName} ===\n`;
       
-      // Конвертируем данные в текст
-      (sheetData as any[][]).forEach((row: any[], rowIndex) => {
-        if (row.length > 0) {
-          const rowText = row.map(cell => {
-            if (cell === null || cell === undefined) return '';
-            if (typeof cell === 'object' && cell instanceof Date) {
-              return cell.toLocaleDateString('ru-RU');
-            }
-            return String(cell).trim();
-          }).filter(cell => cell.length > 0).join(' | ');
+      // Итерируемся по всем строкам
+      worksheet.eachRow({ includeEmpty: false }, (row, rowNumber) => {
+        const rowValues: string[] = [];
+        
+        // Получаем значения всех ячеек в строке
+        row.eachCell({ includeEmpty: false }, (cell) => {
+          let cellValue = '';
           
-          if (rowText.length > 0) {
-            extractedText += `Строка ${rowIndex + 1}: ${rowText}\n`;
+          if (cell.value !== null && cell.value !== undefined) {
+            if (typeof cell.value === 'object' && 'text' in cell.value) {
+              // Rich text
+              cellValue = cell.value.text;
+            } else if (cell.value instanceof Date) {
+              cellValue = cell.value.toLocaleDateString('ru-RU');
+            } else {
+              cellValue = String(cell.value).trim();
+            }
           }
+          
+          if (cellValue.length > 0) {
+            rowValues.push(cellValue);
+          }
+        });
+        
+        if (rowValues.length > 0) {
+          extractedText += `Строка ${rowNumber}: ${rowValues.join(' | ')}\n`;
         }
       });
     });

@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import { ClerkProvider } from '@clerk/nextjs'
 import { Header } from '@/components/common/Header'
 import { Footer } from '@/components/common/Footer'
+// import { PricingBanner } from '@/components/notifications/PricingBanner'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'] })
@@ -31,6 +32,9 @@ export default function RootLayout({
         <ClerkProvider>
           <div className="min-h-full">
           <Header />
+          
+          {/* Баннер уведомлений о ценах - временно отключен для отладки */}
+          {/* <PricingBanner className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-2" /> */}
 
           {/* Main Content */}
           <main className="flex-1">

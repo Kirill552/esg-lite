@@ -1,0 +1,99 @@
+# ESG-Lite OCR Worker Dockerfile
+# Специальный образ для OCR worker с Tesseract поддержкой
+
+# ============================================================================
+# Stage 1: Dependencies
+# ============================================================================
+FROM node:22-alpine AS deps
+RUN apk add --no-cache libc6-compat
+
+WORKDIR /app
+
+# Копируем package files для установки зависимостей
+COPY package.json package-lock.json ./
+RUN npm ci --only=production --frozen-lockfile
+
+# ============================================================================
+# Stage 2: Builder
+# ============================================================================
+FROM node:22-alpine AS builder
+WORKDIR /app
+
+# Копируем зависимости из предыдущего stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# Настройка переменных окружения для build
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Генерируем Prisma client
+RUN npx prisma generate
+
+# Собираем приложение (для worker нужны только некоторые части)
+RUN npm run build
+
+# ============================================================================
+# Stage 3: Runner для OCR Worker
+# ============================================================================
+FROM node:22-alpine AS runner
+WORKDIR /app
+
+# Создаем non-root пользователя для безопасности
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 worker
+
+# Обновляем Alpine до последней версии для безопасности
+RUN apk update && apk upgrade
+
+# Устанавливаем системные зависимости для Tesseract и обновляем пакеты
+RUN apk add --no-cache \
+    tesseract-ocr=~5.3 \
+    tesseract-ocr-data-rus \
+    tesseract-ocr-data-eng \
+    curl \
+    postgresql-client=~16 \
+    dumb-init \
+    && rm -rf /var/cache/apk/*
+
+# Создаем необходимые директории
+RUN mkdir -p ./logs ./temp ./uploads && \
+    chown -R worker:nodejs ./logs ./temp ./uploads
+
+# Копируем только необходимые файлы для worker
+COPY --from=builder --chown=worker:nodejs /app/package.json ./package.json
+
+# Копируем Prisma schema и сгенерированный client
+COPY --from=builder --chown=worker:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=worker:nodejs /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder --chown=worker:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+
+# Копируем производственные зависимости
+COPY --from=deps --chown=worker:nodejs /app/node_modules ./node_modules
+
+# Копируем worker scripts и библиотеки
+COPY --from=builder --chown=worker:nodejs /app/workers ./workers
+COPY --from=builder --chown=worker:nodejs /app/lib ./lib
+COPY --from=builder --chown=worker:nodejs /app/scripts ./scripts
+
+# Копируем конфигурационные файлы
+COPY --from=builder --chown=worker:nodejs /app/tessdata ./tessdata
+
+# Настройка environment variables
+ENV NODE_ENV=production
+ENV TESSERACT_WORKER_COUNT=2
+ENV TESSERACT_LANGUAGE=rus+eng
+ENV OCR_CONFIDENCE_THRESHOLD=0.6
+
+# Переключаемся на non-root пользователя
+USER worker
+
+# Health check для worker
+HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3 \
+    CMD pgrep -f "start-ocr-worker" || exit 1
+
+# Используем dumb-init для правильной обработки сигналов
+ENTRYPOINT ["dumb-init", "--"]
+
+# Команда запуска worker
+CMD ["node", "scripts/start-ocr-worker.js"]
