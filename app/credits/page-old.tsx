@@ -293,7 +293,7 @@ export default function CreditsPage() {
               <div className="flex items-center mt-2">
                 <Zap className="h-3 w-3 text-amber-500 mr-1" />
                 <p className="text-xs text-amber-600">
-                  Surge pricing активен
+                  Резкое повышение цены активно
                 </p>
               </div>
             </CardContent>

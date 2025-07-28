@@ -41,17 +41,17 @@ export function FileUpload({
 
   const validateFile = useCallback((file: File): string | null => {
     // Проверка типа файла
-    if (!isValidFileType(file, acceptedMimeTypes)) {
+    if (!isValidFileType(file)) {
       return `Неподдерживаемый тип файла. Разрешены: ${acceptedFileTypes.join(', ')}`
     }
 
     // Проверка размера файла
-    if (!isValidFileSize(file, maxFileSizeInMB)) {
+    if (!isValidFileSize(file)) {
       return `Файл слишком большой. Максимальный размер: ${maxFileSizeInMB} МБ`
     }
 
     return null
-  }, [acceptedMimeTypes, acceptedFileTypes, maxFileSizeInMB])
+  }, [acceptedFileTypes, maxFileSizeInMB])
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setError('')
@@ -111,19 +111,20 @@ export function FileUpload({
   }
 
   return (
-    <div className={cn('w-full', className)}>
+    <div className={cn('w-full max-w-[340px] mx-auto md:max-w-none', className)}>
       {!uploadedFile ? (
         <Card
           {...getRootProps()}
           className={cn(
-            'upload-area cursor-pointer transition-all duration-200',
+            'upload-area cursor-pointer transition-all duration-200 min-h-[180px] flex items-center justify-center',
+            'max-w-[340px] w-full mx-auto', // Ограничиваем драг-область для мобильных
             isDragActive && 'border-primary-500 bg-primary-50',
             error && 'border-error-300 bg-error-50'
           )}
           variant="outlined"
         >
           <input {...getInputProps()} />
-          <div className="text-center">
+          <div className="text-center pointer-events-none"> {/* Делаем текст неклинкабельным */}
             <svg
               className={cn(
                 'mx-auto h-12 w-12 mb-4',
@@ -147,10 +148,10 @@ export function FileUpload({
             </h3>
             
             <p className="text-sm text-gray-600 mb-4">
-              Перетащите файл сюда или{' '}
+              Перетащите PDF или *.jpeg* сюда или{' '}
               <button
                 type="button"
-                className="text-primary-600 hover:text-primary-700 font-medium"
+                className="text-primary-600 hover:text-primary-700 font-medium pointer-events-auto"
                 onClick={(e) => {
                   e.stopPropagation()
                   open()

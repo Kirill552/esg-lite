@@ -8,6 +8,8 @@ import { OcrJobData } from './pg-boss-config';
 export interface QueuedOcrRequest {
   documentId: string;
   fileKey: string;
+  fileName: string;
+  fileSize: number;
   userId: string;
   organizationId?: string;
   priority?: 'normal' | 'high' | 'urgent';
@@ -32,6 +34,8 @@ export async function queueOcrProcessing(request: QueuedOcrRequest): Promise<Que
     const jobData: OcrJobData = {
       documentId: request.documentId,
       fileKey: request.fileKey,
+      fileName: request.fileName,
+      fileSize: request.fileSize,
       userId: request.userId,
       organizationId: request.organizationId
     };

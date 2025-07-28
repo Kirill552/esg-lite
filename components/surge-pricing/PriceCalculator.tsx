@@ -1,6 +1,6 @@
 /**
- * Компонент калькулятора цен с surge pricing
- * Задача 5.2: Интегрировать surge pricing в кредитную систему
+ * Компонент калькулятора цен с сезонным повышением
+ * Задача 5.2: Интегрировать систему повышения цен в кредитную систему
  */
 
 'use client';
@@ -158,13 +158,13 @@ export default function PriceCalculator({
 
       {pricingInfo && !isLoading && !error && (
         <div className="space-y-4">
-          {/* Surge Pricing уведомление */}
+          {/* Уведомление о сезонном повышении цен */}
           {pricingInfo.surgePricingInfo.isActive && (
             <div className="bg-amber-50 border border-amber-200 rounded-md p-4">
               <div className="flex items-center space-x-2">
                 <TrendingUp className="h-4 w-4 text-amber-600" />
                 <p className="text-sm font-medium text-amber-800">
-                  Surge Pricing активен
+                  Сезонное повышение цен активно
                 </p>
               </div>
               <p className="text-sm text-amber-700 mt-1">
@@ -195,7 +195,7 @@ export default function PriceCalculator({
                 
                 {pricingInfo.surgeAddition > 0 && (
                   <div className="flex justify-between py-1">
-                    <span className="text-gray-600">Доплата surge:</span>
+                    <span className="text-gray-600">Доплата за сезон:</span>
                     <span className="font-medium text-amber-600">
                       +{pricingInfo.surgeAddition.toFixed(3)} т CO₂
                     </span>
@@ -237,7 +237,7 @@ export default function PriceCalculator({
                 <ul className="text-xs space-y-1 text-blue-700">
                   <li>• Первые 1000 т CO₂ в год предоставляются бесплатно</li>
                   <li>• Базовая стоимость: 5 ₽ за 1 т CO₂</li>
-                  <li>• Surge pricing действует с 15 по 30 июня</li>
+                  <li>• Повышение цены действует с 15 по 30 июня</li>
                   {pricingInfo.surgePricingInfo.isActive && (
                     <li>• Сейчас действует повышенный тариф ×{pricingInfo.multiplier}</li>
                   )}

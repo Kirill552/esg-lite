@@ -1,6 +1,6 @@
 /**
- * Компонент баннера Surge Pricing для уведомления пользователей
- * Задача 5.2: Интегрировать surge pricing в кредитную систему
+ * Компонент баннера сезонного повышения цен для уведомления пользователей
+ * Задача 5.2: Интегрировать систему повышения цен в кредитную систему
  */
 
 'use client';
@@ -95,7 +95,7 @@ export default function SurgePricingBanner({
           
           <div className="flex-1">
             <div className="font-medium text-sm">
-              {isActive ? 'Surge Pricing активен' : 'Предупреждение о ценах'}
+              {isActive ? 'Сезонное повышение цен активно' : 'Предупреждение о повышении цен'}
             </div>
             <div className="mt-1 text-sm">
               {bannerInfo.message}

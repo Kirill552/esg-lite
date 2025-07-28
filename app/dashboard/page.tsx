@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { PricingAlert } from '@/components/notifications/PricingAlert';
-import { CreditsWidget } from '@/components/credits/CreditsWidget';
 import { 
   Upload,
   FileText,
@@ -111,8 +110,7 @@ export default function Dashboard() {
   }
 
   const handleSettings = () => {
-    console.log('Настройки')
-    alert('Настройки (в разработке)')
+    window.location.href = '/settings';
   }
 
   const handleNotifications = () => {
@@ -126,8 +124,7 @@ export default function Dashboard() {
   }
 
   const handleLearnMore = () => {
-    console.log('Подробнее о советах')
-    alert('Подробная информация о советах по оптимизации ESG отчетности')
+    window.location.href = '/help'
   }
 
   const downloadReport = async (reportId: string, fileName: string) => {
@@ -206,11 +203,7 @@ export default function Dashboard() {
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md border-b border-slate-200/50 sticky top-0 z-10">
         <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              {/* Компактная информация о кредитах */}
-              <CreditsWidget />
-            </div>
+          <div className="flex items-center justify-end">
             
             <div className="flex items-center gap-4">
               <div className="relative">
@@ -238,15 +231,6 @@ export default function Dashboard() {
                 title="Настройки"
               >
                 <Settings className="w-5 h-5" />
-              </Button>
-              
-              <Button 
-                size="sm" 
-                className="bg-gradient-to-r from-emerald-500 to-green-600 text-white"
-                onClick={handleCreateReport}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Новый отчёт
               </Button>
             </div>
           </div>
@@ -423,18 +407,24 @@ export default function Dashboard() {
             <Card className="p-6 border-0 bg-white/60 backdrop-blur-sm">
               <h3 className="font-bold text-slate-900 mb-4">Быстрые действия</h3>
               <div className="space-y-3">
-                <Button variant="ghost" size="sm" className="w-full justify-start">
-                  <FileText className="w-4 h-4 mr-3" />
-                  Создать отчёт 296-ФЗ
-                </Button>
-                <Button variant="ghost" size="sm" className="w-full justify-start">
-                  <Zap className="w-4 h-4 mr-3" />
-                  Экспорт CBAM
-                </Button>
-                <Button variant="ghost" size="sm" className="w-full justify-start">
-                  <BarChart3 className="w-4 h-4 mr-3" />
-                  Годовая аналитика
-                </Button>
+                <Link href="/create-report">
+                  <Button variant="ghost" size="sm" className="w-full justify-start">
+                    <FileText className="w-4 h-4 mr-3" />
+                    Создать отчёт 296-ФЗ
+                  </Button>
+                </Link>
+                <Link href="/reports">
+                  <Button variant="ghost" size="sm" className="w-full justify-start">
+                    <Zap className="w-4 h-4 mr-3" />
+                    Экспорт CBAM
+                  </Button>
+                </Link>
+                <Link href="/analytics">
+                  <Button variant="ghost" size="sm" className="w-full justify-start">
+                    <BarChart3 className="w-4 h-4 mr-3" />
+                    Годовая аналитика
+                  </Button>
+                </Link>
               </div>
             </Card>
 

@@ -137,7 +137,7 @@ export function CreditsDisplay({ className = '' }: CreditsDisplayProps) {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center">
             <Zap className="h-3 w-3 text-amber-500 mr-1" />
-            <span className="text-xs text-amber-600">Surge pricing</span>
+            <span className="text-xs text-amber-600">Повышение цены</span>
           </div>
           <span className="text-xs text-gray-500">×2</span>
         </div>

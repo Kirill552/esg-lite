@@ -20,6 +20,19 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
+interface ReportFormData {
+  inn?: string;
+  companyName?: string;
+  fullCompanyName?: string;
+  ogrn?: string;
+  kpp?: string;
+  address?: string;
+  okved?: string;
+  okvedName?: string;
+  reportingYear?: string;
+  [key: string]: any;
+}
+
 interface CompanyInfo {
   inn: string;
   name: string;
@@ -38,7 +51,7 @@ export default function CreateReportPage() {
   const [selectedReport, setSelectedReport] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isLoadingCompany, setIsLoadingCompany] = useState(false);
-  const [formData, setFormData] = useState<any>({});
+  const [formData, setFormData] = useState<ReportFormData>({});
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
   const router = useRouter();
 
@@ -153,7 +166,7 @@ export default function CreateReportPage() {
   // Автозаполнение по ИНН
   const handleINNChange = async (inn: string) => {
     const cleanInn = inn.replace(/\D/g, '');
-    setFormData(prev => ({ ...prev, inn: cleanInn }));
+    setFormData((prev: ReportFormData) => ({ ...prev, inn: cleanInn }));
 
     if (cleanInn.length === 10 || cleanInn.length === 12) {
       setIsLoadingCompany(true);
@@ -164,7 +177,7 @@ export default function CreateReportPage() {
           setCompanyInfo(companyData);
           
           // Автозаполнение полей формы
-          setFormData(prev => ({
+          setFormData((prev: ReportFormData) => ({
             ...prev,
             companyName: companyData.name,
             fullCompanyName: companyData.fullName,
@@ -192,7 +205,7 @@ export default function CreateReportPage() {
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev: ReportFormData) => ({ ...prev, [field]: value }));
   };
 
   const validateForm = () => {
@@ -464,7 +477,7 @@ export default function CreateReportPage() {
                   )}
                 </Button>
                 <Link href="/reports">
-                  <Button variant="outline" className="px-6">
+                  <Button variant="secondary" className="px-6">
                     Отмена
                   </Button>
                 </Link>

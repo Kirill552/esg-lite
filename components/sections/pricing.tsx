@@ -90,7 +90,7 @@ export default function Pricing() {
           </p>
           <div className="mt-6 p-4 bg-emerald-50 rounded-xl max-w-2xl mx-auto">
             <p className="text-sm text-emerald-800">
-              🚨 <strong>Surge Pricing:</strong> 15-30 июня цена увеличивается ×2 (аврал-сбор)
+              🚨 <strong>Повышение цены:</strong> 15-30 июня цена увеличивается ×2 (аврал-сбор)
             </p>
           </div>
         </div>
@@ -202,7 +202,7 @@ export default function Pricing() {
                 </div>
                 <div>
                   <h4 className="font-semibold text-slate-900 mb-2">
-                    Когда действует Surge Pricing?
+                    Когда действует Повышение цены?
                   </h4>
                   <p className="text-slate-600">
                     С 15 по 30 июня цена за тонну CO₂ увеличивается в 2 раза (10 ₽/т) 

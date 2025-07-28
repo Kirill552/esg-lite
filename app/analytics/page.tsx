@@ -171,7 +171,13 @@ export default function AnalyticsPage() {
                Аналитика ESG
             </h1>
             <p className="text-slate-600">
-              Анализ выбросов, затрат и эффективности за период {timeRange === '12months' ? '12 месяцев' : timeRange}
+              Анализ выбросов, затрат и эффективности за период {
+                timeRange === '3months' ? '3 месяца' :
+                timeRange === '6months' ? '6 месяцев' :
+                timeRange === '12months' ? '12 месяцев' :
+                timeRange === '2years' ? '2 года' :
+                timeRange
+              }
             </p>
           </div>
           
