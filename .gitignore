@@ -173,3 +173,21 @@ TESTING_GUIDE.md
 !public/**/*.png
 !public/**/*.jpg
 !public/**/*.jpeg
+
+# Large binary files
+*.traineddata
+*.dll
+*.node
+*.exe
+*.pack
+*.pack.gz
+
+# Tesseract data files
+tessdata/
+rus.traineddata
+eng.traineddata
+osd.traineddata
+
+# Prisma binaries
+node_modules/.prisma/
+node_modules/@prisma/
