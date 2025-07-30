@@ -121,10 +121,16 @@ export default function Features() {
             Готовы начать работу с ESG-отчётностью?
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-semibold rounded-2xl hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 hover:scale-105">
+            <button 
+              className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-green-600 text-white font-semibold rounded-2xl hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-300 hover:scale-105"
+              onClick={() => window.location.href = '/sign-up'}
+            >
               Попробовать бесплатно
             </button>
-            <button className="px-8 py-4 border-2 border-slate-200 text-slate-700 font-semibold rounded-2xl hover:border-emerald-300 hover:text-emerald-600 transition-all duration-300">
+            <button 
+              className="px-8 py-4 border-2 border-slate-200 text-slate-700 font-semibold rounded-2xl hover:border-emerald-300 hover:text-emerald-600 transition-all duration-300"
+              onClick={() => window.location.href = '/sign-up'}
+            >
               Посмотреть демо
             </button>
           </div>

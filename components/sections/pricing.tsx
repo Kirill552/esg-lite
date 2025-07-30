@@ -166,6 +166,7 @@ export default function Pricing() {
                   variant={plan.buttonVariant}
                   size="lg"
                   className="w-full group-hover:scale-105 transition-transform duration-300"
+                  onClick={() => window.location.href = '/sign-up'}
                 >
                   {plan.buttonText}
                 </Button>
@@ -257,37 +258,22 @@ export default function Pricing() {
             Полное соответствие 296-ФЗ и CBAM требованиям ЕС.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-            <Button variant="primary" size="lg" className="flex-1">
+            <Button 
+              variant="primary" 
+              size="lg" 
+              className="flex-1"
+              onClick={() => window.location.href = '/sign-up'}
+            >
               🚀 Начать бесплатно
             </Button>
-            <Button variant="secondary" size="lg" className="flex-1">
+            <Button 
+              variant="secondary" 
+              size="lg" 
+              className="flex-1"
+              onClick={() => window.open('https://wa.me/89199052376?text=Здравствуйте! Интересует консультация по ESG-отчётности', '_blank')}
+            >
               📞 Консультация
             </Button>
-          </div>
-          
-          {/* Additional monetization info */}
-          <div className="mt-12 p-6 bg-emerald-50 rounded-2xl max-w-4xl mx-auto">
-            <h4 className="font-semibold text-slate-900 mb-4">
-              💼 Дополнительные возможности заработка:
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-600">
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></div>
-                <span>👥 Маркетплейс ESG-консультантов (комиссия)</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></div>
-                <span>🏢 White-label для ТПП и регионов (лицензия)</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></div>
-                <span>🎓 Персонализированное обучение (курсы)</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full mr-3"></div>
-                <span>📈 Стратегии сокращения CO₂ (консалтинг)</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>

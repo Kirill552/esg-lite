@@ -65,6 +65,7 @@ export function HeroSection() {
           <Button 
             size="lg" 
             className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl hover:shadow-emerald-500/25 transition-all duration-300 hover:scale-105"
+            onClick={() => window.location.href = '/sign-up'}
           >
             Создать отчёт бесплатно
             <Zap className="ml-2 h-5 w-5" />
@@ -73,6 +74,7 @@ export function HeroSection() {
             variant="secondary" 
             size="lg"
             className="border-2 border-slate-200 hover:border-emerald-300 text-slate-700 hover:text-emerald-600 px-8 py-4 text-lg font-semibold transition-all duration-300 hover:bg-emerald-50/50"
+            onClick={() => window.location.href = '/sign-up'}
           >
             <Play className="mr-2 h-5 w-5" />
             Посмотреть демо

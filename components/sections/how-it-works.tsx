@@ -135,6 +135,7 @@ export default function HowItWorks() {
                   variant="primary" 
                   size="lg"
                   className="flex-1"
+                  onClick={() => window.location.href = '/sign-up'}
                 >
                   Попробовать бесплатно
                 </Button>
@@ -142,6 +143,7 @@ export default function HowItWorks() {
                   variant="secondary" 
                   size="lg"
                   className="flex-1"
+                  onClick={() => window.location.href = '/sign-up'}
                 >
                   Посмотреть демо
                 </Button>
