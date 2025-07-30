@@ -10,6 +10,8 @@ node# Environment variables
 
 # Yandex Cloud keys (CRITICAL!)
 authorized_key.json
+yandex_key.json
+service_account.json
 *.key
 *.pems/
 /.pnp

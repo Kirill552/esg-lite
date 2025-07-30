@@ -1,0 +1,114 @@
+# Автоматический деплой ESG-Lite на VM2
+name: Deploy to VM2
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # Позволяет запускать вручную
+
+jobs:
+  deploy:
+    name: Deploy to VM2
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to VM2
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VM2_HOST }}
+        username: ${{ secrets.VM2_USER }}
+        key: ${{ secrets.VM2_SSH_KEY }}
+        port: 22
+        script: |
+          echo "🚀 Начинаем деплой ESG-Lite..."
+          
+          # Переходим в директорию проекта
+          cd /opt/esg-lite || { echo "❌ Директория /opt/esg-lite не найдена"; exit 1; }
+          
+          # Создаем локальные SSL сертификаты если их нет
+          if [ ! -f ./ssl/nginx-selfsigned.crt ]; then
+            echo "🔐 Генерируем SSL сертификат..."
+            mkdir -p ./ssl
+            openssl genrsa -out ./ssl/nginx-selfsigned.key 2048
+            openssl req -new -x509 -key ./ssl/nginx-selfsigned.key \
+              -out ./ssl/nginx-selfsigned.crt -days 365 \
+              -subj "/C=RU/ST=Moscow/L=Moscow/O=ESG-Lite/CN=82.202.156.35"
+            chmod 600 ./ssl/nginx-selfsigned.key
+            chmod 644 ./ssl/nginx-selfsigned.crt
+          fi
+          
+          # Останавливаем контейнеры
+          echo "⏹️ Останавливаем контейнеры..."
+          docker compose -f docker-compose.prod.yml down
+          
+          # Обновляем код
+          echo "📥 Обновляем код из GitHub..."
+          git fetch origin
+          git reset --hard origin/main
+          
+          # Проверяем что authorized_key.json существует
+          if [ ! -f authorized_key.json ]; then
+            echo "⚠️ authorized_key.json не найден, но это нормально для безопасности"
+          fi
+          
+          # Удаляем старые образы
+          echo "🧹 Очищаем старые образы..."
+          docker image prune -f
+          
+          # Собираем и запускаем новые контейнеры
+          echo "🔨 Собираем и запускаем контейнеры..."
+          docker compose -f docker-compose.prod.yml up -d --build
+          
+          # Ждем запуска
+          echo "⏳ Ждем запуска сервисов..."
+          sleep 30
+          
+          # Проверяем статус
+          echo "✅ Проверяем статус контейнеров..."
+          docker compose -f docker-compose.prod.yml ps
+          
+          # Проверяем логи
+          echo "📋 Последние логи:"
+          docker compose -f docker-compose.prod.yml logs --tail=20
+          
+          echo "🎉 Деплой завершен!"
+
+    - name: Health Check
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VM2_HOST }}
+        username: ${{ secrets.VM2_USER }}
+        key: ${{ secrets.VM2_SSH_KEY }}
+        port: 22
+        script: |
+          echo "🏥 Проверяем здоровье приложения..."
+          
+          # Ждем полного запуска
+          sleep 60
+          
+          # Проверяем доступность приложения
+          if curl -f http://localhost:3000/api/queue/health; then
+            echo "✅ Приложение работает корректно!"
+            echo "🌐 Сайт доступен по адресу: https://esg-lite.ru"
+          else
+            echo "❌ Приложение недоступно!"
+            echo "📋 Логи контейнеров:"
+            cd /opt/esg-lite
+            docker compose -f docker-compose.prod.yml logs --tail=50
+            exit 1
+          fi
+
+    - name: Notify Success
+      if: success()
+      run: |
+        echo "🎉 Деплой на VM2 успешно завершен!"
+        echo "🌐 Приложение доступно по адресу: https://esg-lite.ru"
+
+    - name: Notify Failure
+      if: failure()
+      run: |
+        echo "❌ Деплой на VM2 завершился с ошибкой!"
+        echo "🔍 Проверьте логи выше для диагностики проблемы"
