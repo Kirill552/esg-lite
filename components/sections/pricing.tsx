@@ -3,8 +3,8 @@
 import React from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { 
-  Check, 
+import {
+  Check,
   Star,
   Zap,
   Shield,
@@ -87,7 +87,7 @@ export default function Pricing() {
             Прозрачное ценообразование по кредитам
           </h2>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-            Платите только за обработанные тонны CO₂. Начните бесплатно с 1000 т CO₂, 
+            Платите только за обработанные тонны CO₂. Начните бесплатно с 1000 т CO₂,
             затем 5 ₽/т CO₂. Annual тариф включает кредиты и приоритет.
           </p>
           <div className="mt-6 p-4 bg-emerald-50 rounded-xl max-w-2xl mx-auto">
@@ -102,11 +102,10 @@ export default function Pricing() {
           {plans.map((plan, index) => {
             const IconComponent = plan.icon;
             return (
-              <Card 
-                key={plan.name} 
-                className={`relative p-8 border-0 bg-gradient-to-br ${plan.bgGradient} hover:shadow-2xl transition-all duration-300 group ${
-                  plan.popular ? 'ring-2 ring-blue-500 scale-105' : ''
-                }`}
+              <Card
+                key={plan.name}
+                className={`relative p-8 border-0 bg-gradient-to-br ${plan.bgGradient} hover:shadow-2xl transition-all duration-300 group ${plan.popular ? 'ring-2 ring-blue-500 scale-105' : ''
+                  }`}
               >
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
@@ -164,7 +163,7 @@ export default function Pricing() {
                 </div>
 
                 {/* CTA Button */}
-                <Button 
+                <Button
                   variant={plan.buttonVariant}
                   size="lg"
                   className="w-full group-hover:scale-105 transition-transform duration-300"
@@ -190,7 +189,7 @@ export default function Pricing() {
                     Как работает система кредитов?
                   </h4>
                   <p className="text-slate-600">
-                    Каждый аккаунт получает 1000 т CO₂ бесплатно. После исчерпания 
+                    Каждый аккаунт получает 1000 т CO₂ бесплатно. После исчерпания
                     лимита списывается 5 ₽ за каждую обработанную тонну CO₂.
                   </p>
                 </div>
@@ -208,7 +207,7 @@ export default function Pricing() {
                     Когда действует Повышение цены?
                   </h4>
                   <p className="text-slate-600">
-                    С 15 по 30 июня цена за тонну CO₂ увеличивается в 2 раза (10 ₽/т) 
+                    С 15 по 30 июня цена за тонну CO₂ увеличивается в 2 раза (10 ₽/т)
                     из-за аврального периода сбора отчётности.
                   </p>
                 </div>
@@ -227,7 +226,7 @@ export default function Pricing() {
                     30 дней гарантия возврата
                   </h4>
                   <p className="text-slate-600 mb-6">
-                    Если наш сервис вам не подойдёт, мы вернём 100% стоимости 
+                    Если наш сервис вам не подойдёт, мы вернём 100% стоимости
                     в течение 30 дней без вопросов.
                   </p>
                   <div className="flex items-center justify-center space-x-4 text-sm text-slate-500">
@@ -256,21 +255,21 @@ export default function Pricing() {
             Готовы автоматизировать ESG отчётность?
           </h3>
           <p className="text-lg text-slate-600 mb-8 max-w-2xl mx-auto">
-            Начните бесплатно с 1000 т CO₂. Платите только за фактическое использование. 
+            Начните бесплатно с 1000 т CO₂. Платите только за фактическое использование.
             Полное соответствие 296-ФЗ и CBAM требованиям ЕС.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-            <Button 
-              variant="primary" 
-              size="lg" 
-              className="flex-1"
+            <Button
+              variant="primary"
+              size="lg"
+              className="flex-1 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-semibold shadow-lg hover:shadow-xl hover:shadow-emerald-500/25 transition-all duration-300 hover:scale-105 border-0"
               onClick={() => window.location.href = '/sign-up'}
             >
               🚀 Начать бесплатно
             </Button>
-            <Button 
-              variant="secondary" 
-              size="lg" 
+            <Button
+              variant="secondary"
+              size="lg"
               className="flex-1"
               onClick={() => window.open('https://wa.me/89199052376?text=Здравствуйте! Интересует консультация по ESG-отчётности', '_blank')}
             >
