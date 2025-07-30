@@ -93,11 +93,17 @@ jspm_packages/
 
 # Nuxt.js build / generate output
 .nuxt
-dist
+
 
 # Gatsby files
 .cache/
-public
+# public - разрешаем папку public для Next.js статических файлов
+public/reports/
+!public/fonts/
+!public/*.ico
+!public/*.png
+!public/*.jpg
+!public/*.svg
 
 # Storybook build outputs
 .out
@@ -163,6 +169,7 @@ YANDEX_CLOUD_НАСТРОЙКА.md
 authorized_key.json
 TESTING_GUIDE.md
 .kiro/
+docs/
 
 # clerk configuration (can include secrets)
 /.clerk/
