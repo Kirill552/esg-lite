@@ -17,8 +17,8 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./ssl:/app/ssl:ro
-      - letsencrypt-volume:/etc/letsencrypt:ro
-      - certbot-webroot:/var/www/certbot:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
     networks:
       - esg-lite-network
     depends_on:
