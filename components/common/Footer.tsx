@@ -47,7 +47,6 @@ export function Footer() {
               <li><Link href="/knowledge" className="text-gray-300 hover:text-white transition-colors">База знаний</Link></li>
               <li><Link href="/knowledge/296-fz" className="text-gray-300 hover:text-white transition-colors">296-ФЗ гид</Link></li>
               <li><Link href="/knowledge/cbam" className="text-gray-300 hover:text-white transition-colors">CBAM руководство</Link></li>
-              <li><Link href="/suppliers" className="text-gray-300 hover:text-white transition-colors">Поставщики</Link></li>
             </ul>
           </div>
 

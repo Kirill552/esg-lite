@@ -37,12 +37,11 @@ export function Header() {
   const [isBillingOpen, setIsBillingOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-  // Главные навигационные пункты (согласно аудиту - только 4)
+  // Главные навигационные пункты (согласно аудиту - только 3, поставщики временно отключены)
   const mainNavItems = [
     { href: '/dashboard', label: 'Главная', icon: BarChart3 },
     { href: '/reports', label: 'Отчёты', icon: FileText },
     { href: '/documents', label: 'Документы', icon: FolderOpen },
-    { href: '/suppliers', label: 'Поставщики', icon: Users },
   ]
 
   // Загрузка баланса и данных очереди
