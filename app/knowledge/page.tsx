@@ -69,7 +69,7 @@ export default function KnowledgeBasePage() {
                 </div>
               </div>
               <Link href="/knowledge/296-fz" className="block">
-                <Button className="w-full">
+                <Button className="w-full bg-emerald-600 text-white hover:bg-emerald-700 transition-colors">
                   Изучить 296-ФЗ
                   <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
                 </Button>
@@ -98,7 +98,7 @@ export default function KnowledgeBasePage() {
                 </div>
               </div>
               <Link href="/knowledge/cbam" className="block">
-                <Button className="w-full">
+                <Button className="w-full bg-blue-600 text-white hover:bg-blue-700 transition-colors">
                   Изучить CBAM
                   <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
                 </Button>

@@ -400,7 +400,7 @@ export default function ReportsPage() {
                 {filteredReports.map((report) => (
                   <div 
                     key={report.id}
-                    className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                    className="group flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
                   >
                     <div className="flex items-center gap-4">
                       <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${getReportTypeColor(report.reportType)}`}>
@@ -422,25 +422,28 @@ export default function ReportsPage() {
                     </div>
                     
                     <div className="flex items-center gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleView(report)}
-                        className="text-blue-600 hover:text-blue-700"
-                      >
-                        <Eye className="w-4 h-4 mr-1" />
-                        Просмотр
-                      </Button>
-                      
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDownload(report)}
-                        className="bg-blue-600 text-white hover:bg-blue-700"
-                      >
-                        <Download className="w-4 h-4 mr-1" />
-                        Скачать
-                      </Button>
+                      {/* Кнопки появляются только при hover */}
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleView(report)}
+                          className="text-blue-600 hover:text-blue-700"
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          Просмотр
+                        </Button>
+                        
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDownload(report)}
+                          className="bg-blue-600 text-white hover:bg-blue-700"
+                        >
+                          <Download className="w-4 h-4 mr-1" />
+                          Скачать
+                        </Button>
+                      </div>
                       
                       <div className="relative">
                         <Button

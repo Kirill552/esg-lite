@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient, ReportType } from '@prisma/client';
 import { auth } from '@clerk/nextjs/server';
+import { getUserInternalId } from '@/lib/user-utils';
 import fs from 'fs';
 import path from 'path';
 import { generate296FZReport, generateCBAMReport, ReportGenerationData } from '@/lib/report-generator';
@@ -154,20 +155,39 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth();
+    const { userId: clerkUserId } = await auth();
     
-    if (!userId) {
+    console.log(`🔍 [VIEW] Trying to access report with clerkUserId: ${clerkUserId}`);
+    
+    if (!clerkUserId) {
+      console.log('❌ [VIEW] No clerkUserId found');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Получаем внутренний ID пользователя
+    const internalUserId = await getUserInternalId(clerkUserId);
+    console.log(`🔍 [VIEW] Internal userId: ${internalUserId}`);
+
     const { id } = await params;
+    console.log(`🔍 [VIEW] Looking for report ID: ${id}`);
 
     // Находим отчет
     const report = await prisma.report.findFirst({
-      where: { id, userId }
+      where: { id, userId: internalUserId }
     });
 
+    console.log(`🔍 [VIEW] Found report:`, report ? 'YES' : 'NO');
+    
     if (!report) {
+      // Пробуем найти отчет без userId для отладки
+      const anyReport = await prisma.report.findFirst({
+        where: { id }
+      });
+      console.log(`🔍 [VIEW] Report exists without userId filter:`, anyReport ? 'YES' : 'NO');
+      if (anyReport) {
+        console.log(`🔍 [VIEW] Report belongs to userId: ${anyReport.userId}`);
+      }
+      
       return NextResponse.json({ error: 'Report not found' }, { status: 404 });
     }
 
