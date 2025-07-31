@@ -135,10 +135,15 @@ export default function ReportsPage() {
   // Действия с отчетом
   const handleView = async (report: Report) => {
     try {
-      if (report.filePath) {
-        window.open(report.filePath, '_blank');
+      // Открываем отчет для просмотра через API
+      const response = await fetch(`/api/reports/${report.id}/view`);
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank');
+        window.URL.revokeObjectURL(url);
       } else {
-        toast.error('Файл отчета не найден');
+        toast.error('Ошибка открытия отчета');
       }
     } catch (error) {
       console.error('Ошибка просмотра:', error);

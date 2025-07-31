@@ -100,6 +100,43 @@ export default function DocumentsPage() {
     }
   };
 
+  const viewDocument = async (document: Document) => {
+    try {
+      // Переходим к просмотру результата OCR обработки
+      if (document.status === 'COMPLETED') {
+        window.open(`/reports/${document.id}`, '_blank');
+      } else {
+        alert('Документ еще не обработан');
+      }
+    } catch (error) {
+      console.error('Ошибка просмотра документа:', error);
+      setError('Ошибка открытия документа');
+    }
+  };
+
+  const downloadDocument = async (document: Document) => {
+    try {
+      const response = await fetch(`/api/documents/${document.id}/download`);
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = window.document.createElement('a');
+        a.href = url;
+        a.download = document.fileName;
+        window.document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        window.document.body.removeChild(a);
+      } else {
+        throw new Error('Ошибка скачивания файла');
+      }
+    } catch (error) {
+      console.error('Ошибка скачивания:', error);
+      setError('Ошибка скачивания файла');
+    }
+  };
+
   const getStatusIcon = (status: Document['status']) => {
     switch (status) {
       case 'COMPLETED': return <CheckCircle className="w-5 h-5 text-green-600" />;
@@ -292,6 +329,7 @@ export default function DocumentsPage() {
                           size="sm"
                           className="bg-white/80 dark:bg-gray-700/80 hover:bg-white dark:hover:bg-gray-700 shadow-sm"
                           title="Просмотр"
+                          onClick={() => viewDocument(doc)}
                         >
                           <Eye className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                         </Button>
@@ -300,6 +338,7 @@ export default function DocumentsPage() {
                           size="sm"
                           className="bg-white/80 dark:bg-gray-700/80 hover:bg-white dark:hover:bg-gray-700 shadow-sm"
                           title="Скачать"
+                          onClick={() => downloadDocument(doc)}
                         >
                           <Download className="w-4 h-4 text-green-600 dark:text-green-400" />
                         </Button>

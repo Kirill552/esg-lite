@@ -90,7 +90,7 @@ export default function KnowledgeBasePage() {
               <div className="space-y-2 text-sm text-slate-500 mb-6">
                 <div className="flex items-center justify-center space-x-2">
                   <Calendar className="w-4 h-4" />
-                  <span>Действует с 2026 года</span>
+                  <span>Действует с 1 января 2026 года</span>
                 </div>
                 <div className="flex items-center justify-center space-x-2">
                   <Building className="w-4 h-4" />
@@ -148,40 +148,48 @@ export default function KnowledgeBasePage() {
                 <FileText className="w-8 h-8 text-emerald-600 mb-3" />
                 <h4 className="font-semibold text-slate-900 mb-2">Текст 296-ФЗ</h4>
                 <p className="text-sm text-slate-600 mb-4">Полный текст закона в актуальной редакции</p>
-                <Button size="sm" variant="ghost" className="w-full">
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Перейти
-                </Button>
+                <a href="https://www.consultant.ru/document/cons_doc_LAW_388992/" target="_blank" rel="noopener noreferrer">
+                  <Button size="sm" variant="ghost" className="w-full">
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Перейти
+                  </Button>
+                </a>
               </div>
               
               <div className="bg-white rounded-lg p-6 shadow-sm">
                 <Globe className="w-8 h-8 text-blue-600 mb-3" />
                 <h4 className="font-semibold text-slate-900 mb-2">CBAM Regulation</h4>
                 <p className="text-sm text-slate-600 mb-4">Официальное постановление ЕС</p>
-                <Button size="sm" variant="ghost" className="w-full">
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Перейти
-                </Button>
+                <a href="https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism_en" target="_blank" rel="noopener noreferrer">
+                  <Button size="sm" variant="ghost" className="w-full">
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Перейти
+                  </Button>
+                </a>
               </div>
               
               <div className="bg-white rounded-lg p-6 shadow-sm">
                 <BookOpen className="w-8 h-8 text-indigo-600 mb-3" />
                 <h4 className="font-semibold text-slate-900 mb-2">Методики расчета</h4>
                 <p className="text-sm text-slate-600 mb-4">Утвержденные методики расчета выбросов</p>
-                <Button size="sm" variant="ghost" className="w-full">
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Перейти
-                </Button>
+                <a href="https://www.consultant.ru/law/podborki/metodika_rascheta_vybrosov_parnikovyh_gazov/" target="_blank" rel="noopener noreferrer">
+                  <Button size="sm" variant="ghost" className="w-full">
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Перейти
+                  </Button>
+                </a>
               </div>
               
               <div className="bg-white rounded-lg p-6 shadow-sm">
                 <CheckCircle className="w-8 h-8 text-green-600 mb-3" />
                 <h4 className="font-semibold text-slate-900 mb-2">Шаблоны отчетов</h4>
                 <p className="text-sm text-slate-600 mb-4">Готовые шаблоны для заполнения</p>
-                <Button size="sm" variant="ghost" className="w-full">
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Перейти
-                </Button>
+                <a href="https://www.trudohrana.ru/article/104387-23-m6-kak-oformit-otchet-po-parnikovym-gazam-v-2023-godu" target="_blank" rel="noopener noreferrer">
+                  <Button size="sm" variant="ghost" className="w-full">
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Перейти
+                  </Button>
+                </a>
               </div>
             </div>
           </Card>
