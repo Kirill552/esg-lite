@@ -139,7 +139,7 @@ prisma/migrations/
 # Uploads and generated files
 uploads/
 generated/
-reports/
+
 
 # Backup files
 *.bak
