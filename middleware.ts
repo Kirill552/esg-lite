@@ -1,7 +1,7 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
-// Временно отключен rate-limiter в middleware для избежания проблем с Node.js модулями
-// import { getRateLimiter } from '@/lib/rate-limiter'
+// Rate-limiter теперь реализован непосредственно в API роутах
+// для лучшей производительности и совместимости с Edge Runtime
 
 const isProtectedRoute = createRouteMatcher([
   '/dashboard',
@@ -33,13 +33,9 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.redirect(new URL('/sign-in', req.url))
   }
 
-  // Rate limiting временно отключен - будет реализован в самих API роутах
-  // чтобы избежать проблем с импортом Node.js модулей в middleware
-  /*
-  if (isRateLimitedRoute(req) && userId) {
-    // Rate limiting логика перенесена в API роуты
-  }
-  */
+  // Rate limiting реализован непосредственно в API роутах (/api/upload, /api/ocr)
+  // для обеспечения лучшей производительности и точности контроля
+  // См. app/api/upload/route.ts для реализации rate-limiting
 
   return NextResponse.next()
 })

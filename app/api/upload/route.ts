@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import { uploadFile, generateFileKey } from '@/lib/s3';
 import { prisma } from '@/lib/prisma';
 import { getUserInternalId } from '@/lib/user-utils';
+import { RateLimiter } from '@/lib/rate-limiter';
 
 export const runtime = 'nodejs';
 
@@ -15,6 +16,49 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
+
+    // Rate limiting для API загрузки файлов
+    const rateLimiter = new RateLimiter({
+      windowSizeMs: 60 * 1000, // 1 минута
+      maxRequests: 10,          // 10 загрузок в минуту для базового лимита
+      cleanupIntervalMs: 5 * 60 * 1000, // Очистка каждые 5 минут
+      subscriptionLimits: {
+        FREE: 5,           // 5 файлов в минуту для бесплатного
+        LITE_ANNUAL: 10,   // 10 файлов в минуту для Lite
+        CBAM_ADDON: 15,    // 15 файлов в минуту для CBAM
+        PREMIUM: 25        // 25 файлов в минуту для Premium
+      }
+    });
+
+    // Получаем внутренний ID пользователя для rate limiting
+    const internalUserId = await getUserInternalId(userId);
+    
+    // Проверяем rate limit (используем userId как organizationId)
+    const rateLimitResult = await rateLimiter.checkLimit(internalUserId);
+    
+    if (!rateLimitResult.allowed) {
+      console.log(`🚫 Rate limit exceeded for user ${internalUserId}:`, rateLimitResult.reason);
+      
+      return NextResponse.json(
+        { 
+          error: 'Превышен лимит загрузок',
+          details: rateLimitResult.reason,
+          retryAfter: rateLimitResult.retryAfter,
+          remaining: rateLimitResult.remaining
+        },
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Limit': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': rateLimitResult.resetTime.toISOString(),
+            'Retry-After': rateLimitResult.retryAfter?.toString() || '60'
+          }
+        }
+      );
+    }
+
+    console.log(`✅ Rate limit check passed for user ${internalUserId}. Remaining: ${rateLimitResult.remaining}`);
 
     const formData = await request.formData();
     const file = formData.get('file') as File;
@@ -94,6 +138,10 @@ export async function POST(request: NextRequest) {
     });
     
     console.log('💾 Document saved to database:', result.document);
+
+    // Увеличиваем счетчик rate limit после успешной загрузки
+    await rateLimiter.incrementCounter(internalUserId);
+    console.log('📈 Rate limit counter incremented');
 
     return NextResponse.json({
       success: true,

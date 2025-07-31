@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { getQueueManager } from '@/lib/queue';
 import { creditsService } from '@/lib/credits-service';
 import { JobStatus } from '@/types/queue';
+import { RateLimiter } from '@/lib/rate-limiter';
+import { getUserInternalId } from '@/lib/user-utils';
 
 /**
  * Получение позиции задачи в очереди
@@ -31,6 +33,70 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Получаем внутренний ID пользователя для rate limiting
+    const internalUserId = await getUserInternalId(userId);
+    if (!internalUserId) {
+      console.error('❌ Не удалось получить внутренний ID пользователя:', { userId });
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    // Используем organizationId или internalUserId как fallback
+    const organizationId = orgId || internalUserId;
+
+    // Проверка rate limiting для OCR API (более строгие лимиты чем upload)
+    const rateLimiter = new RateLimiter({
+      windowSizeMs: 60 * 1000, // 1 минута
+      subscriptionLimits: {
+        FREE: 3,           // 3 OCR запроса в минуту для FREE
+        LITE_ANNUAL: 8,    // 8 OCR запросов в минуту для LITE
+        CBAM_ADDON: 12,    // 12 OCR запросов в минуту для CBAM
+        PREMIUM: 20        // 20 OCR запросов в минуту для PREMIUM
+      }
+    });
+    
+    try {
+      const rateLimitResult = await rateLimiter.checkLimit(organizationId);
+      
+      if (!rateLimitResult.allowed) {
+        console.log('⚠️ Rate limit exceeded for OCR API:', { 
+          organizationId, 
+          reason: rateLimitResult.reason,
+          remaining: rateLimitResult.remaining,
+          retryAfter: rateLimitResult.retryAfter
+        });
+        
+        return NextResponse.json({
+          success: false,
+          error: 'Rate limit exceeded',
+          code: 'RATE_LIMIT_EXCEEDED',
+          details: {
+            message: `Превышен лимит запросов для OCR. Тип подписки: ${rateLimitResult.subscriptionType}`,
+            retryAfter: rateLimitResult.retryAfter || 60,
+            subscriptionType: rateLimitResult.subscriptionType,
+            hasCredits: rateLimitResult.hasCredits
+          }
+        }, { 
+          status: 429,
+          headers: {
+            'Retry-After': String(rateLimitResult.retryAfter || 60),
+            'X-RateLimit-Remaining': String(rateLimitResult.remaining)
+          }
+        });
+      }
+      
+      console.log('✅ Rate limit check passed for OCR API:', { 
+        organizationId, 
+        remaining: rateLimitResult.remaining,
+        subscriptionType: rateLimitResult.subscriptionType
+      });
+    } catch (error: any) {
+      console.error('❌ Rate limiter error for OCR API:', error);
+      // В случае ошибки продолжаем работу (fail-open approach)
+    }
+
     const body = await request.json();
     const { documentId } = body;
 
@@ -42,9 +108,6 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('🔍 OCR POST request received:', { documentId, userId, orgId });
-
-    // Используем organizationId или userId как fallback
-    const organizationId = orgId || userId;
 
     // Проверяем surge-pricing период для корректного расчета стоимости
     const surgePricingService = require('@/lib/surge-pricing').surgePricingService;
@@ -152,6 +215,15 @@ export async function POST(request: NextRequest) {
         fileName: document.fileName,
         fileSize: document.fileSize
       });
+
+      // Инкрементируем счетчик rate limiter после успешного добавления в очередь
+      try {
+        await rateLimiter.incrementCounter(organizationId);
+        console.log('✅ Rate limiter counter incremented for OCR API:', { organizationId });
+      } catch (rateLimiterError: any) {
+        console.error('⚠️ Failed to increment rate limiter counter:', rateLimiterError);
+        // Не прерываем выполнение, так как задача уже добавлена в очередь
+      }
 
       // Возвращаем job ID вместо немедленного результата OCR
       return NextResponse.json({

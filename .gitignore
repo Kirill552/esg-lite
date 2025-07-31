@@ -1,5 +1,9 @@
 # Dependencies
-node# Environment variables
+node_modules/
+/.pnp
+.pnp.js
+
+# Environment variables (CRITICAL!)
 .env
 .env.local
 .env.test
@@ -7,6 +11,13 @@ node# Environment variables
 .env.test.local
 .env.production.local
 .env.production
+
+# Database credentials and connection strings
+database-config.json
+db-credentials.json
+connection-strings.txt
+*database-url*
+*credentials*
 
 # Yandex Cloud keys (CRITICAL!)
 authorized_key.json
@@ -200,3 +211,7 @@ osd.traineddata
 # Prisma binaries
 node_modules/.prisma/
 node_modules/@prisma/
+
+root.crt
+dev-db-tunnel.ps1
+

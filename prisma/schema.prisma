@@ -211,11 +211,11 @@ model QueueJobLog {
 
 model QueueMetric {
   id          String   @id @default(dbgenerated("(gen_random_uuid())::text"))
-  metricType  String
-  metricValue Float
+  metricType  String   @map("metric_type")
+  metricValue Float    @map("metric_value")
   metadata    Json?
   timestamp   DateTime @default(now()) @db.Timestamp(6)
-  expiresAt   DateTime @db.Timestamp(6)
+  expiresAt   DateTime @map("expires_at") @db.Timestamp(6)
 
   @@index([metricType])
   @@index([timestamp])
@@ -307,6 +307,26 @@ model organization_subscriptions {
   @@index([plan_type], map: "org_subscriptions_plan_type_idx")
   @@index([status], map: "org_subscriptions_status_idx")
   @@index([expires_at], map: "org_subscriptions_expires_at_idx")
+}
+
+model EmissionFactor {
+  id            String    @id @default(dbgenerated("(gen_random_uuid())::text"))
+  version       String    @unique
+  name          String
+  description   String
+  effectiveFrom DateTime  @db.Timestamp(6)
+  effectiveTo   DateTime? @db.Timestamp(6)
+  isActive      Boolean   @default(true)
+  source        String
+  coefficients  Json
+  createdAt     DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt     DateTime  @default(now()) @updatedAt @db.Timestamp(6)
+
+  @@index([effectiveFrom])
+  @@index([effectiveTo])
+  @@index([isActive])
+  @@index([version])
+  @@map("emission_factors")
 }
 
 enum DocumentStatus {

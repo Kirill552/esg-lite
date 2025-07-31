@@ -62,6 +62,14 @@ jobs:
           echo "🔨 Собираем и запускаем контейнеры..."
           docker compose -f docker-compose.prod.yml up -d --build
           
+          # Применяем миграции базы данных
+          echo "🗃️ Применяем миграции базы данных..."
+          docker compose -f docker-compose.prod.yml exec -T esg-lite-web sh -c 'DATABASE_URL="${{ secrets.PRODUCTION_DATABASE_URL }}" npx prisma migrate deploy'
+          
+          # Проверяем актуальность коэффициентов 296-ФЗ
+          echo "📊 Проверяем актуальность коэффициентов выбросов..."
+          docker compose -f docker-compose.prod.yml exec -T esg-lite-web sh -c 'node scripts/update-emission-factors.js --check || echo "⚠️ Коэффициенты требуют обновления после деплоя"'
+          
           # Ждем запуска
           echo "⏳ Ждем запуска сервисов..."
           sleep 30

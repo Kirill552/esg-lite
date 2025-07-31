@@ -75,6 +75,7 @@ services:
       - temp-volume:/app/temp
       - uploads-volume:/app/uploads
       - ./authorized_key.json:/app/authorized_key.json:ro
+      - /etc/ssl/esg-lite/root.crt:/etc/ssl/esg-lite/root.crt:ro
     networks:
       - esg-lite-network
     depends_on:
@@ -133,6 +134,7 @@ services:
       - temp-volume:/app/temp
       - uploads-volume:/app/uploads
       - ./authorized_key.json:/app/authorized_key.json:ro
+      - /etc/ssl/esg-lite/root.crt:/etc/ssl/esg-lite/root.crt:ro
     networks:
       - esg-lite-network
     depends_on:
@@ -160,7 +162,9 @@ services:
         exit 0
       "
     environment:
-      - PGPASSWORD=${DB_PASSWORD:-esg_user_2025!}
+      - PGPASSWORD=${DB_PASSWORD}
+    volumes:
+      - /etc/ssl/esg-lite/root.crt:/etc/ssl/esg-lite/root.crt:ro
     networks:
       - esg-lite-network
 
@@ -194,7 +198,7 @@ services:
       dockerfile: Dockerfile
     container_name: esg-lite-metrics
     restart: unless-stopped
-    command: ["node", "scripts/metrics-exporter.js"]
+    entrypoint: ["node", "scripts/metrics-exporter.js"]
     ports:
       - "9090:9090"
     environment:
@@ -204,6 +208,7 @@ services:
       - METRICS_INTERVAL=60000
     volumes:
       - logs-volume:/app/logs:ro
+      - /etc/ssl/esg-lite/root.crt:/etc/ssl/esg-lite/root.crt:ro
     networks:
       - esg-lite-network
     depends_on:

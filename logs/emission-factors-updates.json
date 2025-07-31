@@ -1,0 +1,20 @@
+[
+  {
+    "version": "AR6-2025",
+    "name": "IPCC AR6 Коэффициенты 2025",
+    "description": "Актуальные коэффициенты IPCC AR6 согласно Распоряжению Правительства РФ от 04.04.2025 № 805-р",
+    "effectiveFrom": "2025-01-01",
+    "source": "IPCC Sixth Assessment Report (2021) + РФ 805-р",
+    "updatedAt": "2025-07-31T19:41:53.633Z",
+    "coefficients": {
+      "CO2": 1,
+      "CH4": 28,
+      "N2O": 265,
+      "HFC": 1300,
+      "PFC": 6630,
+      "SF6": 23500
+    },
+    "timestamp": "2025-07-31T19:41:53.717Z",
+    "method": "script"
+  }
+]
