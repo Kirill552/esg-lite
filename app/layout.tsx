@@ -43,21 +43,21 @@ export default function RootLayout({
             </a>
             
             <div className="min-h-full">
-            <Header />
-            
-            {/* Баннер уведомлений о ценах - временно отключен для отладки */}
-            {/* <PricingBanner className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-2" /> */}
+              <Header />
+              
+              {/* Баннер уведомлений о ценах - временно отключен для отладки */}
+              {/* <PricingBanner className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-2" /> */}
 
-            {/* Main Content */}
-            <main id="main-content" className="flex-1">
-              {children}
-            </main>
+              {/* Main Content */}
+              <main id="main-content" className="flex-1">
+                {children}
+              </main>
 
-            {/* Плавающая кнопка создания отчёта для мобильных */}
-            <FloatingActionButton />
+              {/* Плавающая кнопка создания отчёта для мобильных */}
+              <FloatingActionButton />
 
-            <Footer />
-          </div>
+              <Footer />
+            </div>
           </ClerkProvider>
         </ThemeProvider>
         
