@@ -1,0 +1,51 @@
+# Исключаем тесты из Docker образов (экономим место и время сборки)
+__tests__/
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+
+# Jest конфигурация
+jest.config.js
+jest.setup.js
+coverage/
+
+# Development файлы
+.env.local
+.env.development.local
+.env.test.local
+
+# Документация
+docs/
+README.md
+SETUP_*.md
+TESTING_GUIDE.md
+INTEGRATION-GUIDE.md
+
+# Git и VS Code
+.git/
+.gitignore
+.vscode/
+.kiro/
+
+# Логи и временные файлы
+logs/
+*.log
+.next/cache/
+.next/trace
+node_modules/.cache/
+
+# Скрипты разработки
+scripts/prepare-repository.ps1
+scripts/security-check.ps1
+cleanup-selective.ps1
+install.ps1
+
+# Lighthouse и тестирование
+lighthouserc.json
+test-*.html
+screenshots/
+
+# TypeScript конфигурации для разработки
+tsconfig.test.json
+tsconfig.tsbuildinfo

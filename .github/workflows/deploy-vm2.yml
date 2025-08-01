@@ -8,9 +8,9 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to VM2
+    name: Deploy to VM2 (Cloud.ru Free-tier 10% CPU)
     runs-on: ubuntu-latest
-    timeout-minutes: 30  # Увеличиваем до 30 минут
+    timeout-minutes: 45  # Увеличиваем для Cloud.ru free-tier
     
     steps:
     - name: Checkout code
@@ -23,8 +23,8 @@ jobs:
         username: ${{ secrets.VM2_USER }}
         key: ${{ secrets.VM2_SSH_KEY }}
         port: 22
-        timeout: 25m  # Увеличиваем SSH таймаут
-        command_timeout: 20m  # Увеличиваем таймаут команд
+        timeout: 40m  # Cloud.ru free-tier требует больше времени
+        command_timeout: 35m  # Учитываем 10% CPU ограничение
         script: |
           echo "🚀 Начинаем деплой ESG-Lite..."
           
@@ -57,19 +57,26 @@ jobs:
             echo "⚠️ authorized_key.json не найден, но это нормально для безопасности"
           fi
           
-          # Удаляем старые образы
-          echo "🧹 Очищаем старые образы..."
+          # Удаляем старые образы (важно для Cloud.ru free-tier с 30GB диска)
+          echo "🧹 Удаляем старые образы..."
           docker image prune -f
-          docker system prune -f
+          docker system prune -f --volumes
+          docker builder prune -f
+          
+          # Освобождаем место для новых образов
+          echo "📊 Проверяем доступное место:"
+          df -h /
+          docker images | head -10
           
           # Принудительно пересобираем образы (поэтапно для экономии времени)
-          echo "🔥 Сначала собираем веб и nginx контейнеры..."
-          docker compose -f docker-compose.prod.yml build --no-cache --pull nginx esg-lite-web metrics-exporter
+          echo "🔥 Сначала собираем веб и nginx контейнеры (с кешем для Cloud.ru 10% CPU)..."
+          docker buildx create --use --name multiarch || docker buildx use multiarch
+          docker compose -f docker-compose.prod.yml build --no-cache nginx esg-lite-web metrics-exporter
           
-          echo "🔥 Теперь собираем worker контейнер отдельно (может занять до 10 минут)..."
-          timeout 900 docker compose -f docker-compose.prod.yml build --no-cache --pull esg-lite-worker || {
-            echo "⚠️ Worker билд превысил 15 минут, пропускаем и используем существующий образ"
-            docker compose -f docker-compose.prod.yml build esg-lite-worker || echo "Используем кешированный образ"
+          echo "🔥 Теперь собираем worker контейнер отдельно (может занять до 15 минут на 10% CPU)..."
+          timeout 1200 docker compose -f docker-compose.prod.yml build --no-cache esg-lite-worker || {
+            echo "⚠️ Worker билд превысил 20 минут на Cloud.ru free-tier (10% CPU), используем кешированный образ"
+            docker compose -f docker-compose.prod.yml build esg-lite-worker || echo "Используем существующий образ"
           }
           
           # Собираем и запускаем новые контейнеры
