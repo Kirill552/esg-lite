@@ -64,7 +64,7 @@ model Document {
 }
 
 model Report {
-  id            String     @id @default(cuid())
+  id            String             @id @default(cuid())
   userId        String
   documentId    String?
   reportType    ReportType
@@ -73,13 +73,14 @@ model Report {
   filePath      String
   fileSize      Int?
   emissionData  Json
-  methodology   String     @default("296-ФЗ от 02.07.2021")
-  downloadCount Int        @default(0)
+  methodology   String             @default("296-ФЗ от 02.07.2021")
+  downloadCount Int                @default(0)
   lastDownload  DateTime?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  document      Document?  @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  document      Document?          @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  validations   ReportValidation[]
 
   @@map("reports")
 }
@@ -406,4 +407,27 @@ enum QueueLogLevel {
   INFO
   WARN
   ERROR
+}
+
+model ReportValidation {
+  id             String            @id @default(cuid())
+  reportId       String
+  validationType ValidationType
+  isValid        Boolean
+  errors         String[]
+  warnings       String[]
+  schemaType     String?
+  validationData Json?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  report         Report            @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@map("report_validations")
+}
+
+enum ValidationType {
+  CBAM_XML
+  EMISSION_296FZ
+  STRUCTURE_CHECK
+  DATA_QUALITY
 }
