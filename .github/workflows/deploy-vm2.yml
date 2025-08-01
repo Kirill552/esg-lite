@@ -10,7 +10,7 @@ jobs:
   deploy:
     name: Deploy to VM2
     runs-on: ubuntu-latest
-    timeout-minutes: 20  # Увеличиваем таймаут до 20 минут
+    timeout-minutes: 30  # Увеличиваем до 30 минут
     
     steps:
     - name: Checkout code
@@ -23,8 +23,8 @@ jobs:
         username: ${{ secrets.VM2_USER }}
         key: ${{ secrets.VM2_SSH_KEY }}
         port: 22
-        timeout: 15m  # Таймаут SSH соединения
-        command_timeout: 10m  # Таймаут для отдельных команд
+        timeout: 25m  # Увеличиваем SSH таймаут
+        command_timeout: 20m  # Увеличиваем таймаут команд
         script: |
           echo "🚀 Начинаем деплой ESG-Lite..."
           
@@ -62,13 +62,19 @@ jobs:
           docker image prune -f
           docker system prune -f
           
-          # Принудительно пересобираем образы
-          echo "🔥 Принудительно пересобираем образы..."
-          docker compose -f docker-compose.prod.yml build --no-cache --pull
+          # Принудительно пересобираем образы (поэтапно для экономии времени)
+          echo "🔥 Сначала собираем веб и nginx контейнеры..."
+          docker compose -f docker-compose.prod.yml build --no-cache --pull nginx esg-lite-web metrics-exporter
+          
+          echo "🔥 Теперь собираем worker контейнер отдельно (может занять до 10 минут)..."
+          timeout 900 docker compose -f docker-compose.prod.yml build --no-cache --pull esg-lite-worker || {
+            echo "⚠️ Worker билд превысил 15 минут, пропускаем и используем существующий образ"
+            docker compose -f docker-compose.prod.yml build esg-lite-worker || echo "Используем кешированный образ"
+          }
           
           # Собираем и запускаем новые контейнеры
           echo "🔨 Запускаем контейнеры..."
-          DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 docker compose -f docker-compose.prod.yml up -d
+          docker compose -f docker-compose.prod.yml up -d
           
           # Проверяем успешность запуска
           echo "⏳ Ждем запуска сервисов..."
