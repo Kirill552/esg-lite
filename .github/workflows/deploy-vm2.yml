@@ -95,6 +95,7 @@ jobs:
         key: ${{ secrets.VM2_SSH_KEY }}
         port: 22
         script: |
+          cd /opt/esg-lite
           echo "🏥 Проверяем здоровье приложения..."
           
           # Ждем полного запуска
@@ -105,10 +106,10 @@ jobs:
           docker compose -f docker-compose.prod.yml ps
           
           echo "🔍 Проверяем какие порты слушаются..."
-          netstat -tlnp | grep -E ":80|:443|:3000" || echo "Порты не найдены"
+          ss -tlnp | grep -E ":80|:443|:3000" || netstat -tlnp | grep -E ":80|:443|:3000" || echo "Порты не найдены"
           
           # Проверяем доступность приложения через nginx
-          if curl -f http://localhost/api/queue/health; then
+          if curl -f -k https://localhost/api/queue/health; then
             echo "✅ Приложение работает корректно!"
             echo "🌐 Сайт доступен по адресу: https://esg-lite.ru"
           else
@@ -119,7 +120,6 @@ jobs:
               echo "❌ Веб-контейнер не отвечает"
             fi
             echo "📋 Логи контейнеров:"
-            cd /opt/esg-lite
             docker compose -f docker-compose.prod.yml logs --tail=50
             exit 1
           fi

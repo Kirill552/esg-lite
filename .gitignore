@@ -215,3 +215,6 @@ node_modules/@prisma/
 root.crt
 dev-db-tunnel.ps1
 
+# Kiro project management files
+.kiro/
+
