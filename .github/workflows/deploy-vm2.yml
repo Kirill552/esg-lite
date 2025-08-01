@@ -10,6 +10,7 @@ jobs:
   deploy:
     name: Deploy to VM2
     runs-on: ubuntu-latest
+    timeout-minutes: 20  # Увеличиваем таймаут до 20 минут
     
     steps:
     - name: Checkout code
@@ -22,6 +23,8 @@ jobs:
         username: ${{ secrets.VM2_USER }}
         key: ${{ secrets.VM2_SSH_KEY }}
         port: 22
+        timeout: 15m  # Таймаут SSH соединения
+        command_timeout: 10m  # Таймаут для отдельных команд
         script: |
           echo "🚀 Начинаем деплой ESG-Lite..."
           
@@ -58,9 +61,9 @@ jobs:
           echo "🧹 Очищаем старые образы..."
           docker image prune -f
           
-          # Собираем и запускаем новые контейнеры
+          # Собираем и запускаем новые контейнеры (с оптимизацией)
           echo "🔨 Собираем и запускаем контейнеры..."
-          docker compose -f docker-compose.prod.yml up -d --build
+          DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 docker compose -f docker-compose.prod.yml up -d --build --parallel
           
           # Применяем миграции базы данных
           echo "🗃️ Применяем миграции базы данных..."

@@ -1,0 +1,48 @@
+# ESG-Lite Worker Docker Ignore
+# Исключаем ненужные файлы для более быстрой сборки worker контейнера
+
+# Node modules - будем копировать только нужные
+node_modules
+!node_modules/.prisma
+!node_modules/@prisma
+!node_modules/pg-boss
+!node_modules/tesseract.js
+!node_modules/multer
+!node_modules/sharp
+!node_modules/dotenv
+
+# Development files
+.git
+.gitignore
+*.md
+docs/
+__tests__/
+.github/
+screenshots/
+
+# Build artifacts
+.next/
+dist/
+coverage/
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+*.swp
+*.swo
+
+# Temporary files
+temp/
+uploads/
+ssl/
+
+# Config files (использует переменные окружения)
+.env*
+!.env.example
