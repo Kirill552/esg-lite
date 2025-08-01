@@ -196,9 +196,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: runner  # Используем stage с Node.js
     container_name: esg-lite-metrics
     restart: unless-stopped
-    entrypoint: ["node", "scripts/metrics-exporter.js"]
+    command: ["node", "scripts/metrics-exporter.js"]
     ports:
       - "9090:9090"
     environment:

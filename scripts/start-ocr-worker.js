@@ -1,5 +1,5 @@
 /**
- * Скрипт для запуска OCR Worker процесса
+ * Скрипт для запуска OCR Worker процесса (Production)
  */
 
 require('dotenv').config();
@@ -8,10 +8,8 @@ async function startWorker() {
   console.log('🚀 Запуск OCR Worker процесса...');
   
   try {
-    // Компилируем TypeScript в runtime
-    require('ts-node/register');
-    
-    const { startOcrWorker } = require('../workers/ocr-worker.ts');
+    // В production используем скомпилированные JS файлы
+    const { startOcrWorker } = require('../dist/workers/ocr-worker.js') || require('../workers/ocr-worker.ts');
     
     // Конфигурация worker'а из переменных окружения
     const config = {

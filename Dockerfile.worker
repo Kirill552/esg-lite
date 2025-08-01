@@ -30,8 +30,11 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # Генерируем Prisma client
 RUN npx prisma generate
 
-# Собираем приложение (для worker нужны только некоторые части)
+# Собираем приложение и компилируем TypeScript
 RUN npm run build
+
+# Дополнительно компилируем worker файлы
+RUN npx tsc --project tsconfig.json --outDir ./dist
 
 # ============================================================================
 # Stage 3: Runner для OCR Worker
@@ -71,7 +74,8 @@ COPY --from=builder --chown=worker:nodejs /app/node_modules/@prisma ./node_modul
 # Копируем производственные зависимости
 COPY --from=deps --chown=worker:nodejs /app/node_modules ./node_modules
 
-# Копируем worker scripts и библиотеки
+# Копируем worker scripts и библиотеки (скомпилированные)
+COPY --from=builder --chown=worker:nodejs /app/dist ./dist
 COPY --from=builder --chown=worker:nodejs /app/workers ./workers
 COPY --from=builder --chown=worker:nodejs /app/lib ./lib
 COPY --from=builder --chown=worker:nodejs /app/scripts ./scripts
