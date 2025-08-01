@@ -76,8 +76,8 @@ services:
       - /etc/ssl/esg-lite/root.crt:/etc/ssl/esg-lite/root.crt:ro
     networks:
       - esg-lite-network
-    depends_on:
-      - postgres-health-check
+    # depends_on:
+    #   - postgres-health-check  # Временно отключено для диагностики
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/queue/health"]
       interval: 30s
@@ -138,8 +138,8 @@ services:
       - /etc/ssl/esg-lite/root.crt:/etc/ssl/esg-lite/root.crt:ro
     networks:
       - esg-lite-network
-    depends_on:
-      - postgres-health-check
+    # depends_on:
+    #   - postgres-health-check  # Временно отключено для диагностики
     healthcheck:
       test: ["CMD", "pgrep", "-f", "start-ocr-worker"]
       interval: 60s
@@ -213,8 +213,8 @@ services:
       - /etc/ssl/esg-lite/root.crt:/etc/ssl/esg-lite/root.crt:ro
     networks:
       - esg-lite-network
-    depends_on:
-      - postgres-health-check
+    # depends_on:
+    #   - postgres-health-check  # Временно отключено для диагностики
 
 # ============================================================================
 # Networks & Volumes
