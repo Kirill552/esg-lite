@@ -164,7 +164,7 @@ generated/
 # .kiro/
 
 # Test files (не используем в этом проекте)
-**/__tests__/
+
 *.test.ts
 *.test.js
 *.spec.ts

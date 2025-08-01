@@ -81,8 +81,8 @@ export class HealthMonitor {
 
       // Проверяем статистику подключений
       const connectionStats = await prisma.$queryRaw<[{
-        total_connections: number;
-        active_connections: number;
+        total_connections: bigint;
+        active_connections: bigint;
         max_connections: number;
       }]>`
         SELECT 
@@ -92,7 +92,7 @@ export class HealthMonitor {
       `;
 
       const stats = connectionStats[0];
-      const connectionUsage = stats ? (stats.active_connections / stats.max_connections) * 100 : 0;
+      const connectionUsage = stats ? (Number(stats.active_connections) / stats.max_connections) * 100 : 0;
 
       // Определяем статус на основе производительности
       let status: 'healthy' | 'warning' | 'critical' | 'unhealthy' = 'healthy';
@@ -123,8 +123,8 @@ export class HealthMonitor {
         version: version.split(' ')[0] + ' ' + version.split(' ')[1], // PostgreSQL version
         memoryUsage: connectionUsage,
         details: {
-          totalConnections: stats?.total_connections || 0,
-          activeConnections: stats?.active_connections || 0,
+          totalConnections: stats ? Number(stats.total_connections) : 0,
+          activeConnections: stats ? Number(stats.active_connections) : 0,
           maxConnections: stats?.max_connections || 0,
           responseTime: connectionTime
         }

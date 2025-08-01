@@ -200,7 +200,7 @@ services:
       target: runner  # Используем stage с Node.js
     container_name: esg-lite-metrics
     restart: unless-stopped
-    command: ["node", "scripts/metrics-exporter.js"]
+    command: ["/nodejs/bin/node", "scripts/metrics-exporter.js"]
     ports:
       - "9090:9090"
     environment:

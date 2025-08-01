@@ -34,7 +34,7 @@ RUN npx prisma generate
 RUN npm run build
 
 # Дополнительно компилируем worker файлы
-RUN npx tsc --project tsconfig.json --outDir ./dist
+RUN npx tsc --project tsconfig.worker.json
 
 # ============================================================================
 # Stage 3: Runner для OCR Worker
