@@ -49,3 +49,6 @@ screenshots/
 # TypeScript конфигурации для разработки
 tsconfig.test.json
 tsconfig.tsbuildinfo
+
+# Локальные файлы планирования (не для репозитория)
+Варианты серверов.md

@@ -218,3 +218,6 @@ dev-db-tunnel.ps1
 # Kiro project management files
 .kiro/
 
+# Локальные файлы планирования (не для репозитория)
+Варианты серверов.md
+
