@@ -60,10 +60,15 @@ jobs:
           # Удаляем старые образы
           echo "🧹 Очищаем старые образы..."
           docker image prune -f
+          docker system prune -f
           
-          # Собираем и запускаем новые контейнеры (с оптимизацией)
-          echo "🔨 Собираем и запускаем контейнеры..."
-          DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 docker compose -f docker-compose.prod.yml up -d --build --parallel
+          # Принудительно пересобираем образы
+          echo "🔥 Принудительно пересобираем образы..."
+          docker compose -f docker-compose.prod.yml build --no-cache --pull
+          
+          # Собираем и запускаем новые контейнеры
+          echo "🔨 Запускаем контейнеры..."
+          DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 docker compose -f docker-compose.prod.yml up -d
           
           # Проверяем успешность запуска
           echo "⏳ Ждем запуска сервисов..."
@@ -122,9 +127,24 @@ jobs:
           docker compose -f docker-compose.prod.yml ps
           
           # Проверяем логи если контейнеры не работают
+          echo "📋 Всегда показываем логи для диагностики:"
+          docker compose -f docker-compose.prod.yml logs --tail=100 || echo "Нет логов"
+          
           if ! docker compose -f docker-compose.prod.yml ps | grep -q "Up"; then
-            echo "❌ Контейнеры не запущены! Смотрим логи:"
-            docker compose -f docker-compose.prod.yml logs --tail=100
+            echo "❌ Контейнеры не запущены! Дополнительная диагностика:"
+            
+            echo "🔍 Проверяем образы:"
+            docker images | grep esg-lite || echo "Образы esg-lite не найдены"
+            
+            echo "🔍 Проверяем состояние Docker:"
+            docker info | head -10
+            
+            echo "🔍 Проверяем файлы в проекте:"
+            ls -la
+            
+            echo "🔍 Проверяем Dockerfile:"
+            head -20 Dockerfile || echo "Dockerfile не найден"
+            
             exit 1
           fi
           
