@@ -53,7 +53,7 @@ jobs:
 
     - name: Setup test environment
       run: |
-        cp .env.example .env
+        cp env.example .env
         echo "DATABASE_URL=postgresql://test_user:test_password@localhost:5432/test_esg_lite" >> .env
         echo "NODE_ENV=test" >> .env
 

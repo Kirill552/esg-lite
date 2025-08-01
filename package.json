@@ -122,5 +122,10 @@
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2"
+  },
+  "overrides": {
+    "@a2seven/yoo-checkout": {
+      "axios": "^1.7.9"
+    }
   }
 }
