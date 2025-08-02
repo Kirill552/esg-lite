@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/Button';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { MiniSparkline, generateSampleEmissionsData } from '@/components/ui/MiniSparkline';
 import { SearchInput, FilterSelect } from '@/components/ui/SearchAndFilter';
+import { DocumentsListSkeleton } from '@/components/ui/Skeleton';
+import { EmptyDocumentsState, ErrorState } from '@/components/ui/EmptyState';
 import { 
-  Upload,
   FileText,
   Download,
   Eye,
@@ -182,6 +183,13 @@ export default function DocumentsPage() {
     setFilterStatus(status);
   }, []);
 
+  const clearFilters = useCallback(() => {
+    setSearchTerm('');
+    setFilterStatus('');
+    setSortField('date');
+    setSortDirection('desc');
+  }, []);
+
   const handleSort = useCallback((field: SortField) => {
     if (sortField === field) {
       setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
@@ -249,10 +257,41 @@ export default function DocumentsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <RefreshCw className="w-8 h-8 text-emerald-600 animate-spin mx-auto mb-4" />
-          <p className="text-slate-600">Загрузка документов...</p>
+      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Breadcrumbs */}
+          <div className="mb-6">
+            <Breadcrumb 
+              items={[
+                { label: 'Документы', current: true }
+              ]} 
+            />
+          </div>
+
+          {/* Header */}
+          <div className="mb-8">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+              <div className="mb-6 lg:mb-0">
+                <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
+                  📄 Управление документами
+                </h1>
+                <p className="text-xl text-slate-600 dark:text-slate-300">
+                  Просматривайте и управляйте загруженными документами
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link href="/upload">
+                  <Button className="bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700">
+                    <Plus className="w-5 h-5 mr-2" />
+                    Загрузить документ
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Loading skeletons */}
+          <DocumentsListSkeleton count={6} />
         </div>
       </div>
     );
@@ -361,50 +400,28 @@ export default function DocumentsPage() {
                   )}
                 </Button>
               </div>
-
-              {/* Upload Button */}
-              <Link href="/upload">
-                <Button className="bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700 px-6">
-                  <Upload className="w-5 h-5 mr-2" />
-                  Upload
-                </Button>
-              </Link>
             </div>
           </div>
         </div>
 
         {/* Error */}
         {error && (
-          <Card className="p-4 mb-8 border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
-            <div className="flex items-center">
-              <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 mr-3" />
-              <p className="text-red-700 dark:text-red-300">{error}</p>
-            </div>
-          </Card>
+          <ErrorState 
+            title="Ошибка загрузки"
+            description={error}
+            onRetry={() => {
+              setError('');
+              fetchDocuments();
+            }}
+          />
         )}
 
         {/* Documents Grid */}
         {sortedAndFilteredDocuments.length === 0 ? (
-          <Card className="p-12 text-center border-0 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm">
-            <FileText className="w-16 h-16 text-slate-400 dark:text-slate-500 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-slate-600 dark:text-slate-300 mb-2">
-              {debouncedSearchTerm || (filterStatus && filterStatus !== '') ? 'Документы не найдены' : 'Нет загруженных документов'}
-            </h3>
-            <p className="text-slate-500 dark:text-slate-400 mb-6">
-              {debouncedSearchTerm || (filterStatus && filterStatus !== '') 
-                ? 'Попробуйте изменить условия поиска'
-                : 'Загрузите первый документ для начала работы'
-              }
-            </p>
-            {!debouncedSearchTerm && (!filterStatus || filterStatus === '') && (
-              <Link href="/upload">
-                <Button className="bg-gradient-to-r from-emerald-500 to-green-600 text-white">
-                  <Upload className="w-5 h-5 mr-2" />
-                  Загрузить документ
-                </Button>
-              </Link>
-            )}
-          </Card>
+          <EmptyDocumentsState 
+            isFiltered={!!debouncedSearchTerm || (!!filterStatus && filterStatus !== '')}
+            onClearFilters={clearFilters}
+          />
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {sortedAndFilteredDocuments.map((doc) => (

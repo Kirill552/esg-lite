@@ -86,7 +86,28 @@ export class QueueManager {
 
     try {
       this.boss = await createPgBoss();
+      
+      // Создаем необходимые очереди
+      await this.boss.createQueue(QUEUE_NAMES.OCR, {
+        retryLimit: 3,
+        retryDelay: 2000,
+        expireInHours: 1
+      });
+      
+      await this.boss.createQueue(QUEUE_NAMES.PDF_GENERATION, {
+        retryLimit: 2,
+        retryDelay: 5000,
+        expireInHours: 2
+      });
+      
+      await this.boss.createQueue(QUEUE_NAMES.CLEANUP, {
+        retryLimit: 1,
+        retryDelay: 10000,
+        expireInHours: 24
+      });
+      
       console.log('✅ Queue Manager инициализирован успешно');
+      console.log('✅ Очереди созданы:', Object.values(QUEUE_NAMES));
     } catch (error) {
       console.error('❌ Ошибка инициализации Queue Manager:', error);
       throw error;
@@ -193,6 +214,17 @@ export class QueueManager {
 
     try {
       const jobId = await this.boss.send(QUEUE_NAMES.OCR, enrichedJobData, jobOptions);
+      
+      await queueLogger.info('OCR job created', {
+        jobId,
+        documentId: data.documentId,
+        jobIdType: typeof jobId,
+        jobIdLength: jobId ? String(jobId).length : 0
+      }, { organizationId });
+      
+      if (!jobId || typeof jobId !== 'string' || jobId.trim() === '') {
+        throw new Error(`Invalid job ID returned: ${JSON.stringify(jobId)}`);
+      }
       
       await queueLogger.jobStarted(jobId, 'OCR', {
         documentId: data.documentId,

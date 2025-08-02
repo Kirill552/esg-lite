@@ -191,8 +191,8 @@ export async function POST(request: NextRequest) {
         organizationId
       }, { priority });
 
-      if (!jobId) {
-        throw new Error('Failed to add job to queue - no job ID returned');
+      if (!jobId || typeof jobId !== 'string' || jobId.trim() === '') {
+        throw new Error('Failed to add job to queue - no valid job ID returned');
       }
 
       // Обновляем статус документа на QUEUED с отслеживанием прогресса

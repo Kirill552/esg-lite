@@ -18,19 +18,11 @@ export interface PgBossConfig {
  * Получение конфигурации pg-boss из переменных окружения
  */
 export function getPgBossConfig(): PgBossConfig {
-    // Используем отдельные параметры вместо connectionString для надежности
-    const host = process.env.DB_HOST;
-    const port = parseInt(process.env.DB_PORT || '5432');
-    const database = process.env.DB_NAME;
-    const user = process.env.DB_USER;
-    const password = process.env.DB_PASSWORD;
+    const connectionString = process.env.DATABASE_URL;
 
-    if (!host || !database || !user || !password) {
-        throw new Error('DB_HOST, DB_NAME, DB_USER, and DB_PASSWORD are required for PostgreSQL queues');
+    if (!connectionString) {
+        throw new Error('DATABASE_URL is required for PostgreSQL queues');
     }
-
-    // Формируем connectionString из отдельных параметров
-    const connectionString = `postgresql://${user}:${password}@${host}:${port}/${database}`;
 
     return {
         connectionString,
@@ -47,29 +39,23 @@ export function getPgBossConfig(): PgBossConfig {
  * Создание экземпляра pg-boss с конфигурацией
  */
 export async function createPgBoss(): Promise<any> {
-    // Используем отдельные параметры для надежного подключения
-    const host = process.env.DB_HOST;
-    const port = parseInt(process.env.DB_PORT || '5432');
-    const database = process.env.DB_NAME;
-    const user = process.env.DB_USER;
-    const password = process.env.DB_PASSWORD;
+    const connectionString = process.env.DATABASE_URL;
 
-    if (!host || !database || !user || !password) {
-        throw new Error('DB_HOST, DB_NAME, DB_USER, and DB_PASSWORD are required');
+    if (!connectionString) {
+        throw new Error('DATABASE_URL is required');
     }
 
     const boss = new PgBoss({
-        host,
-        port,
-        database,
-        user,
-        password,
+        connectionString,
         schema: process.env.QUEUE_TABLE_PREFIX || 'pgboss',
         retryLimit: 3,
         retryDelay: 2000,
         expireInHours: 1,
         archiveCompletedAfterSeconds: 3600,
         deleteAfterHours: 24 * 7,
+        // Добавляем обязательные настройки для автоматических миграций
+        migrate: true,
+        max: 20,
         // Настройки для production
         monitorStateIntervalSeconds: 60,
         maintenanceIntervalSeconds: 300
