@@ -3,6 +3,8 @@ const config = {
   preset: 'ts-jest',
   testEnvironment: 'node',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  // Загружаем переменные окружения для тестов
+  setupFiles: ['<rootDir>/jest.env.js'],
   testMatch: [
     '**/__tests__/**/*.test.ts',
     '**/__tests__/**/*.test.js'

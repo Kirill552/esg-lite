@@ -1,10 +1,11 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { MiniSparkline, generateSampleEmissionsData } from '@/components/ui/MiniSparkline';
+import { SearchInput, FilterSelect } from '@/components/ui/SearchAndFilter';
 import { 
   Upload,
   FileText,
@@ -23,7 +24,9 @@ import {
   RefreshCw,
   Edit,
   Share2,
-  Copy
+  Copy,
+  SortAsc,
+  SortDesc
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -40,17 +43,32 @@ interface Document {
   updatedAt: string;
 }
 
+type SortField = 'name' | 'date' | 'size' | 'status';
+type SortDirection = 'asc' | 'desc';
+
 export default function DocumentsPage() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'UPLOADED' | 'PROCESSING' | 'COMPLETED' | 'FAILED'>('all');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState<string>('');
+  const [sortField, setSortField] = useState<SortField>('date');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [error, setError] = useState('');
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   useEffect(() => {
     fetchDocuments();
   }, []);
+
+  // Debounce для поиска
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   // Закрываем dropdown при клике вне его
   useEffect(() => {
@@ -155,11 +173,65 @@ export default function DocumentsPage() {
     }
   };
 
+  // Обработчики поиска и фильтрации
+  const handleSearch = useCallback((query: string) => {
+    setSearchTerm(query);
+  }, []);
+
+  const handleStatusFilter = useCallback((status: string) => {
+    setFilterStatus(status);
+  }, []);
+
+  const handleSort = useCallback((field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  }, [sortField]);
+
+  // Сортировка документов
+  const sortDocuments = useCallback((docs: Document[]) => {
+    return [...docs].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortField) {
+        case 'name':
+          aValue = a.fileName.toLowerCase();
+          bValue = b.fileName.toLowerCase();
+          break;
+        case 'date':
+          aValue = new Date(a.createdAt).getTime();
+          bValue = new Date(b.createdAt).getTime();
+          break;
+        case 'size':
+          aValue = a.fileSize;
+          bValue = b.fileSize;
+          break;
+        case 'status':
+          aValue = a.status;
+          bValue = b.status;
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [sortField, sortDirection]);
+
   const filteredDocuments = (documents || []).filter(doc => {
-    const matchesSearch = doc.fileName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || doc.status === filterStatus;
+    const matchesSearch = doc.fileName.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+                         doc.originalName?.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
+    const matchesStatus = !filterStatus || filterStatus === 'all' || filterStatus === '' || doc.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
+
+  const sortedAndFilteredDocuments = sortDocuments(filteredDocuments);
 
   const formatFileSize = (bytes: number) => {
     return (bytes / 1024 / 1024).toFixed(2) + ' МБ';
@@ -226,31 +298,68 @@ export default function DocumentsPage() {
             <div className="flex flex-col lg:flex-row gap-4 items-center">
               {/* Search */}
               <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 dark:text-slate-500 w-5 h-5" />
-                  <input
-                    type="text"
-                    placeholder="Поиск по имени файла..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white/70 dark:bg-gray-800/70 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-gray-400"
-                  />
-                </div>
+                <SearchInput
+                  placeholder="Поиск по имени файла..."
+                  value={searchTerm}
+                  onSearch={handleSearch}
+                  debounceMs={300}
+                  size="md"
+                  className="w-full bg-white/70 dark:bg-gray-800/70"
+                />
               </div>
 
               {/* Status Filter */}
               <div className="lg:w-48">
-                <select
+                <FilterSelect
                   value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value as any)}
-                  className="w-full px-4 py-3 border border-slate-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white/70 dark:bg-gray-800/70 text-slate-900 dark:text-white"
+                  onChange={(e) => handleStatusFilter(e.target.value)}
+                  options={[
+                    { value: 'UPLOADED', label: 'Загружен' },
+                    { value: 'PROCESSING', label: 'Обработка' },
+                    { value: 'COMPLETED', label: 'Готов' },
+                    { value: 'FAILED', label: 'Ошибка' },
+                  ]}
+                  placeholder="Все статусы"
+                  size="md"
+                  className="bg-white/70 dark:bg-gray-800/70"
+                />
+              </div>
+
+              {/* Sort Controls */}
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handleSort('name')}
+                  className="flex items-center gap-1 bg-white/70 dark:bg-gray-800/70"
                 >
-                  <option value="all">Все статусы</option>
-                  <option value="UPLOADED">Загружен</option>
-                  <option value="PROCESSING">Обработка</option>
-                  <option value="COMPLETED">Готов</option>
-                  <option value="FAILED">Ошибка</option>
-                </select>
+                  Имя
+                  {sortField === 'name' && (
+                    sortDirection === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />
+                  )}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handleSort('date')}
+                  className="flex items-center gap-1 bg-white/70 dark:bg-gray-800/70"
+                >
+                  Дата
+                  {sortField === 'date' && (
+                    sortDirection === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />
+                  )}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handleSort('size')}
+                  className="flex items-center gap-1 bg-white/70 dark:bg-gray-800/70"
+                >
+                  Размер
+                  {sortField === 'size' && (
+                    sortDirection === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />
+                  )}
+                </Button>
               </div>
 
               {/* Upload Button */}
@@ -275,19 +384,19 @@ export default function DocumentsPage() {
         )}
 
         {/* Documents Grid */}
-        {filteredDocuments.length === 0 ? (
+        {sortedAndFilteredDocuments.length === 0 ? (
           <Card className="p-12 text-center border-0 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm">
             <FileText className="w-16 h-16 text-slate-400 dark:text-slate-500 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-slate-600 dark:text-slate-300 mb-2">
-              {searchTerm || filterStatus !== 'all' ? 'Документы не найдены' : 'Нет загруженных документов'}
+              {debouncedSearchTerm || (filterStatus && filterStatus !== '') ? 'Документы не найдены' : 'Нет загруженных документов'}
             </h3>
             <p className="text-slate-500 dark:text-slate-400 mb-6">
-              {searchTerm || filterStatus !== 'all' 
+              {debouncedSearchTerm || (filterStatus && filterStatus !== '') 
                 ? 'Попробуйте изменить условия поиска'
                 : 'Загрузите первый документ для начала работы'
               }
             </p>
-            {!searchTerm && filterStatus === 'all' && (
+            {!debouncedSearchTerm && (!filterStatus || filterStatus === '') && (
               <Link href="/upload">
                 <Button className="bg-gradient-to-r from-emerald-500 to-green-600 text-white">
                   <Upload className="w-5 h-5 mr-2" />
@@ -298,7 +407,7 @@ export default function DocumentsPage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            {filteredDocuments.map((doc) => (
+            {sortedAndFilteredDocuments.map((doc) => (
               <Card key={doc.id} className="group p-6 border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all duration-200 hover:shadow-lg relative">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center">

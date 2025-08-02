@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Breadcrumb } from '@/components/ui/Breadcrumb';
+import { SearchInput, FilterSelect } from '@/components/ui/SearchAndFilter';
 import { 
   FileText,
   Plus,
@@ -14,7 +15,9 @@ import {
   Calendar,
   User,
   Search,
-  Loader2
+  Loader2,
+  SortAsc,
+  SortDesc
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@clerk/nextjs';
@@ -33,12 +36,17 @@ interface Report {
   filePath?: string;
 }
 
+type SortField = 'name' | 'date' | 'type' | 'size';
+type SortDirection = 'asc' | 'desc';
+
 export default function ReportsPage() {
   const { userId } = useAuth();
   const [reports, setReports] = useState<Report[]>([]);
-  const [filteredReports, setFilteredReports] = useState<Report[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState<string>('all');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState<string>('');
+  const [sortField, setSortField] = useState<SortField>('date');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -48,6 +56,15 @@ export default function ReportsPage() {
       fetchReports();
     }
   }, [userId]);
+
+  // Debounce для поиска
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const fetchReports = async () => {
     try {
@@ -68,22 +85,65 @@ export default function ReportsPage() {
     }
   };
 
-  // Фильтрация отчетов
-  useEffect(() => {
-    let filtered = reports;
-    
-    if (searchTerm) {
-      filtered = filtered.filter(report => 
-        report.fileName.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+  // Обработчики поиска и фильтрации
+  const handleSearch = useCallback((query: string) => {
+    setSearchTerm(query);
+  }, []);
+
+  const handleTypeFilter = useCallback((type: string) => {
+    setFilterType(type);
+  }, []);
+
+  const handleSort = useCallback((field: SortField) => {
+    if (sortField === field) {
+      setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
     }
-    
-    if (filterType !== 'all') {
-      filtered = filtered.filter(report => report.reportType === filterType);
-    }
-    
-    setFilteredReports(filtered);
-  }, [reports, searchTerm, filterType]);
+  }, [sortField]);
+
+  // Сортировка отчетов
+  const sortReports = useCallback((reports: Report[]) => {
+    return [...reports].sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortField) {
+        case 'name':
+          aValue = a.fileName.toLowerCase();
+          bValue = b.fileName.toLowerCase();
+          break;
+        case 'date':
+          aValue = new Date(a.createdAt).getTime();
+          bValue = new Date(b.createdAt).getTime();
+          break;
+        case 'type':
+          aValue = a.reportType;
+          bValue = b.reportType;
+          break;
+        case 'size':
+          aValue = a.fileSize;
+          bValue = b.fileSize;
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [sortField, sortDirection]);
+
+  // Фильтрация и сортировка отчетов
+  const filteredAndSortedReports = sortReports(
+    reports.filter(report => {
+      const matchesSearch = report.fileName.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
+      const matchesType = !filterType || filterType === 'all' || filterType === '' || report.reportType === filterType;
+      return matchesSearch && matchesType;
+    })
+  );
 
   // Форматирование размера файла
   const formatFileSize = (bytes: number) => {
@@ -252,8 +312,8 @@ export default function ReportsPage() {
         </div>
 
         {/* Sticky Sub-Header с KPI */}
-        <div className="sticky top-14 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200/50 shadow-sm">
-          <div className="px-8 py-4">
+        <div className="sticky top-14 z-30 bg-white/80 backdrop-blur-md border border-slate-200/50 shadow-sm rounded-xl mx-8 mb-4">
+          <div className="px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 {/* KPI чип */}
@@ -270,113 +330,151 @@ export default function ReportsPage() {
               </div>
               
               <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-500">Показаны: {filteredReports.length} из {reports.length}</span>
+                <span className="text-xs text-slate-500">Показаны: {filteredAndSortedReports.length} из {reports.length}</span>
               </div>
             </div>
           </div>
         </div>
 
         {/* Поиск и фильтры */}
-        <div className="p-8 pt-4">
-          <Card className="mb-6">
+        <div className="px-8 pt-2">
+          <Card className="mb-6 rounded-xl">
             <div className="p-6">
               <div className="flex flex-col md:flex-row gap-4">
                 {/* Поиск */}
                 <div className="flex-1">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-5 h-5" />
-                    <input
-                      type="text"
-                      placeholder="Поиск по названию файла..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
+                  <SearchInput
+                    placeholder="Поиск по названию "
+                    value={searchTerm}
+                    onSearch={handleSearch}
+                    debounceMs={300}
+                    size="md"
+                  />
                 </div>
                 
                 {/* Фильтр по типу */}
                 <div className="md:w-64">
-                  <select
+                  <FilterSelect
                     value={filterType}
-                    onChange={(e) => setFilterType(e.target.value)}
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    onChange={(e) => handleTypeFilter(e.target.value)}
+                    options={[
+                      { value: 'REPORT_296FZ', label: '296-ФЗ Отчеты' },
+                      { value: 'CARBON_FOOTPRINT', label: 'Углеродный след' },
+                      { value: 'CBAM_XML', label: 'CBAM Отчеты' },
+                    ]}
+                    placeholder="Все типы отчетов"
+                    size="md"
+                  />
+                </div>
+
+                {/* Sort Controls */}
+                <div className="flex gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleSort('name')}
+                    className="flex items-center gap-1"
                   >
-                    <option value="all">Все типы отчетов</option>
-                    <option value="REPORT_296FZ">296-ФЗ Отчеты</option>
-                    <option value="CARBON_FOOTPRINT">Углеродный след</option>
-                    <option value="CBAM_XML">CBAM Отчеты</option>
-                  </select>
+                    Имя
+                    {sortField === 'name' && (
+                      sortDirection === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleSort('date')}
+                    className="flex items-center gap-1"
+                  >
+                    Дата
+                    {sortField === 'date' && (
+                      sortDirection === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleSort('type')}
+                    className="flex items-center gap-1"
+                  >
+                    Тип
+                    {sortField === 'type' && (
+                      sortDirection === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />
+                    )}
+                  </Button>
                 </div>
               </div>
             </div>
           </Card>
 
         {/* Статистика */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <FileText className="w-6 h-6 text-blue-600" />
+        <div className="px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <Card className="p-4 rounded-xl">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-600">Всего отчетов</p>
+                  <p className="text-xl font-bold text-slate-900">{reports.length}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-slate-600">Всего отчетов</p>
-                <p className="text-2xl font-bold text-slate-900">{reports.length}</p>
+            </Card>
+            
+            <Card className="p-4 rounded-xl">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                  <Download className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-600">Скачиваний</p>
+                  <p className="text-xl font-bold text-slate-900">
+                    {reports.reduce((sum, r) => sum + r.downloadCount, 0)}
+                  </p>
+                </div>
               </div>
-            </div>
-          </Card>
-          
-          <Card className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <Download className="w-6 h-6 text-green-600" />
+            </Card>
+            
+            <Card className="p-4 rounded-xl">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-600">За этот месяц</p>
+                  <p className="text-xl font-bold text-slate-900">
+                    {reports.filter(r => new Date(r.createdAt).getMonth() === new Date().getMonth()).length}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm text-slate-600">Скачиваний</p>
-                <p className="text-2xl font-bold text-slate-900">
-                  {reports.reduce((sum, r) => sum + r.downloadCount, 0)}
-                </p>
+            </Card>
+            
+            <Card className="p-4 rounded-xl">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
+                  <User className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-600">Размер файлов</p>
+                  <p className="text-xl font-bold text-slate-900">
+                    {formatFileSize(reports.reduce((sum, r) => sum + r.fileSize, 0))}
+                  </p>
+                </div>
               </div>
-            </div>
-          </Card>
-          
-          <Card className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-600">За этот месяц</p>
-                <p className="text-2xl font-bold text-slate-900">
-                  {reports.filter(r => new Date(r.createdAt).getMonth() === new Date().getMonth()).length}
-                </p>
-              </div>
-            </div>
-          </Card>
-          
-          <Card className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center">
-                <User className="w-6 h-6 text-amber-600" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-600">Размер файлов</p>
-                <p className="text-2xl font-bold text-slate-900">
-                  {formatFileSize(reports.reduce((sum, r) => sum + r.fileSize, 0))}
-                </p>
-              </div>
-            </div>
-          </Card>
+            </Card>
+          </div>
         </div>
 
         {/* Список отчетов */}
-        <Card>
-          <div className="p-6">
+        <div className="px-8">
+          <Card className="rounded-xl">
+            <div className="p-6">
             <h2 className="text-xl font-semibold text-slate-900 mb-4">
-              Отчеты ({filteredReports.length})
+              Отчеты ({filteredAndSortedReports.length})
             </h2>
             
-            {filteredReports.length === 0 ? (
+            {filteredAndSortedReports.length === 0 ? (
               <div className="text-center py-12">
                 <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-slate-600 mb-2">
@@ -397,13 +495,13 @@ export default function ReportsPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {filteredReports.map((report) => (
+                {filteredAndSortedReports.map((report: Report) => (
                   <div 
                     key={report.id}
-                    className="group flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                    className="group flex items-center justify-between p-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
                   >
                     <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${getReportTypeColor(report.reportType)}`}>
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${getReportTypeColor(report.reportType)}`}>
                         <FileText className="w-6 h-6" />
                       </div>
                       
@@ -456,10 +554,10 @@ export default function ReportsPage() {
                         </Button>
                         
                         {openMenuId === report.id && (
-                          <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-lg z-10">
+                          <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-10">
                             <button
                               onClick={() => handleDelete(report.id)}
-                              className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 rounded-lg flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 rounded-xl flex items-center gap-2"
                             >
                               <Trash2 className="w-4 h-4" />
                               Удалить отчет
@@ -474,6 +572,7 @@ export default function ReportsPage() {
             )}
           </div>
         </Card>
+        </div>
         </div>
       </div>
       

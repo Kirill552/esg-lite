@@ -1,5 +1,7 @@
 # ESG-Lite Production Docker Compose
 # Запуск: docker-compose -f docker-compose.prod.yml up -d
+# Обновлено для Next.js 15.4.5, React 19.1.0, Tailwind 4.1.11, Prisma 6.13.0
+# Node.js 22.18.0 LTS
 
 services:
   # ============================================================================
@@ -23,7 +25,7 @@ services:
       - esg-lite-web
 
   # ============================================================================
-  # ESG-Lite Web Application
+  # ESG-Lite Web Application (Next.js 15.4.5 + React 19.1.0)
   # ============================================================================
   esg-lite-web:
     build:
@@ -91,7 +93,7 @@ services:
       - "traefik.http.routers.esg-lite.tls.certresolver=letsencrypt"
 
   # ============================================================================
-  # OCR Worker Process
+  # OCR Worker Process (с поддержкой новых зависимостей)
   # ============================================================================
   esg-lite-worker:
     build:

@@ -60,8 +60,10 @@ export function Header() {
     try {
       const response = await fetch(`/api/credits/balance?organizationId=${user?.id}`)
       if (response.ok) {
-        const data = await response.json()
-        setBalanceData({ balance: data.balance || 0 })
+        const result = await response.json()
+        // API возвращает { success: true, data: { balance: "..." } }
+        const balance = result.success && result.data ? parseFloat(result.data.balance) : 0
+        setBalanceData({ balance })
       }
     } catch (error) {
       console.error('Ошибка загрузки баланса:', error)
@@ -97,15 +99,15 @@ export function Header() {
   return (
     <>
       <header className="sticky top-0 z-40 bg-white/70 dark:bg-gray-900/70 backdrop-blur border-b border-gray-200 dark:border-gray-700">
-        <div className="mx-auto flex h-14 max-w-7xl items-center px-4">
+        <div className="mx-auto flex h-14 sm:h-16 max-w-7xl items-center px-4 sm:px-6 lg:px-8">
           {/* Логотип */}
-          <Link href="/" className="text-xl font-semibold text-gray-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
+          <Link href="/" className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">
             ESG-Lite
           </Link>
 
           {/* Основная навигация (только для desktop) */}
           <SignedIn>
-            <nav className="ml-8 hidden lg:flex space-x-5 text-sm font-medium text-gray-700 dark:text-gray-300">
+            <nav className="ml-6 lg:ml-8 hidden lg:flex space-x-3 lg:space-x-5 text-sm font-medium text-gray-700 dark:text-gray-300">
               {mainNavItems.map(({ href, label }) => (
                 <Link
                   key={href}
@@ -125,13 +127,13 @@ export function Header() {
           <div className="flex-1" />
 
           <SignedIn>
-            {/* Баланс-чип (только desktop) */}
+            {/* Баланс-чип (скрыт на очень маленьких экранах) */}
             {balanceData && (
               <button
                 onClick={() => setIsBillingOpen(true)}
-                className="hidden md:inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 hover:bg-emerald-100 transition-colors"
+                className="hidden sm:inline-flex items-center rounded-full bg-emerald-50 dark:bg-emerald-900/30 px-2 sm:px-3 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
               >
-                <span className="font-mono">₽ {formatBalance(balanceData.balance)}</span>
+                <span className="font-mono text-xs sm:text-sm">{formatBalance(balanceData.balance)} т CO₂</span>
                 {isLowBalance(balanceData.balance) && (
                   <AlertTriangle className="ml-1 h-3 w-3 text-orange-500" />
                 )}
@@ -142,33 +144,35 @@ export function Header() {
             {queueData && queueData.count > 0 && (
               <button
                 title={`${queueData.count} документов в обработке`}
-                className="hidden md:inline-flex items-center ml-2 rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100 transition-colors animate-pulse"
+                className="hidden sm:inline-flex items-center ml-2 rounded-full bg-amber-50 dark:bg-amber-900/30 px-2 py-1 text-xs font-medium text-amber-700 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors animate-pulse"
               >
                 <Zap className="w-3 h-3 mr-1" />
-                <span>{queueData.count}</span>
+                <span className="text-xs">{queueData.count}</span>
               </button>
             )}
 
             {/* Переключатель темы */}
-            <ThemeToggle />
+            <div className="ml-2 sm:ml-3">
+              <ThemeToggle />
+            </div>
 
-            {/* Кнопка создать отчет - только CTA + */}
+            {/* Кнопка создать отчет - адаптивная */}
             <Link
               href="/create-report"
-              className="ml-3 hidden lg:inline-flex"
+              className="ml-2 sm:ml-3 hidden md:inline-flex"
               title="Создать новый отчёт"
             >
-              <button className="flex items-center justify-center w-10 h-10 rounded-xl text-white bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all shadow-sm hover:shadow-md">
-                <Plus className="w-5 h-5" />
+              <button className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl text-white bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-all shadow-sm hover:shadow-md">
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </Link>
 
             {/* Аватар с улучшенным меню */}
-            <div className="ml-3">
+            <div className="ml-2 sm:ml-3">
               <UserButton 
                 appearance={{
                   elements: {
-                    avatarBox: 'w-8 h-8',
+                    avatarBox: 'w-7 h-7 sm:w-8 sm:h-8',
                   }
                 }}
                 afterSignOutUrl="/"
@@ -241,7 +245,7 @@ export function Header() {
                       }}
                       className="inline-flex items-center rounded-full bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
                     >
-                      <span className="font-mono">₽ {formatBalance(balanceData.balance)}</span>
+                      <span className="font-mono">{formatBalance(balanceData.balance)} т CO₂</span>
                       {isLowBalance(balanceData.balance) && (
                         <AlertTriangle className="ml-1 h-3 w-3 text-orange-500" />
                       )}

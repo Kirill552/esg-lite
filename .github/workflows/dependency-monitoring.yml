@@ -1,0 +1,268 @@
+# Мониторинг зависимостей и безопасности ESG-Lite
+# Проверяет обновления и уязвимости для поддержания актуального стека (Август 2025)
+
+name: Dependencies & Security Monitoring
+
+on:
+  schedule:
+    # Каждый понедельник в 9:00 UTC (12:00 МСК)
+    - cron: '0 9 * * 1'
+  workflow_dispatch: # Позволяет запускать вручную
+  push:
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'Dockerfile'
+      - 'Dockerfile.worker'
+
+jobs:
+  # ============================================================================
+  # Проверка актуальности зависимостей
+  # ============================================================================
+  dependency-check:
+    name: Check Dependency Updates
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22.18.0'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Check for outdated packages
+      run: |
+        echo "📦 Проверяем устаревшие пакеты..."
+        npm outdated || true
+        
+    - name: Check current versions vs targets
+      run: |
+        echo "🎯 Целевые версии (Август 2025):"
+        echo "Next.js: 15.4.5"
+        echo "React: 19.1.0" 
+        echo "Tailwind CSS: 4.1.11"
+        echo "Prisma: 6.13.0"
+        echo "Node.js: 22.18.0"
+        echo ""
+        echo "📋 Текущие версии:"
+        npm list next react tailwindcss prisma --depth=0 || true
+
+    - name: Create dependency report
+      run: |
+        echo "# Dependency Report $(date)" > dependency-report.md
+        echo "" >> dependency-report.md
+        echo "## Current Stack" >> dependency-report.md
+        npm list --depth=0 >> dependency-report.md 2>&1 || true
+        echo "" >> dependency-report.md
+        echo "## Outdated Packages" >> dependency-report.md
+        npm outdated >> dependency-report.md 2>&1 || true
+
+    - name: Upload dependency report
+      uses: actions/upload-artifact@v4
+      with:
+        name: dependency-report
+        path: dependency-report.md
+
+  # ============================================================================
+  # Аудит безопасности
+  # ============================================================================
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22.18.0'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run npm audit
+      run: |
+        echo "🔒 Запускаем аудит безопасности..."
+        npm audit --audit-level=moderate || true
+        
+    - name: Generate security report
+      run: |
+        echo "# Security Audit Report $(date)" > security-report.md
+        echo "" >> security-report.md
+        echo "## NPM Audit Results" >> security-report.md
+        npm audit --audit-level=low >> security-report.md 2>&1 || true
+
+    - name: Check for critical vulnerabilities
+      run: |
+        if npm audit --audit-level=critical; then
+          echo "✅ Критических уязвимостей не найдено"
+        else
+          echo "⚠️ Обнаружены критические уязвимости!"
+          echo "::warning::Обнаружены критические уязвимости в зависимостях"
+        fi
+
+    - name: Upload security report
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-report
+        path: security-report.md
+
+  # ============================================================================
+  # Docker Base Image Security Scan
+  # ============================================================================
+  docker-security:
+    name: Docker Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Build test image
+      run: |
+        echo "🐳 Строим тестовый образ для сканирования..."
+        docker build -t esg-lite-security-test:latest -f Dockerfile .
+        
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: 'esg-lite-security-test:latest'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        
+    - name: Upload Trivy scan results to GitHub Security tab
+      uses: github/codeql-action/upload-sarif@v2
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+    - name: Check Node.js base image version
+      run: |
+        echo "🔍 Проверяем версию базового образа Node.js..."
+        docker run --rm esg-lite-security-test:latest node --version
+        echo "Целевая версия: v22.18.0"
+
+  # ============================================================================
+  # Версионирование и уведомления
+  # ============================================================================
+  version-tracking:
+    name: Version Tracking
+    runs-on: ubuntu-latest
+    needs: [dependency-check, security-audit]
+    if: always()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Create version summary
+      run: |
+        echo "# ESG-Lite Stack Status $(date)" > version-summary.md
+        echo "" >> version-summary.md
+        echo "## Target Versions (Август 2025)" >> version-summary.md
+        echo "- **Node.js**: 22.18.0 LTS" >> version-summary.md
+        echo "- **Next.js**: 15.4.5" >> version-summary.md
+        echo "- **React**: 19.1.0" >> version-summary.md
+        echo "- **Tailwind CSS**: 4.1.11" >> version-summary.md
+        echo "- **Prisma**: 6.13.0" >> version-summary.md
+        echo "- **TypeScript**: 5.7.3" >> version-summary.md
+        echo "" >> version-summary.md
+        echo "## Status" >> version-summary.md
+        if [[ "${{ needs.dependency-check.result }}" == "success" ]]; then
+          echo "✅ Dependency Check: Passed" >> version-summary.md
+        else
+          echo "❌ Dependency Check: Failed" >> version-summary.md
+        fi
+        if [[ "${{ needs.security-audit.result }}" == "success" ]]; then
+          echo "✅ Security Audit: Passed" >> version-summary.md
+        else
+          echo "❌ Security Audit: Failed" >> version-summary.md
+        fi
+
+    - name: Upload version summary
+      uses: actions/upload-artifact@v4
+      with:
+        name: version-summary
+        path: version-summary.md
+
+    - name: Create issue for critical updates
+      if: needs.security-audit.result == 'failure'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: '🚨 Критические уязвимости в зависимостях',
+            body: `## Обнаружены критические уязвимости
+            
+            Workflow \`${{ github.workflow }}\` обнаружил критические уязвимости в зависимостях.
+            
+            **Действия:**
+            1. Проверьте артефакт security-report
+            2. Обновите уязвимые пакеты
+            3. Протестируйте обновления
+            4. Разверните исправления
+            
+            **Ссылка на workflow:** ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+            
+            ---
+            Создано автоматически $(date)`,
+            labels: ['security', 'critical', 'dependencies']
+          })
+
+  # ============================================================================
+  # Рекомендации по обновлению
+  # ============================================================================
+  update-recommendations:
+    name: Update Recommendations
+    runs-on: ubuntu-latest
+    needs: [dependency-check]
+    if: always()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check latest versions from registries
+      run: |
+        echo "🔍 Проверяем актуальные версии в реестрах..."
+        echo "📦 Next.js latest:" 
+        npm view next version || true
+        echo "📦 React latest:"
+        npm view react version || true  
+        echo "📦 Tailwind CSS latest:"
+        npm view tailwindcss version || true
+        echo "📦 Prisma latest:"
+        npm view prisma version || true
+        
+    - name: Generate update recommendations
+      run: |
+        echo "# Update Recommendations $(date)" > update-recommendations.md
+        echo "" >> update-recommendations.md
+        echo "## Рекомендации по обновлению" >> update-recommendations.md
+        echo "" >> update-recommendations.md
+        echo "### Проверьте следующие пакеты:" >> update-recommendations.md
+        echo "- Сравните текущие версии с целевыми" >> update-recommendations.md
+        echo "- Проверьте breaking changes в changelog" >> update-recommendations.md
+        echo "- Обновите Docker образы при необходимости" >> update-recommendations.md
+        echo "" >> update-recommendations.md
+        echo "### Порядок обновления:" >> update-recommendations.md
+        echo "1. Обновите Node.js в Dockerfile и GitHub Actions" >> update-recommendations.md
+        echo "2. Обновите фреймворки (Next.js, React)" >> update-recommendations.md
+        echo "3. Обновите инструменты (Tailwind, Prisma)" >> update-recommendations.md
+        echo "4. Протестируйте сборку и деплой" >> update-recommendations.md
+
+    - name: Upload recommendations
+      uses: actions/upload-artifact@v4
+      with:
+        name: update-recommendations
+        path: update-recommendations.md

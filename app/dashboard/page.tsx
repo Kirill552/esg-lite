@@ -202,7 +202,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50/20">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md border-b border-slate-200/50 sticky top-0 z-10">
-        <div className="container mx-auto px-6 py-4">
+        <div className="container mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-end">
             
             <div className="flex items-center gap-4">
@@ -237,9 +237,9 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
           <Card className="p-6 hover:shadow-lg transition-shadow border-0 bg-gradient-to-br from-emerald-50 to-green-50/50">
             <div className="flex items-center mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center">
@@ -302,7 +302,7 @@ export default function Dashboard() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
           {statsConfig.map((stat, index) => (
             <Card key={index} className="p-6 border-0 bg-white/60 backdrop-blur-sm hover:shadow-lg transition-shadow">
               <div className="flex items-start justify-between">

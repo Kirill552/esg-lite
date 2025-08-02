@@ -1,0 +1,135 @@
+/* Адаптивные утилиты для мобильных устройств */
+
+/* Улучшенная поддержка очень маленьких экранов */
+@media (max-width: 375px) {
+  .container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+  
+  .mobile-tight {
+    padding: 0.75rem;
+  }
+  
+  .mobile-text-sm {
+    font-size: 0.825rem;
+  }
+}
+
+/* Контейнеры с безопасными отступами */
+.mobile-safe-container {
+  @apply px-4 sm:px-6 lg:px-8;
+}
+
+/* Адаптивная типографика */
+.responsive-title {
+  @apply text-lg sm:text-xl lg:text-2xl font-bold;
+}
+
+.responsive-subtitle {
+  @apply text-base sm:text-lg font-semibold;
+}
+
+.responsive-body {
+  @apply text-sm sm:text-base;
+}
+
+.responsive-caption {
+  @apply text-xs sm:text-sm;
+}
+
+/* Адаптивные отступы */
+.responsive-padding {
+  @apply p-4 sm:p-6;
+}
+
+.responsive-padding-small {
+  @apply p-3 sm:p-4;
+}
+
+.responsive-margin {
+  @apply m-4 sm:m-6;
+}
+
+/* Адаптивные сетки */
+.responsive-grid-actions {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6;
+}
+
+.responsive-grid-stats {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6;
+}
+
+/* Адаптивные flex контейнеры */
+.responsive-flex-header {
+  @apply flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0;
+}
+
+.responsive-flex-item {
+  @apply flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4;
+}
+
+/* Обрезка текста с учётом адаптивности */
+.responsive-truncate {
+  @apply truncate max-w-full;
+}
+
+/* Скрытие элементов на разных экранах */
+.mobile-only {
+  @apply block sm:hidden;
+}
+
+.desktop-only {
+  @apply hidden sm:block;
+}
+
+.tablet-plus {
+  @apply hidden sm:block;
+}
+
+/* Адаптивные иконки */
+.responsive-icon {
+  @apply w-4 h-4 sm:w-5 sm:h-5;
+}
+
+.responsive-icon-large {
+  @apply w-5 h-5 sm:w-6 sm:h-6;
+}
+
+/* Адаптивные кнопки */
+.responsive-button {
+  @apply px-3 py-2 sm:px-4 sm:py-2.5 text-sm sm:text-base;
+}
+
+/* Overflow для длинного контента */
+.mobile-scroll {
+  @apply overflow-x-auto;
+}
+
+/* Адаптивные карточки */
+.responsive-card {
+  @apply p-4 sm:p-6 rounded-xl border-0;
+}
+
+.responsive-card-compact {
+  @apply p-3 sm:p-4 rounded-lg border-0;
+}
+
+/* Медиа-запросы для специальных случаев */
+@media (max-width: 480px) {
+  .ultra-mobile-hidden {
+    display: none;
+  }
+  
+  .ultra-mobile-text-xs {
+    font-size: 0.75rem;
+  }
+}
+
+/* Безопасные области для устройств с вырезами */
+@supports (padding: max(0px)) {
+  .safe-area-padding {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}

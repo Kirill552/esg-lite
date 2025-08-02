@@ -1,5 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
+
 // Rate-limiter теперь реализован непосредственно в API роутах
 // для лучшей производительности и совместимости с Edge Runtime
 

@@ -12,19 +12,20 @@ ESG-платформа для создания отчетов по выброс�
 
 ## 🛠 Технологический стек
 
-- **Frontend**: Next.js 15, React, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes, Prisma ORM
+- **Frontend**: Next.js 15.4.5, React 19.1.0, TypeScript 5.7.3, Tailwind CSS 4.1.11
+- **Backend**: Next.js API Routes, Prisma ORM 6.13.0
 - **База данных**: PostgreSQL 16
 - **Система очередей**: pg-boss (PostgreSQL-based)
 - **Мониторинг 2025**: Yandex Cloud Monitoring + Structured Logging
 - **Аутентификация**: Clerk
 - **Файловое хранилище**: Yandex Object Storage (S3-compatible)
-- **OCR**: Tesseract.js
+- **OCR**: Tesseract.js 5.2.0
 - **PDF генерация**: Playwright
+- **Платежи**: Yookassa (для подписок и кредитов)
 
 ## 📋 Требования
 
-- Node.js 18+
+- Node.js 22.18.0+ (LTS)
 - PostgreSQL 14+
 - Yandex Cloud аккаунт (для Object Storage)
 - Clerk аккаунт (для аутентификации)

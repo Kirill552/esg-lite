@@ -128,7 +128,11 @@ function formatNumber(value: number): string {
   if (value === 0) return '0,0';
   if (value < 0.001) return '< 0,001';
   
-  return value.toFixed(1).replace('.', ',');
+  // Используем русскую локаль для форматирования с пробелами
+  return value.toLocaleString('ru-RU', {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 2
+  });
 }
 
 /**
@@ -181,14 +185,17 @@ export function validateEmissionCalculation(result: EmissionResult): {
   reportedTotal: number;
   difference: number;
 } {
-  // Парсим значения из строк (русский формат с запятой)
-  const co2e_co2 = parseFloat(result.co2e_co2.replace(',', '.'));
-  const co2e_ch4 = parseFloat(result.co2e_ch4.replace(',', '.'));
-  const co2e_n2o = parseFloat(result.co2e_n2o.replace(',', '.'));
-  const co2e_hfc = parseFloat(result.co2e_hfc.replace(',', '.'));
-  const co2e_pfc = parseFloat(result.co2e_pfc.replace(',', '.'));
-  const co2e_sf6 = parseFloat(result.co2e_sf6.replace(',', '.'));
-  const total_reported = parseFloat(result.total_co2e.replace(',', '.'));
+  // Функция для парсинга русских чисел с пробелами
+  const parseRussianNumber = (str: string) => parseFloat(str.replace(/\s/g, '').replace(',', '.'));
+  
+  // Парсим значения из строк (русский формат с запятой и пробелами)
+  const co2e_co2 = parseRussianNumber(result.co2e_co2);
+  const co2e_ch4 = parseRussianNumber(result.co2e_ch4);
+  const co2e_n2o = parseRussianNumber(result.co2e_n2o);
+  const co2e_hfc = parseRussianNumber(result.co2e_hfc);
+  const co2e_pfc = parseRussianNumber(result.co2e_pfc);
+  const co2e_sf6 = parseRussianNumber(result.co2e_sf6);
+  const total_reported = parseRussianNumber(result.total_co2e);
   
   // Рассчитываем сумму
   const calculatedTotal = co2e_co2 + co2e_ch4 + co2e_n2o + co2e_hfc + co2e_pfc + co2e_sf6;
@@ -213,12 +220,15 @@ export function validatePercentages(result: EmissionResult): {
   totalPercent: number;
   difference: number;
 } {
-  const co2_percent = parseFloat(result.co2_percent.replace(',', '.'));
-  const ch4_percent = parseFloat(result.ch4_percent.replace(',', '.'));
-  const n2o_percent = parseFloat(result.n2o_percent.replace(',', '.'));
-  const hfc_percent = parseFloat(result.hfc_percent.replace(',', '.'));
-  const pfc_percent = parseFloat(result.pfc_percent.replace(',', '.'));
-  const sf6_percent = parseFloat(result.sf6_percent.replace(',', '.'));
+  // Функция для парсинга русских чисел с пробелами
+  const parseRussianNumber = (str: string) => parseFloat(str.replace(/\s/g, '').replace(',', '.'));
+  
+  const co2_percent = parseRussianNumber(result.co2_percent);
+  const ch4_percent = parseRussianNumber(result.ch4_percent);
+  const n2o_percent = parseRussianNumber(result.n2o_percent);
+  const hfc_percent = parseRussianNumber(result.hfc_percent);
+  const pfc_percent = parseRussianNumber(result.pfc_percent);
+  const sf6_percent = parseRussianNumber(result.sf6_percent);
   
   const totalPercent = co2_percent + ch4_percent + n2o_percent + hfc_percent + pfc_percent + sf6_percent;
   const difference = Math.abs(totalPercent - 100);

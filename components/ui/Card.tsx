@@ -1,15 +1,17 @@
-import { HTMLAttributes, forwardRef } from 'react'
+import { HTMLAttributes, forwardRef, createElement } from 'react'
 import { cn } from '@/lib/utils'
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
   variant?: 'default' | 'elevated' | 'outlined'
   padding?: 'none' | 'sm' | 'md' | 'lg'
   children: React.ReactNode
+  as?: 'div' | 'article' | 'section' // Семантические HTML элементы
+  role?: string
 }
 
 const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant = 'default', padding = 'md', children, ...props }, ref) => {
-    const baseStyles = 'rounded-xl transition-shadow duration-200'
+  ({ className, variant = 'default', padding = 'md', children, as: Component = 'div', ...props }, ref) => {
+    const baseStyles = 'rounded-xl transition-shadow duration-200 focus-within:ring-2 focus-within:ring-emerald-500 focus-within:ring-offset-2'
     
     const variants = {
       default: 'bg-white shadow-card',
@@ -25,7 +27,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
     }
 
     return (
-      <div
+      <Component
         ref={ref}
         className={cn(
           baseStyles,
@@ -36,7 +38,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
         {...props}
       >
         {children}
-      </div>
+      </Component>
     )
   }
 )
@@ -66,18 +68,19 @@ CardHeader.displayName = 'CardHeader'
 
 interface CardTitleProps extends HTMLAttributes<HTMLHeadingElement> {
   children: React.ReactNode
+  level?: 1 | 2 | 3 | 4 | 5 | 6 // Уровень заголовка для правильной семантики
 }
 
 const CardTitle = forwardRef<HTMLHeadingElement, CardTitleProps>(
-  ({ className, children, ...props }, ref) => {
-    return (
-      <h3
-        ref={ref}
-        className={cn('text-lg font-semibold text-gray-900', className)}
-        {...props}
-      >
-        {children}
-      </h3>
+  ({ className, children, level = 3, ...props }, ref) => {
+    return createElement(
+      `h${level}`,
+      {
+        ref,
+        className: cn('text-lg font-semibold text-gray-900 dark:text-gray-100', className),
+        ...props
+      },
+      children
     )
   }
 )

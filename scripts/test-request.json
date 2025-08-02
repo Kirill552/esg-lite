@@ -1,0 +1,4 @@
+{
+  "xmlContent": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><CBAMQuarterlyReport xmlns=\"http://ec.europa.eu/cbam/quarterly-report/1.4.1\"><declarant><EORI>DE123456789012345</EORI><name>Test Company</name></declarant></CBAMQuarterlyReport>",
+  "schemaType": "cbam-quarterly"
+}

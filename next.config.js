@@ -40,6 +40,11 @@ const nextConfig = {
   },
   
   webpack: (config, { isServer }) => {
+    // Увеличиваем лимит слушателей событий для предотвращения предупреждений
+    if (isServer && typeof process !== 'undefined' && process.setMaxListeners) {
+      process.setMaxListeners(20);
+    }
+    
     // Фикс для Tesseract.js в Next.js
     if (!isServer) {
       config.resolve.fallback = {

@@ -15,6 +15,13 @@ coverage/
 .env.development.local
 .env.test.local
 
+# Новые конфигурационные файлы (но оставляем нужные)
+# .nvmrc включаем для Docker build
+# tailwind.config.js включаем
+# next.config.js включаем
+# prisma.config.ts включаем
+# empty-module.js включаем
+
 # Документация
 docs/
 README.md

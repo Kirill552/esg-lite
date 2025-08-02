@@ -1,3 +1,5 @@
+# Lighthouse CI для тестирования производительности
+# Обновлено для Next.js 15.4.5, Node.js 22.18.0 LTS (Август 2025)
 name: Lighthouse CI
 
 on:
@@ -17,15 +19,23 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '22.18.0'  # Обновлено для Node.js 22.18.0 LTS
         cache: 'npm'
         
     - name: Install dependencies
       run: npm ci
       
-    - name: Build application
-      run: npm run build
-      
+    - name: Verify Next.js 15.4.5 build
+      run: |
+        echo "🔍 Verifying Next.js build with new features..."
+        npm run build
+        
+    - name: Check build output
+      run: |
+        echo "📊 Build analysis:"
+        ls -la .next/
+        du -sh .next/
+        
     - name: Run Lighthouse CI
       run: |
         npm install -g @lhci/cli@0.12.x

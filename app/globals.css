@@ -5,6 +5,48 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Responsive utilities for mobile-first design */
+@import './responsive.css';
+
+/* Accessibility improvements */
+@layer base {
+  /* Улучшенная видимость фокуса для клавиатурной навигации */
+  .focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring));
+  }
+  
+  /* Скрытие обычного фокуса когда используется focus-visible */
+  .focus-visible:focus:not(.focus-visible) {
+    outline: none;
+    box-shadow: none;
+  }
+  
+  /* Улучшенный контраст для текста */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Анимации учитывают предпочтения пользователя */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+  
+  /* Увеличенная область клика для мобильных устройств */
+  @media (hover: none) and (pointer: coarse) {
+    button, [role="button"], input[type="button"], input[type="submit"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
