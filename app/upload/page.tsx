@@ -4,6 +4,8 @@ import { useState } from 'react'
 import { FileUpload } from '@/components/upload/FileUpload'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
+import { ProgressModal } from '@/components/ui/ProgressModal'
+import { useProgressModal } from '@/lib/hooks/useProgressModal'
 import { FileType } from '@/types'
 import { 
   Upload, 
@@ -24,7 +26,9 @@ export default function UploadPage() {
   const [fileUploaded, setFileUploaded] = useState(false)
   const [uploadedFileInfo, setUploadedFileInfo] = useState<{documentId: string, fileKey: string} | null>(null)
   const [error, setError] = useState('')
-  // убрали тестовые кнопки, поэтому состояния больше не нужны
+  
+  // Хук для управления прогресс-модалкой
+  const [progressState, progressActions] = useProgressModal()
 
   const maxFileSizeInMB = 10
   const acceptedFileTypes: FileType[] = ['pdf', 'csv', 'xlsx', 'xls'] // Поддерживаем Excel файлы
@@ -35,23 +39,60 @@ export default function UploadPage() {
     setProcessingComplete(false)
     setFileUploaded(false)
     setUploadedFileInfo(null)
+    progressActions.reset()
   }
 
   const handleProcessFile = async () => {
     if (!selectedFile) return
 
+    const fileSize = (selectedFile.size / 1024 / 1024).toFixed(2) + ' МБ'
+    
+    // Проверяем размер файла
+    if (selectedFile.size > maxFileSizeInMB * 1024 * 1024) {
+      progressActions.setError(
+        `Файл слишком большой. Максимальный размер: ${maxFileSizeInMB} МБ`,
+        {
+          type: 'file-size',
+          maxSize: maxFileSizeInMB + ' МБ',
+          actualSize: fileSize
+        }
+      )
+      return
+    }
+
+    // Проверяем тип файла
+    const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase()
+    if (!fileExtension || !acceptedFileTypes.includes(fileExtension as FileType)) {
+      progressActions.setError(
+        'Неподдерживаемый тип файла',
+        {
+          type: 'file-type',
+          allowedTypes: acceptedFileTypes,
+          actualType: fileExtension || 'неизвестно'
+        }
+      )
+      return
+    }
+
+    progressActions.startUpload(selectedFile.name, fileSize)
     setIsProcessing(true)
     setError('')
 
     try {
-      // Загружаем файл через API
+      // Симулируем прогресс загрузки
+      progressActions.updateProgress(10, 'Подготавливаем файл...')
+      
       const formData = new FormData()
       formData.append('file', selectedFile)
+
+      progressActions.updateProgress(30, 'Загружаем файл на сервер...')
 
       const uploadResponse = await fetch('/api/upload', {
         method: 'POST',
         body: formData,
       })
+
+      progressActions.updateProgress(70, 'Проверяем файл...')
 
       if (!uploadResponse.ok) {
         throw new Error('Ошибка загрузки файла')
@@ -63,6 +104,12 @@ export default function UploadPage() {
         throw new Error(uploadResult.error || 'Ошибка загрузки файла')
       }
 
+      progressActions.updateProgress(100, 'Файл успешно загружен!')
+      
+      setTimeout(() => {
+        progressActions.setCompleted('Файл готов к обработке')
+      }, 500)
+
       console.log('✅ Файл загружен:', uploadResult.data)
       setFileUploaded(true)
       setUploadedFileInfo(uploadResult.data)
@@ -70,6 +117,11 @@ export default function UploadPage() {
     } catch (err: any) {
       console.error('❌ Ошибка загрузки:', err)
       setError(err.message || 'Ошибка загрузки файла. Попробуйте еще раз.')
+      
+      progressActions.setError(
+        err.message || 'Ошибка загрузки файла',
+        { type: 'network' }
+      )
     } finally {
       setIsProcessing(false)
     }
@@ -78,6 +130,7 @@ export default function UploadPage() {
   const handleRunOCR = async () => {
     if (!uploadedFileInfo) return
 
+    progressActions.setProcessing('Запускаем распознавание текста...')
     setIsProcessing(true)
     setError('')
 
@@ -107,9 +160,16 @@ export default function UploadPage() {
       console.log('✅ OCR завершен:', ocrResult.data)
       setProcessingComplete(true)
       
+      progressActions.setCompleted('Файл успешно обработан! Отчеты готовы к скачиванию.')
+      
     } catch (err: any) {
       console.error('❌ Ошибка OCR:', err)
       setError(err.message || 'Ошибка OCR обработки. Попробуйте еще раз.')
+      
+      progressActions.setError(
+        err.message || 'Ошибка OCR обработки',
+        { type: 'server' }
+      )
     } finally {
       setIsProcessing(false)
     }
@@ -121,6 +181,7 @@ export default function UploadPage() {
     setFileUploaded(false)
     setUploadedFileInfo(null)
     setError('')
+    progressActions.reset()
   }
 
   return (
@@ -339,6 +400,25 @@ export default function UploadPage() {
           </div>
         </div>
       </div>
+      
+      {/* Progress Modal */}
+      <ProgressModal
+        isOpen={progressState.isOpen}
+        progress={progressState.progress}
+        status={progressState.status}
+        message={progressState.message}
+        details={progressState.details}
+        fileName={progressState.fileName}
+        fileSize={progressState.fileSize}
+        errorDetails={progressState.errorDetails}
+        onClose={progressActions.close}
+        onRetry={() => {
+          progressActions.close()
+          if (progressState.status === 'error' && selectedFile) {
+            handleProcessFile()
+          }
+        }}
+      />
     </div>
   )
 } 

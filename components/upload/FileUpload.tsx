@@ -6,6 +6,8 @@ import { cn, formatFileSize, isValidFileType, isValidFileSize } from '@/lib/util
 import { FileType } from '@/types'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { ProgressModal } from '@/components/ui/ProgressModal'
+import { useProgressModal } from '@/lib/hooks/useProgressModal'
 
 interface FileUploadProps {
   onFileSelect: (file: File) => void
@@ -28,6 +30,9 @@ export function FileUpload({
   const [uploadedFile, setUploadedFile] = useState<UploadedFileInfo | null>(null)
   const [error, setError] = useState<string>('')
   const [isDragActive, setIsDragActive] = useState(false)
+  
+  // Хук для управления прогресс-модалкой
+  const [progressState, progressActions] = useProgressModal()
 
   // Mapping file types to MIME types
   const mimeTypes = {
@@ -39,19 +44,38 @@ export function FileUpload({
 
   const acceptedMimeTypes = acceptedFileTypes.map(type => mimeTypes[type])
 
-  const validateFile = useCallback((file: File): string | null => {
+  const validateFile = useCallback((file: File): boolean => {
+    const fileSize = (file.size / 1024 / 1024).toFixed(2) + ' МБ'
+    const fileExtension = file.name.split('.').pop()?.toLowerCase()
+
     // Проверка типа файла
     if (!isValidFileType(file)) {
-      return `Неподдерживаемый тип файла. Разрешены: ${acceptedFileTypes.join(', ')}`
+      progressActions.setError(
+        'Неподдерживаемый тип файла',
+        {
+          type: 'file-type',
+          allowedTypes: acceptedFileTypes,
+          actualType: fileExtension || 'неизвестно'
+        }
+      )
+      return false
     }
 
     // Проверка размера файла
     if (!isValidFileSize(file)) {
-      return `Файл слишком большой. Максимальный размер: ${maxFileSizeInMB} МБ`
+      progressActions.setError(
+        `Файл слишком большой. Максимальный размер: ${maxFileSizeInMB} МБ`,
+        {
+          type: 'file-size',
+          maxSize: maxFileSizeInMB + ' МБ',
+          actualSize: fileSize
+        }
+      )
+      return false
     }
 
-    return null
-  }, [acceptedFileTypes, maxFileSizeInMB])
+    return true
+  }, [acceptedFileTypes, maxFileSizeInMB, progressActions])
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setError('')
@@ -63,11 +87,10 @@ export function FileUpload({
     }
 
     const file = acceptedFiles[0]
-    const validationError = validateFile(file)
+    const isValid = validateFile(file)
 
-    if (validationError) {
-      setError(validationError)
-      return
+    if (!isValid) {
+      return // Ошибка уже показана в ProgressModal
     }
 
     // Создаем preview для PDF файлов (опционально)
@@ -211,6 +234,19 @@ export function FileUpload({
           <p className="text-sm text-error-700">{error}</p>
         </div>
       )}
+      
+      {/* Progress Modal */}
+      <ProgressModal
+        isOpen={progressState.isOpen}
+        progress={progressState.progress}
+        status={progressState.status}
+        message={progressState.message}
+        details={progressState.details}
+        fileName={progressState.fileName}
+        fileSize={progressState.fileSize}
+        errorDetails={progressState.errorDetails}
+        onClose={progressActions.close}
+      />
     </div>
   )
 } 
