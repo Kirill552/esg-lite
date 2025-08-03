@@ -41,28 +41,28 @@ export default async function ReportPage({ params }: { params: PageParams }) {
   if (!data) notFound()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50 py-12">
+    <div className="min-h-screen bg-background py-12">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-4">OCR-результат</h1>
-        <p className="text-sm text-slate-500 mb-6">Document ID: {documentId}</p>
+        <h1 className="text-3xl font-bold text-foreground mb-4">OCR-результат</h1>
+        <p className="text-sm text-muted-foreground mb-6">Document ID: {documentId}</p>
 
         {/* Debug info */}
-        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
-          <p className="text-sm text-blue-800">Debug: Status = {data.status}</p>
+        <div className="mb-4 p-3 bg-card border border-border rounded">
+          <p className="text-sm text-muted-foreground">Debug: Status = {data.status}</p>
         </div>
 
         {data.status === 'completed' && (
           <>
-            <h2 className="text-xl font-semibold text-slate-900 mb-2">Извлечённый текст (превью)</h2>
-            <pre className="whitespace-pre-wrap bg-white p-4 border rounded-md text-sm text-slate-800">
+            <h2 className="text-xl font-semibold text-foreground mb-2">Извлечённый текст (превью)</h2>
+            <pre className="whitespace-pre-wrap bg-card p-4 border border-border rounded-md text-sm text-foreground">
               {data.textPreview}
             </pre>
-            <p className="mt-2 text-slate-600 text-sm">Всего символов: {data.textLength}</p>
+            <p className="mt-2 text-muted-foreground text-sm">Всего символов: {data.textLength}</p>
           </>
         )}
 
         {data.status === 'processing' && (
-          <p className="text-slate-700">Документ ещё обрабатывается, попробуйте обновить страницу чуть позже.</p>
+          <p className="text-foreground">Документ ещё обрабатывается, попробуйте обновить страницу чуть позже.</p>
         )}
 
         {data.status === 'failed' && (

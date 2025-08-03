@@ -35,6 +35,7 @@ module.exports = {
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
+          border: "hsl(var(--border))", // используем существующую border переменную
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -44,6 +45,28 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        
+        // ESG semantic colors using CSS variables
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+        },
+        
+        // Dashboard specific colors
+        'dashboard-bg': "hsl(var(--dashboard-bg))",
+        'stats-card': "hsl(var(--stats-card))",
+        'stats-card-border': "hsl(var(--stats-card-border))",
+        'chart-bg': "hsl(var(--chart-bg))",
+        'table-header': "hsl(var(--table-header))",
+        'table-row-hover': "hsl(var(--table-row-hover))",
         
         // ESG-Lite цветовая схема 2025 
         'esg-primary': {

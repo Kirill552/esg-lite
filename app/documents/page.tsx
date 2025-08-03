@@ -257,7 +257,7 @@ export default function DocumentsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50 py-12">
+      <div className="min-h-screen bg-background py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumbs */}
           <div className="mb-6">
@@ -272,16 +272,16 @@ export default function DocumentsPage() {
           <div className="mb-8">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
               <div className="mb-6 lg:mb-0">
-                <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
-                  📄 Управление документами
+                <h1 className="text-4xl font-bold text-foreground mb-2">
+                   Управление документами
                 </h1>
-                <p className="text-xl text-slate-600 dark:text-slate-300">
+                <p className="text-xl text-muted-foreground">
                   Просматривайте и управляйте загруженными документами
                 </p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/upload">
-                  <Button className="bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700">
+                  <Button className="bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700 shadow-lg hover:shadow-xl">
                     <Plus className="w-5 h-5 mr-2" />
                     Загрузить документ
                   </Button>
@@ -298,7 +298,7 @@ export default function DocumentsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50 py-12">
+    <div className="min-h-screen bg-background py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumbs */}
         <div className="mb-6">
@@ -313,16 +313,16 @@ export default function DocumentsPage() {
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div className="mb-6 lg:mb-0">
-              <h1 className="text-4xl font-bold text-slate-900 dark:text-white mb-2">
-                📄 Управление документами
+              <h1 className="text-4xl font-bold text-foreground mb-2">
+                 Управление документами
               </h1>
-              <p className="text-xl text-slate-600 dark:text-slate-300">
+              <p className="text-xl text-muted-foreground">
                 Просматривайте и управляйте загруженными документами
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/upload">
-                <Button className="bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700">
+                <Button className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg hover:shadow-xl">
                   <Plus className="w-5 h-5 mr-2" />
                   Загрузить документ
                 </Button>
@@ -332,7 +332,7 @@ export default function DocumentsPage() {
         </div>
 
         {/* Sticky Sub-Header */}
-        <div className="sticky top-0 z-20 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-slate-200 dark:border-gray-700 mb-8">
+        <div className="sticky top-0 z-20 bg-background/90 backdrop-blur-md border-b border-border mb-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex flex-col lg:flex-row gap-4 items-center">
               {/* Search */}
@@ -343,7 +343,7 @@ export default function DocumentsPage() {
                   onSearch={handleSearch}
                   debounceMs={300}
                   size="md"
-                  className="w-full bg-white/70 dark:bg-gray-800/70"
+                  className="w-full bg-card/70"
                 />
               </div>
 
@@ -360,7 +360,7 @@ export default function DocumentsPage() {
                   ]}
                   placeholder="Все статусы"
                   size="md"
-                  className="bg-white/70 dark:bg-gray-800/70"
+                  className="bg-card/70"
                 />
               </div>
 
@@ -370,7 +370,7 @@ export default function DocumentsPage() {
                   variant="secondary"
                   size="sm"
                   onClick={() => handleSort('name')}
-                  className="flex items-center gap-1 bg-white/70 dark:bg-gray-800/70"
+                  className="flex items-center gap-1 bg-card/70"
                 >
                   Имя
                   {sortField === 'name' && (
@@ -381,7 +381,7 @@ export default function DocumentsPage() {
                   variant="secondary"
                   size="sm"
                   onClick={() => handleSort('date')}
-                  className="flex items-center gap-1 bg-white/70 dark:bg-gray-800/70"
+                  className="flex items-center gap-1 bg-card/70"
                 >
                   Дата
                   {sortField === 'date' && (
@@ -392,7 +392,7 @@ export default function DocumentsPage() {
                   variant="secondary"
                   size="sm"
                   onClick={() => handleSort('size')}
-                  className="flex items-center gap-1 bg-white/70 dark:bg-gray-800/70"
+                  className="flex items-center gap-1 bg-card/70"
                 >
                   Размер
                   {sortField === 'size' && (
@@ -425,11 +425,11 @@ export default function DocumentsPage() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
             {sortedAndFilteredDocuments.map((doc) => (
-              <Card key={doc.id} className="group p-6 border-0 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm hover:bg-white/80 dark:hover:bg-gray-800/80 transition-all duration-200 hover:shadow-lg relative">
+              <Card key={doc.id} className="group p-6 bg-card border border-border backdrop-blur-sm hover:shadow-card-hover transition-all duration-200 relative">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center">
                     {getStatusIcon(doc.status)}
-                    <span className="ml-2 text-sm font-medium text-slate-600 dark:text-slate-300">
+                    <span className="ml-2 text-sm font-medium text-muted-foreground">
                       {getStatusText(doc.status)}
                     </span>
                   </div>
@@ -453,7 +453,7 @@ export default function DocumentsPage() {
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          className="bg-white/80 dark:bg-gray-700/80 hover:bg-white dark:hover:bg-gray-700 shadow-sm"
+                          className="bg-card/80 hover:bg-card shadow-sm"
                           title="Просмотр"
                           onClick={() => viewDocument(doc)}
                         >
@@ -462,7 +462,7 @@ export default function DocumentsPage() {
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          className="bg-white/80 dark:bg-gray-700/80 hover:bg-white dark:hover:bg-gray-700 shadow-sm"
+                          className="bg-card/80 hover:bg-card shadow-sm"
                           title="Скачать"
                           onClick={() => downloadDocument(doc)}
                         >
@@ -473,9 +473,9 @@ export default function DocumentsPage() {
                   </div>
                     
                     {openDropdown === doc.id && (
-                      <div className="absolute right-6 top-16 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-slate-200 dark:border-gray-700 py-2 z-10">
+                      <div className="absolute right-6 top-16 w-48 bg-card rounded-lg shadow-lg border border-border py-2 z-10">
                         <button 
-                          className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-gray-700 flex items-center"
+                          className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-accent flex items-center"
                           onClick={() => {
                             navigator.clipboard.writeText(doc.fileName);
                             setOpenDropdown(null);
@@ -487,7 +487,7 @@ export default function DocumentsPage() {
                         
                         {doc.status === 'COMPLETED' && (
                           <Link href={`/reports/${doc.id}`}>
-                            <button className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-gray-700 flex items-center">
+                            <button className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-accent flex items-center">
                               <Eye className="w-4 h-4 mr-2" />
                               Просмотр результата
                             </button>
@@ -495,7 +495,7 @@ export default function DocumentsPage() {
                         )}
                         
                         <button 
-                          className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-gray-700 flex items-center"
+                          className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-accent flex items-center"
                           onClick={() => {
                             // TODO: Implement share functionality
                             setOpenDropdown(null);
@@ -505,7 +505,7 @@ export default function DocumentsPage() {
                           Поделиться
                         </button>
                         
-                        <hr className="my-1 border-slate-200 dark:border-gray-600" />
+                        <hr className="my-1 border-border" />
                         
                         <button 
                           className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center"
@@ -522,10 +522,10 @@ export default function DocumentsPage() {
                 </div>
 
                 <div className="mb-4">
-                  <h3 className="font-semibold text-slate-900 dark:text-white mb-2 line-clamp-2">
+                  <h3 className="font-semibold text-foreground mb-2 line-clamp-2">
                     {doc.fileName}
                   </h3>
-                  <div className="space-y-1 text-sm text-slate-500 dark:text-slate-400">
+                  <div className="space-y-1 text-sm text-muted-foreground">
                     <p>Размер: {formatFileSize(doc.fileSize)}</p>
                     <p>Загружен: {formatDate(doc.createdAt)}</p>
                     {doc.ocrProcessed && (
@@ -557,12 +557,12 @@ export default function DocumentsPage() {
 
         {/* KPI Cards with Mini-Sparklines */}
         <div className="mt-12">
-          <Card className="p-6 border-0 bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-emerald-900/20 dark:to-blue-900/20">
-            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6">📊 Статистика документов</h3>
+          <Card className="p-6 bg-card border border-border">
+            <h3 className="text-lg font-semibold text-foreground mb-6"> Статистика документов</h3>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="text-center">
                 <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mb-1">{documents.length}</div>
-                <div className="text-sm text-slate-600 dark:text-slate-300 mb-2">Всего документов</div>
+                <div className="text-sm text-muted-foreground mb-2">Всего документов</div>
                 <MiniSparkline 
                   data={generateSampleEmissionsData(30)} 
                   width={60} 
@@ -570,13 +570,13 @@ export default function DocumentsPage() {
                   color="#10b981"
                   className="mx-auto"
                 />
-                <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">30-дневный тренд</div>
+                <div className="text-xs text-muted-foreground mt-1">30-дневный тренд</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-green-600 dark:text-green-400 mb-1">
                   {documents.filter(d => d.status === 'COMPLETED').length}
                 </div>
-                <div className="text-sm text-slate-600 dark:text-slate-300 mb-2">Обработано</div>
+                <div className="text-sm text-muted-foreground mb-2">Обработано</div>
                 <MiniSparkline 
                   data={generateSampleEmissionsData(30).map(v => v * 0.8)} 
                   width={60} 
@@ -584,13 +584,13 @@ export default function DocumentsPage() {
                   color="#16a34a"
                   className="mx-auto"
                 />
-                <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">Успешная обработка</div>
+                <div className="text-xs text-muted-foreground mt-1">Успешная обработка</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mb-1">
                   {documents.filter(d => d.status === 'PROCESSING').length}
                 </div>
-                <div className="text-sm text-slate-600 dark:text-slate-300 mb-2">В обработке</div>
+                <div className="text-sm text-muted-foreground mb-2">В обработке</div>
                 <MiniSparkline 
                   data={generateSampleEmissionsData(30).map(v => v * 0.3)} 
                   width={60} 
@@ -598,13 +598,13 @@ export default function DocumentsPage() {
                   color="#eab308"
                   className="mx-auto"
                 />
-                <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">Очередь обработки</div>
+                <div className="text-xs text-muted-foreground mt-1">Очередь обработки</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">
                   {documents.filter(d => d.ocrProcessed).length}
                 </div>
-                <div className="text-sm text-slate-600 dark:text-slate-300 mb-2">OCR готов</div>
+                <div className="text-sm text-muted-foreground mb-2">OCR готов</div>
                 <MiniSparkline 
                   data={generateSampleEmissionsData(30).map(v => v * 0.6)} 
                   width={60} 
@@ -612,7 +612,7 @@ export default function DocumentsPage() {
                   color="#2563eb"
                   className="mx-auto"
                 />
-                <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">Качество распознавания</div>
+                <div className="text-xs text-muted-foreground mt-1">Качество распознавания</div>
               </div>
             </div>
           </Card>

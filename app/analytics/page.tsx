@@ -146,13 +146,13 @@ export default function AnalyticsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 p-6">
+      <div className="min-h-screen bg-background p-6">
         <div className="max-w-7xl mx-auto">
           <div className="animate-pulse">
-            <div className="h-8 bg-slate-200 rounded w-64 mb-6"></div>
+            <div className="h-8 bg-accent rounded w-64 mb-6"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-32 bg-slate-200 rounded-lg"></div>
+                <div key={i} className="h-32 bg-accent rounded-lg"></div>
               ))}
             </div>
           </div>
@@ -162,15 +162,15 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
+    <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
                Аналитика ESG
             </h1>
-            <p className="text-slate-600">
+            <p className="text-muted-foreground">
               Анализ выбросов, затрат и эффективности за период {
                 timeRange === '3months' ? '3 месяца' :
                 timeRange === '6months' ? '6 месяцев' :
@@ -185,7 +185,7 @@ export default function AnalyticsPage() {
             <select
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value)}
-              className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              className="px-4 py-2 border border-border bg-background text-foreground rounded-lg focus:ring-2 focus:ring-ring focus:border-ring"
             >
               <option value="3months">3 месяца</option>
               <option value="6months">6 месяцев</option>
@@ -199,7 +199,7 @@ export default function AnalyticsPage() {
                 size="sm"
                 onClick={() => handleExport('csv')}
                 disabled={exportLoading}
-                className="flex items-center"
+                className="flex items-center bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700 text-white shadow-lg hover:shadow-xl"
               >
                 <Download className="w-4 h-4 mr-2" />
                 CSV
@@ -209,7 +209,7 @@ export default function AnalyticsPage() {
                 size="sm"
                 onClick={() => handleExport('xlsx')}
                 disabled={exportLoading}
-                className="flex items-center"
+                className="flex items-center bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-xl"
               >
                 <Download className="w-4 h-4 mr-2" />
                 Excel
@@ -219,7 +219,7 @@ export default function AnalyticsPage() {
                 size="sm"
                 onClick={() => handleExport('pdf')}
                 disabled={exportLoading}
-                className="flex items-center"
+                className="flex items-center bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg hover:shadow-xl"
               >
                 <Download className="w-4 h-4 mr-2" />
                 PDF Report
@@ -230,69 +230,69 @@ export default function AnalyticsPage() {
 
         {/* KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="p-6">
+          <Card className="p-6 bg-card border border-border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-600">Соответствие нормам</p>
-                <p className="text-2xl font-bold text-emerald-600">{currentData.complianceScore}%</p>
+                <p className="text-sm font-medium text-muted-foreground">Соответствие нормам</p>
+                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{currentData.complianceScore}%</p>
               </div>
-              <div className="p-3 bg-emerald-100 rounded-full">
-                <Award className="w-6 h-6 text-emerald-600" />
+              <div className="p-3 bg-emerald-100 dark:bg-emerald-900/20 rounded-full">
+                <Award className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm">
-              <ArrowUpRight className="w-4 h-4 text-emerald-500 mr-1" />
-              <span className="text-emerald-600">+2.1% за месяц</span>
+              <ArrowUpRight className="w-4 h-4 text-emerald-500 dark:text-emerald-400 mr-1" />
+              <span className="text-emerald-600 dark:text-emerald-400">+2.1% за месяц</span>
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 bg-card border border-border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-600">Экономия средств</p>
-                <p className="text-2xl font-bold text-blue-600">{currentData.totalSavings.toLocaleString()} ₽</p>
+                <p className="text-sm font-medium text-muted-foreground">Экономия средств</p>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{currentData.totalSavings.toLocaleString()} ₽</p>
               </div>
-              <div className="p-3 bg-blue-100 rounded-full">
-                <DollarSign className="w-6 h-6 text-blue-600" />
+              <div className="p-3 bg-blue-100 dark:bg-blue-900/20 rounded-full">
+                <DollarSign className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm">
-              <ArrowUpRight className="w-4 h-4 text-emerald-500 mr-1" />
-              <span className="text-emerald-600">Vs ручной отчётности</span>
+              <ArrowUpRight className="w-4 h-4 text-emerald-500 dark:text-emerald-400 mr-1" />
+              <span className="text-emerald-600 dark:text-emerald-400">Vs ручной отчётности</span>
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 bg-card border border-border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-600">Сокращение выбросов</p>
-                <p className="text-2xl font-bold text-emerald-600">{Math.abs(currentData.trends.emissionsChange)}%</p>
+                <p className="text-sm font-medium text-muted-foreground">Сокращение выбросов</p>
+                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{Math.abs(currentData.trends.emissionsChange)}%</p>
               </div>
-              <div className="p-3 bg-emerald-100 rounded-full">
-                <TrendingUp className="w-6 h-6 text-emerald-600" />
+              <div className="p-3 bg-emerald-100 dark:bg-emerald-900/20 rounded-full">
+                <TrendingUp className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm">
-              <ArrowDownRight className="w-4 h-4 text-emerald-500 mr-1" />
-              <span className="text-emerald-600">За год</span>
+              <ArrowDownRight className="w-4 h-4 text-emerald-500 dark:text-emerald-400 mr-1" />
+              <span className="text-emerald-600 dark:text-emerald-400">За год</span>
             </div>
           </Card>
 
-          <Card className="p-6">
+          <Card className="p-6 bg-card border border-border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-600">Всего отчётов</p>
-                <p className="text-2xl font-bold text-slate-900">
+                <p className="text-sm font-medium text-muted-foreground">Всего отчётов</p>
+                <p className="text-2xl font-bold text-card-foreground">
                   {currentData.reportTypes.reduce((sum, type) => sum + type.count, 0)}
                 </p>
               </div>
-              <div className="p-3 bg-slate-100 rounded-full">
-                <FileText className="w-6 h-6 text-slate-600" />
+              <div className="p-3 bg-accent rounded-full">
+                <FileText className="w-6 h-6 text-muted-foreground" />
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm">
-              <ArrowUpRight className="w-4 h-4 text-emerald-500 mr-1" />
-              <span className="text-emerald-600">+{currentData.trends.reportsChange}% за месяц</span>
+              <ArrowUpRight className="w-4 h-4 text-emerald-500 dark:text-emerald-400 mr-1" />
+              <span className="text-emerald-600 dark:text-emerald-400">+{currentData.trends.reportsChange}% за месяц</span>
             </div>
           </Card>
         </div>
@@ -300,23 +300,23 @@ export default function AnalyticsPage() {
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           {/* Emissions Trend */}
-          <Card className="p-6">
+          <Card className="p-6 bg-card border border-border">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-slate-900">Динамика выбросов</h3>
-              <BarChart3 className="w-5 h-5 text-slate-400" />
+              <h3 className="text-lg font-semibold text-card-foreground">Динамика выбросов</h3>
+              <BarChart3 className="w-5 h-5 text-muted-foreground" />
             </div>
             <div className="space-y-4">
               {currentData.monthlyEmissions.slice(-6).map((item, index) => (
                 <div key={index} className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600">{item.month}</span>
+                  <span className="text-sm text-muted-foreground">{item.month}</span>
                   <div className="flex items-center space-x-4">
-                    <div className="w-32 bg-slate-200 rounded-full h-2">
+                    <div className="w-32 bg-accent rounded-full h-2">
                       <div
-                        className="bg-emerald-500 h-2 rounded-full"
+                        className="bg-emerald-500 dark:bg-emerald-400 h-2 rounded-full"
                         style={{ width: `${(item.emissions / 1400) * 100}%` }}
                       />
                     </div>
-                    <span className="text-sm font-medium text-slate-900 w-16 text-right">
+                    <span className="text-sm font-medium text-card-foreground w-16 text-right">
                       {item.emissions} т
                     </span>
                   </div>
@@ -326,24 +326,24 @@ export default function AnalyticsPage() {
           </Card>
 
           {/* Report Types Distribution */}
-          <Card className="p-6">
+          <Card className="p-6 bg-card border border-border">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-slate-900">Типы отчётов</h3>
-              <Activity className="w-5 h-5 text-slate-400" />
+              <h3 className="text-lg font-semibold text-card-foreground">Типы отчётов</h3>
+              <Activity className="w-5 h-5 text-muted-foreground" />
             </div>
             <div className="space-y-4">
               {currentData.reportTypes.map((type, index) => (
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className={`w-3 h-3 rounded-full ${
-                      index === 0 ? 'bg-emerald-500' : 
-                      index === 1 ? 'bg-blue-500' : 'bg-purple-500'
+                      index === 0 ? 'bg-emerald-500 dark:bg-emerald-400' : 
+                      index === 1 ? 'bg-blue-500 dark:bg-blue-400' : 'bg-purple-500 dark:bg-purple-400'
                     }`} />
-                    <span className="text-sm font-medium text-slate-900">{type.type}</span>
+                    <span className="text-sm font-medium text-card-foreground">{type.type}</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-sm text-slate-600">{type.count}</span>
-                    <span className="text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded-full">
+                    <span className="text-sm text-muted-foreground">{type.count}</span>
+                    <span className="text-xs bg-accent text-muted-foreground px-2 py-1 rounded-full">
                       {type.percentage}%
                     </span>
                   </div>
@@ -354,65 +354,65 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Top Emission Sources */}
-        <Card className="p-6 mb-8">
+        <Card className="p-6 mb-8 bg-card border border-border">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-slate-900">Основные источники выбросов</h3>
-            <Target className="w-5 h-5 text-slate-400" />
+            <h3 className="text-lg font-semibold text-card-foreground">Основные источники выбросов</h3>
+            <Target className="w-5 h-5 text-muted-foreground" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             {currentData.topSources.map((source, index) => (
               <div key={index} className="text-center">
                 <div className="relative w-20 h-20 mx-auto mb-3">
-                  <div className="absolute inset-0 bg-slate-200 rounded-full"></div>
+                  <div className="absolute inset-0 bg-accent rounded-full"></div>
                   <div
                     className={`absolute inset-0 rounded-full ${
-                      index === 0 ? 'bg-emerald-500' :
-                      index === 1 ? 'bg-blue-500' :
-                      index === 2 ? 'bg-purple-500' :
-                      index === 3 ? 'bg-orange-500' : 'bg-gray-500'
+                      index === 0 ? 'bg-emerald-500 dark:bg-emerald-400' :
+                      index === 1 ? 'bg-blue-500 dark:bg-blue-400' :
+                      index === 2 ? 'bg-purple-500 dark:bg-purple-400' :
+                      index === 3 ? 'bg-orange-500 dark:bg-orange-400' : 'bg-gray-500 dark:bg-gray-400'
                     }`}
                     style={{
                       clipPath: `polygon(50% 50%, 50% 0%, ${50 + source.percentage * 5}% 0%, 50% 50%)`
                     }}
                   />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-xs font-semibold text-slate-700">
+                    <span className="text-xs font-semibold text-card-foreground">
                       {source.percentage}%
                     </span>
                   </div>
                 </div>
-                <p className="text-sm font-medium text-slate-900">{source.source}</p>
-                <p className="text-xs text-slate-600">{source.emissions} т CO₂</p>
+                <p className="text-sm font-medium text-card-foreground">{source.source}</p>
+                <p className="text-xs text-muted-foreground">{source.emissions} т CO₂</p>
               </div>
             ))}
           </div>
         </Card>
 
         {/* Quick Actions */}
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-slate-900 mb-6">Быстрые действия</h3>
+        <Card className="p-6 bg-card border border-border">
+          <h3 className="text-lg font-semibold text-card-foreground mb-6">Быстрые действия</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Link href="/create-report">
-              <Button variant="primary" className="w-full h-auto p-4 flex flex-col items-center">
+              <Button variant="primary" className="w-full h-auto p-4 flex flex-col items-center bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg hover:shadow-xl">
                 <Plus className="w-6 h-6 mb-2" />
-                <span className="font-medium">Новый отчёт</span>
-                <span className="text-xs opacity-80">Создать отчёт 296-ФЗ или CBAM</span>
+                <span className="font-medium text-white">Новый отчёт</span>
+                <span className="text-xs opacity-80 text-white">Создать отчёт 296-ФЗ или CBAM</span>
               </Button>
             </Link>
 
             <Link href="/reports">
-              <Button variant="secondary" className="w-full h-auto p-4 flex flex-col items-center">
+              <Button variant="secondary" className="w-full h-auto p-4 flex flex-col items-center bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg hover:shadow-xl">
                 <FileText className="w-6 h-6 mb-2" />
-                <span className="font-medium">Все отчёты</span>
-                <span className="text-xs opacity-80">Просмотр и загрузка</span>
+                <span className="font-medium text-white">Все отчёты</span>
+                <span className="text-xs opacity-80 text-white">Просмотр и загрузка</span>
               </Button>
             </Link>
 
             <Link href="/credits">
-              <Button variant="secondary" className="w-full h-auto p-4 flex flex-col items-center">
+              <Button variant="secondary" className="w-full h-auto p-4 flex flex-col items-center bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl">
                 <Zap className="w-6 h-6 mb-2" />
-                <span className="font-medium">Кредиты</span>
-                <span className="text-xs opacity-80">Управление балансом</span>
+                <span className="font-medium text-white">Кредиты</span>
+                <span className="text-xs opacity-80 text-white">Управление балансом</span>
               </Button>
             </Link>
           </div>

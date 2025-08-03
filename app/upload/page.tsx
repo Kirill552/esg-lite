@@ -185,14 +185,14 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50 py-12">
+    <div className="min-h-screen bg-background py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-slate-900 mb-4">
+          <h1 className="text-4xl font-bold text-foreground mb-4">
             Загрузка документов
           </h1>
-          <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Загрузите PDF счета за электроэнергию или CSV/Excel файлы для автоматического 
             создания отчётов по 296-ФЗ
           </p>
@@ -203,12 +203,12 @@ export default function UploadPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Upload Area */}
           <div className="lg:col-span-2">
-            <Card className="p-8 border-0 bg-white/70 backdrop-blur-sm">
+            <Card className="p-8 bg-card border border-border">
               <div className="mb-6">
-                <h2 className="text-2xl font-semibold text-slate-900 mb-2">
+                <h2 className="text-2xl font-semibold text-card-foreground mb-2">
                   Выберите файл
                 </h2>
-                <p className="text-slate-600">
+                <p className="text-muted-foreground">
                   Поддерживаются файлы: PDF, CSV, Excel XLS/XLSX (до {maxFileSizeInMB} МБ)
                 </p>
               </div>
@@ -222,13 +222,13 @@ export default function UploadPage() {
                 />
               ) : (
                 <div className="mb-6">
-                  <div className="flex items-center p-4 bg-emerald-50 border border-emerald-200 rounded-lg mb-4">
-                    <FileText className="w-8 h-8 text-emerald-600 mr-4" />
+                  <div className="flex items-center p-4 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg mb-4">
+                    <FileText className="w-8 h-8 text-emerald-600 dark:text-emerald-400 mr-4" />
                     <div className="flex-1">
-                      <h3 className="font-medium text-emerald-900">
+                      <h3 className="font-medium text-emerald-900 dark:text-emerald-100">
                         {selectedFile.name}
                       </h3>
-                      <p className="text-sm text-emerald-600">
+                      <p className="text-sm text-emerald-600 dark:text-emerald-400">
                         {(selectedFile.size / 1024 / 1024).toFixed(2)} МБ
                       </p>
                     </div>
@@ -236,7 +236,7 @@ export default function UploadPage() {
                       variant="ghost"
                       size="sm"
                       onClick={resetUpload}
-                      className="text-emerald-600 hover:text-emerald-700"
+                      className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300"
                     >
                       Изменить
                     </Button>
@@ -247,7 +247,7 @@ export default function UploadPage() {
                     <Button
                       onClick={handleProcessFile}
                       disabled={isProcessing}
-                      className="w-full bg-gradient-to-r from-emerald-500 to-green-600 text-white hover:from-emerald-600 hover:to-green-700 transition-all duration-200"
+                      className="w-full bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                       size="lg"
                     >
                       {isProcessing ? (
@@ -267,17 +267,17 @@ export default function UploadPage() {
               )}
 
               {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center">
-                  <AlertCircle className="w-5 h-5 text-red-600 mr-3" />
-                  <p className="text-red-700">{error}</p>
+                <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center">
+                  <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 mr-3" />
+                  <p className="text-red-700 dark:text-red-300">{error}</p>
                 </div>
               )}
 
               {fileUploaded && !processingComplete && (
                 <div className="space-y-4">
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-center">
-                    <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
-                    <p className="text-green-700 font-medium">
+                  <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center">
+                    <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mr-3" />
+                    <p className="text-green-700 dark:text-green-300 font-medium">
                       ✅ Файл успешно загружен! Теперь запустите распознавание текста.
                     </p>
                   </div>
@@ -285,7 +285,7 @@ export default function UploadPage() {
                   <Button
                     onClick={handleRunOCR}
                     disabled={isProcessing}
-                    className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 transition-all duration-200"
+                    className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200"
                     size="lg"
                   >
                     {isProcessing ? (
@@ -305,16 +305,16 @@ export default function UploadPage() {
 
               {processingComplete && (
                 <div className="space-y-4">
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-center">
-                    <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
-                    <p className="text-green-700 font-medium">
+                  <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-center">
+                    <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mr-3" />
+                    <p className="text-green-700 dark:text-green-300 font-medium">
                       Файл успешно обработан! Отчёты готовы к скачиванию.
                     </p>
                   </div>
                   
                   <div className="space-y-4">
                     <Link href="/reports">
-                      <Button variant="primary" size="lg" className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700">
+                      <Button variant="primary" size="lg" className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl">
                         <Download className="w-5 h-5 mr-2" />
                         Перейти к отчётам
                       </Button>
@@ -342,57 +342,57 @@ export default function UploadPage() {
 
           {/* Info Sidebar */}
           <div className="space-y-6">
-            <Card className="p-6 border-0 bg-white/60 backdrop-blur-sm">
-              <h3 className="font-bold text-slate-900 mb-4">
+            <Card className="p-6 border-0 bg-card/60 backdrop-blur-sm">
+              <h3 className="font-bold text-foreground mb-4">
                 📋 Что происходит при обработке?
               </h3>
-              <div className="space-y-3 text-sm text-slate-600">
+              <div className="space-y-3 text-sm text-muted-foreground">
                 <div className="flex items-start">
-                  <div className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
-                    <span className="text-xs font-medium text-emerald-700">1</span>
+                  <div className="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mr-3 mt-0.5">
+                    <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">1</span>
                   </div>
                   <p>Автоматическое распознавание данных из документа</p>
                 </div>
                 <div className="flex items-start">
-                  <div className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
-                    <span className="text-xs font-medium text-emerald-700">2</span>
+                  <div className="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mr-3 mt-0.5">
+                    <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">2</span>
                   </div>
                   <p>Расчёт углеродного следа по 296-ФЗ</p>
                 </div>
                 <div className="flex items-start">
-                  <div className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
-                    <span className="text-xs font-medium text-emerald-700">3</span>
+                  <div className="w-6 h-6 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mr-3 mt-0.5">
+                    <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">3</span>
                   </div>
                   <p>Генерация отчётов PDF и CSV/XML</p>
                 </div>
               </div>
             </Card>
 
-            <Card className="p-6 border-0 bg-white/60 backdrop-blur-sm">
-              <h3 className="font-bold text-slate-900 mb-4">
+            <Card className="p-6 border-0 bg-card/60 backdrop-blur-sm">
+              <h3 className="font-bold text-foreground mb-4">
                 💡 Поддерживаемые форматы
               </h3>
-              <div className="space-y-3 text-sm text-slate-600">
+              <div className="space-y-3 text-sm text-muted-foreground">
                 <div className="flex items-center">
-                  <FileText className="w-4 h-4 text-slate-500 mr-2" />
+                  <FileText className="w-4 h-4 text-muted-foreground mr-2" />
                   <p>PDF счета за электроэнергию</p>
                 </div>
                 <div className="flex items-center">
-                  <FileText className="w-4 h-4 text-slate-500 mr-2" />
+                  <FileText className="w-4 h-4 text-muted-foreground mr-2" />
                   <p>CSV файлы с данными</p>
                 </div>
                 <div className="flex items-center">
-                  <FileText className="w-4 h-4 text-slate-500 mr-2" />
+                  <FileText className="w-4 h-4 text-muted-foreground mr-2" />
                   <p>Excel файлы XLS/XLSX с таблицами</p>
                 </div>
               </div>
             </Card>
 
-            <Card className="p-6 border-0 bg-gradient-to-br from-emerald-50 to-green-50/50">
-              <h3 className="font-bold text-slate-900 mb-4">
+            <Card className="p-6 bg-card border border-border">
+              <h3 className="font-bold text-card-foreground mb-4">
                 🔒 Безопасность данных
               </h3>
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-muted-foreground">
                 Все загруженные файлы обрабатываются локально и удаляются после 
                 создания отчётов. Ваши данные остаются конфиденциальными.
               </p>

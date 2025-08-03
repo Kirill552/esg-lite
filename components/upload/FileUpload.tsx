@@ -140,9 +140,9 @@ export function FileUpload({
           {...getRootProps()}
           className={cn(
             'upload-area cursor-pointer transition-all duration-200 min-h-[180px] flex items-center justify-center',
-            'max-w-[340px] w-full mx-auto', // Ограничиваем драг-область для мобильных
-            isDragActive && 'border-primary-500 bg-primary-50',
-            error && 'border-error-300 bg-error-50'
+            'max-w-[340px] w-full mx-auto bg-card border-border', // Ограничиваем драг-область для мобильных
+            isDragActive && 'border-primary-500 bg-primary-50 dark:bg-primary-950',
+            error && 'border-error border-error-300 bg-error-50 dark:bg-error-950'
           )}
           variant="outlined"
         >
@@ -151,8 +151,8 @@ export function FileUpload({
             <svg
               className={cn(
                 'mx-auto h-12 w-12 mb-4',
-                isDragActive ? 'text-primary-500' : 'text-gray-400',
-                error && 'text-error-400'
+                isDragActive ? 'text-primary-500' : 'text-muted-foreground',
+                error && 'text-error'
               )}
               stroke="currentColor"
               fill="none"
@@ -166,15 +166,15 @@ export function FileUpload({
               />
             </svg>
             
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-lg font-medium text-card-foreground mb-2">
               {isDragActive ? 'Отпустите файл здесь' : 'Загрузите файл'}
             </h3>
             
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-muted-foreground mb-4">
               Перетащите PDF или *.jpeg* сюда или{' '}
               <button
                 type="button"
-                className="text-primary-600 hover:text-primary-700 font-medium pointer-events-auto"
+                className="text-primary hover:text-primary/80 font-medium pointer-events-auto transition-colors"
                 onClick={(e) => {
                   e.stopPropagation()
                   open()
@@ -184,19 +184,19 @@ export function FileUpload({
               </button>
             </p>
             
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-muted-foreground">
               <p>Поддерживаемые форматы: {acceptedFileTypes.join(', ').toUpperCase()}</p>
               <p>Максимальный размер: {maxFileSizeInMB} МБ</p>
             </div>
           </div>
         </Card>
       ) : (
-        <Card>
+        <Card className="bg-card border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="flex-shrink-0">
                 <svg
-                  className="h-10 w-10 text-success-500"
+                  className="h-10 w-10 text-success"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -210,10 +210,10 @@ export function FileUpload({
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium text-card-foreground">
                   {uploadedFile.file.name}
                 </p>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   {formatFileSize(uploadedFile.file.size)}
                 </p>
               </div>
@@ -230,8 +230,8 @@ export function FileUpload({
       )}
 
       {error && (
-        <div className="mt-3 p-3 bg-error-50 border border-error-200 rounded-lg">
-          <p className="text-sm text-error-700">{error}</p>
+        <div className="mt-3 p-3 bg-error/10 border border-error/20 rounded-lg">
+          <p className="text-sm text-error">{error}</p>
         </div>
       )}
       

@@ -160,7 +160,7 @@ export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-40 backdrop-blur-sm transition-opacity" />
+          <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm transition-opacity" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-hidden">
@@ -176,7 +176,7 @@ export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
                 leaveTo="translate-x-full"
               >
                 <Dialog.Panel className="pointer-events-auto relative w-screen max-w-md">
-                  <div className="flex h-full flex-col overflow-y-scroll bg-white shadow-xl">
+                  <div className="flex h-full flex-col overflow-y-scroll bg-background shadow-xl border-l border-border">
                     {/* Хедер */}
                     <div className="bg-gradient-to-r from-emerald-600 to-blue-600 px-4 py-6 sm:px-6">
                       <div className="flex items-center justify-between">
@@ -211,9 +211,9 @@ export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
                     {/* Контент */}
                     <div className="flex-1 px-4 py-6 sm:px-6">
                       <Tab.Group>
-                        <Tab.List className="flex space-x-1 rounded-xl bg-blue-900/10 p-1">
+                        <Tab.List className="flex space-x-1 rounded-xl bg-muted p-1">
                           <Tab
-                            className="w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all ui-selected:bg-white ui-selected:text-blue-700 ui-selected:shadow ui-not-selected:text-blue-600 ui-not-selected:hover:bg-white/[0.12] ui-not-selected:hover:text-blue-700"
+                            className="w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all ui-selected:bg-card ui-selected:text-foreground ui-selected:shadow ui-not-selected:text-muted-foreground ui-not-selected:hover:bg-card/50 ui-not-selected:hover:text-foreground"
                           >
                             <div className="flex items-center justify-center space-x-2">
                               <Coins className="h-4 w-4" />
@@ -221,7 +221,7 @@ export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
                             </div>
                           </Tab>
                           <Tab
-                            className="w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all ui-selected:bg-white ui-selected:text-blue-700 ui-selected:shadow ui-not-selected:text-blue-600 ui-not-selected:hover:bg-white/[0.12] ui-not-selected:hover:text-blue-700"
+                            className="w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all ui-selected:bg-card ui-selected:text-foreground ui-selected:shadow ui-not-selected:text-muted-foreground ui-not-selected:hover:bg-card/50 ui-not-selected:hover:text-foreground"
                           >
                             <div className="flex items-center justify-center space-x-2">
                               <TrendingUp className="h-4 w-4" />
@@ -236,15 +236,15 @@ export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
                             <div className="space-y-6">
                               {/* Статистика */}
                               <div className="grid grid-cols-2 gap-4">
-                                <div className="rounded-lg border border-gray-200 p-4">
-                                  <div className="text-sm text-gray-500">Всего куплено</div>
-                                  <div className="text-lg font-semibold text-gray-900 font-mono">
+                                <div className="rounded-lg border border-border bg-card p-4">
+                                  <div className="text-sm text-muted-foreground">Всего куплено</div>
+                                  <div className="text-lg font-semibold text-foreground font-mono">
                                     {balanceData ? (balanceData.totalPurchased || 0).toLocaleString() : '0'} т
                                   </div>
                                 </div>
-                                <div className="rounded-lg border border-gray-200 p-4">
-                                  <div className="text-sm text-gray-500">Использовано</div>
-                                  <div className="text-lg font-semibold text-gray-900 font-mono">
+                                <div className="rounded-lg border border-border bg-card p-4">
+                                  <div className="text-sm text-muted-foreground">Использовано</div>
+                                  <div className="text-lg font-semibold text-foreground font-mono">
                                     {balanceData ? (balanceData.totalUsed || 0).toLocaleString() : '0'} т
                                   </div>
                                 </div>
@@ -252,16 +252,16 @@ export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
 
                               {/* График прогресса "Куплено / Использовано" */}
                               {balanceData && (balanceData.totalPurchased > 0) && (
-                                <div className="rounded-lg border border-gray-200 p-4">
+                                <div className="rounded-lg border border-border bg-card p-4">
                                   <div className="flex items-center justify-between mb-3">
-                                    <h4 className="text-sm font-medium text-gray-900">Использование кредитов</h4>
-                                    <span className="text-xs text-gray-500">
+                                    <h4 className="text-sm font-medium text-foreground">Использование кредитов</h4>
+                                    <span className="text-xs text-muted-foreground">
                                       {Math.round((balanceData.totalUsed / balanceData.totalPurchased) * 100)}%
                                     </span>
                                   </div>
                                   
                                   {/* Progress Bar */}
-                                  <div className="w-full bg-gray-200 rounded-full h-3 mb-3">
+                                  <div className="w-full bg-muted rounded-full h-3 mb-3">
                                     <div 
                                       className="bg-gradient-to-r from-emerald-500 to-green-600 h-3 rounded-full transition-all duration-300 ease-out"
                                       style={{ 
@@ -271,7 +271,7 @@ export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
                                   </div>
                                   
                                   {/* Детали */}
-                                  <div className="flex justify-between text-xs text-gray-600">
+                                  <div className="flex justify-between text-xs text-muted-foreground">
                                     <span>Использовано: {balanceData.totalUsed.toLocaleString()} т</span>
                                     <span>Всего: {balanceData.totalPurchased.toLocaleString()} т</span>
                                   </div>
@@ -280,10 +280,10 @@ export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
 
                               {/* Прогноз затрат */}
                               {balanceData && (
-                                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+                                <div className="rounded-lg border border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-800 p-4">
                                   <div className="flex items-center space-x-2 mb-3">
-                                    <TrendingUp className="h-4 w-4 text-amber-600" />
-                                    <h4 className="text-sm font-medium text-amber-900">Прогноз затрат до конца месяца</h4>
+                                    <TrendingUp className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                    <h4 className="text-sm font-medium text-amber-900 dark:text-amber-200">Прогноз затрат до конца месяца</h4>
                                   </div>
                                   
                                   <div className="space-y-2">
@@ -300,14 +300,14 @@ export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
                                       return (
                                         <>
                                           <div className="flex justify-between text-sm">
-                                            <span className="text-amber-700">Прогноз использования:</span>
-                                            <span className="font-mono text-amber-900">{Math.round(projectedUsage)} т CO₂</span>
+                                            <span className="text-amber-700 dark:text-amber-300">Прогноз использования:</span>
+                                            <span className="font-mono text-amber-900 dark:text-amber-100">{Math.round(projectedUsage)} т CO₂</span>
                                           </div>
                                           <div className="flex justify-between text-sm">
-                                            <span className="text-amber-700">Ориентировочная стоимость:</span>
-                                            <span className="font-mono font-semibold text-amber-900">{formatCurrency(projectedCost)}</span>
+                                            <span className="text-amber-700 dark:text-amber-300">Ориентировочная стоимость:</span>
+                                            <span className="font-mono font-semibold text-amber-900 dark:text-amber-100">{formatCurrency(projectedCost)}</span>
                                           </div>
-                                          <div className="text-xs text-amber-600 mt-2">
+                                          <div className="text-xs text-amber-600 dark:text-amber-400 mt-2">
                                             *Прогноз основан на среднем потреблении
                                           </div>
                                         </>
@@ -325,7 +325,7 @@ export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
 
                               {/* История транзакций */}
                               <div>
-                                <h3 className="text-sm font-medium text-gray-900 mb-3">
+                                <h3 className="text-sm font-medium text-foreground mb-3">
                                   Последние операции
                                 </h3>
                                 <div className="space-y-3">
@@ -333,13 +333,13 @@ export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
                                     transactions.map((transaction) => (
                                       <div
                                         key={transaction.id}
-                                        className="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50"
+                                        className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted"
                                       >
                                         <div className="flex-1">
-                                          <div className="text-sm font-medium text-gray-900">
+                                          <div className="text-sm font-medium text-foreground">
                                             {transaction.description}
                                           </div>
-                                          <div className="text-xs text-gray-500">
+                                          <div className="text-xs text-muted-foreground">
                                             {formatDate(transaction.createdAt)}
                                           </div>
                                         </div>
@@ -356,8 +356,8 @@ export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
                                       </div>
                                     ))
                                   ) : (
-                                    <div className="text-center py-6 text-gray-500">
-                                      <Coins className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                                    <div className="text-center py-6 text-muted-foreground">
+                                      <Coins className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
                                       <p className="text-sm">Нет транзакций</p>
                                     </div>
                                   )}
@@ -371,13 +371,13 @@ export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
                             <div className="space-y-6">
                               {/* Переключатель месяц/год */}
                               <div className="flex items-center justify-center">
-                                <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                                <div className="flex items-center bg-muted rounded-lg p-1">
                                   <button
                                     onClick={() => setIsAnnual(false)}
                                     className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
                                       !isAnnual
-                                        ? 'bg-white text-gray-900 shadow-sm'
-                                        : 'text-gray-600 hover:text-gray-900'
+                                        ? 'bg-card text-foreground shadow-sm'
+                                        : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                   >
                                     Месяц
@@ -386,13 +386,13 @@ export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
                                     onClick={() => setIsAnnual(true)}
                                     className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
                                       isAnnual
-                                        ? 'bg-white text-gray-900 shadow-sm'
-                                        : 'text-gray-600 hover:text-gray-900'
+                                        ? 'bg-card text-foreground shadow-sm'
+                                        : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                   >
                                     Год
                                     {isAnnual && (
-                                      <span className="ml-2 text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded-full">
+                                      <span className="ml-2 text-xs bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 px-2 py-1 rounded-full">
                                         Экономия
                                       </span>
                                     )}
@@ -407,8 +407,8 @@ export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
                                   key={plan.id}
                                   className={`relative rounded-lg border p-4 ${
                                     plan.popular
-                                      ? 'border-emerald-500 bg-emerald-50'
-                                      : 'border-gray-200'
+                                      ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 dark:border-emerald-600'
+                                      : 'border-border bg-card'
                                   }`}
                                 >
                                   {plan.popular && (
@@ -422,23 +422,23 @@ export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
                                   <div className="flex items-start justify-between">
                                     <div className="flex items-center space-x-3">
                                       <div className={`p-2 rounded-lg ${
-                                        plan.popular ? 'bg-emerald-100' : 'bg-gray-100'
+                                        plan.popular ? 'bg-emerald-100 dark:bg-emerald-900/50' : 'bg-muted'
                                       }`}>
                                         {getPlanIcon(plan.id)}
                                       </div>
                                       <div>
-                                        <h3 className="font-medium text-gray-900">{plan.name}</h3>
+                                        <h3 className="font-medium text-foreground">{plan.name}</h3>
                                         <div className="flex items-baseline space-x-2">
-                                          <p className="text-sm text-gray-900 font-semibold">
+                                          <p className="text-sm text-foreground font-semibold">
                                             {formatCurrency(plan.price)}
                                             {plan.id !== 'FREE' && (
-                                              <span className="text-gray-500 font-normal">
+                                              <span className="text-muted-foreground font-normal">
                                                 /{isAnnual ? 'год' : 'мес'}
                                               </span>
                                             )}
                                           </p>
                                           {isAnnual && plan.id !== 'FREE' && (
-                                            <span className="text-xs text-emerald-600 font-medium">
+                                            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                                               Экономия {formatCurrency(getAnnualSavings(plan.id))}
                                             </span>
                                           )}
@@ -449,7 +449,7 @@ export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
                                   
                                   <ul className="mt-3 space-y-1">
                                     {plan.features.map((feature, index) => (
-                                      <li key={index} className="text-sm text-gray-600 flex items-center">
+                                      <li key={index} className="text-sm text-muted-foreground flex items-center">
                                         <span className="mr-2">•</span>
                                         {feature}
                                       </li>
@@ -460,7 +460,7 @@ export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
                                     className={`mt-4 w-full rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                                       plan.popular
                                         ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        : 'bg-muted text-foreground hover:bg-muted/80'
                                     }`}
                                   >
                                     {plan.id === 'FREE' ? 'Текущий план' : 'Выбрать план'}

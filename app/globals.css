@@ -70,19 +70,43 @@
     --ring: 142 76% 36%;
     --radius: 0.5rem;
 
-    /* ESG Theme Colors */
+    /* ESG Theme Colors - Light Mode */
     --green-primary: 142 76% 36%;
     --green-secondary: 120 60% 70%;
     --blue-primary: 206 100% 50%;
     --amber-primary: 43 96% 56%;
+    
+    /* Additional semantic colors */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 43 96% 56%;
+    --warning-foreground: 0 0% 9%;
+    --info: 206 100% 50%;
+    --info-foreground: 0 0% 100%;
+    
+    /* Dashboard specific colors */
+    --dashboard-bg: 142 15% 96%;
+    --stats-card: 0 0% 100%;
+    --stats-card-border: 240 5.9% 90%;
+    --chart-bg: 0 0% 100%;
+    --table-header: 240 4.8% 95.9%;
+    --table-row-hover: 240 4.8% 98%;
+
+    /* Surface Design System - Light Mode */
+    --surface-base: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 30%, #bbf7d0 100%);
+    --surface-elevated: linear-gradient(135deg, #ffffff 0%, #f8fafc 50%, #f1f5f9 100%);
+    --surface-accent: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 50%, #a7f3d0 100%);
+    --surface-interactive: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #bae6fd 100%);
+    --surface-secondary: linear-gradient(135deg, #fef3c7 0%, #fde68a 50%, #fcd34d 100%);
+    --surface-neutral: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%);
   }
 
   .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
+    --card: 240 6% 8%;
     --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
+    --popover: 240 6% 8%;
     --popover-foreground: 0 0% 98%;
     --primary: 142 70% 45%;
     --primary-foreground: 144 61% 20%;
@@ -97,6 +121,36 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 142 70% 45%;
+
+    /* ESG Theme Colors - Dark Mode */
+    --green-primary: 142 70% 45%;
+    --green-secondary: 120 50% 60%;
+    --blue-primary: 206 85% 60%;
+    --amber-primary: 43 85% 65%;
+    
+    /* Additional semantic colors - Dark Mode */
+    --success: 142 70% 45%;
+    --success-foreground: 0 0% 100%;
+    --warning: 43 85% 65%;
+    --warning-foreground: 0 0% 9%;
+    --info: 206 85% 60%;
+    --info-foreground: 0 0% 100%;
+    
+    /* Dashboard specific colors - Dark Mode */
+    --dashboard-bg: 240 8% 6%;
+    --stats-card: 240 6% 8%;
+    --stats-card-border: 240 3.7% 15.9%;
+    --chart-bg: 240 6% 8%;
+    --table-header: 240 3.7% 15.9%;
+    --table-row-hover: 240 3.7% 18%;
+
+    /* Surface Design System - Dark Mode */
+    --surface-base: linear-gradient(135deg, #0f172a 0%, #1e293b 30%, #334155 100%);
+    --surface-elevated: linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%);
+    --surface-accent: linear-gradient(135deg, #164e63 0%, #155e75 50%, #0891b2 100%);
+    --surface-interactive: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
+    --surface-secondary: linear-gradient(135deg, #92400e 0%, #b45309 50%, #d97706 100%);
+    --surface-neutral: linear-gradient(135deg, #374151 0%, #4b5563 50%, #6b7280 100%);
   }
 }
 
@@ -125,6 +179,65 @@
 .card-shadow-hover {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 
               0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Surface Design System Utilities */
+.surface-base {
+  background: var(--surface-base);
+  @apply border border-border/50;
+}
+
+.surface-elevated {
+  background: var(--surface-elevated);
+  @apply border border-border/50 shadow-lg;
+}
+
+.surface-accent {
+  background: var(--surface-accent);
+  @apply border border-emerald-200 dark:border-emerald-800/50;
+}
+
+.surface-interactive {
+  background: var(--surface-interactive);
+  @apply border border-blue-200 dark:border-blue-800/50 transition-all duration-300;
+}
+
+.surface-interactive:hover {
+  @apply shadow-xl scale-[1.02] border-blue-300 dark:border-blue-700/70;
+}
+
+.surface-secondary {
+  background: var(--surface-secondary);
+  @apply border border-amber-200 dark:border-amber-800/50;
+}
+
+.surface-neutral {
+  background: var(--surface-neutral);
+  @apply border border-border/30;
+}
+
+/* Glass morphism surfaces */
+.surface-glass {
+  @apply bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl border border-white/20 dark:border-slate-700/20;
+  @apply shadow-xl shadow-black/5 dark:shadow-black/20;
+}
+
+.surface-glass-accent {
+  @apply bg-emerald-50/80 dark:bg-emerald-900/30 backdrop-blur-xl border border-emerald-200/30 dark:border-emerald-700/30;
+  @apply shadow-xl shadow-emerald-500/10 dark:shadow-emerald-500/5;
+}
+
+/* Modern card with surface system */
+.card-modern {
+  @apply surface-elevated rounded-xl p-6 hover:shadow-2xl transition-all duration-300;
+}
+
+.card-accent {
+  @apply surface-accent rounded-xl p-6 hover:shadow-xl hover:shadow-emerald-500/10 transition-all duration-300;
+}
+
+.card-interactive {
+  @apply surface-interactive rounded-xl p-6 cursor-pointer;
 }
 
 /* Custom ESG Utilities */

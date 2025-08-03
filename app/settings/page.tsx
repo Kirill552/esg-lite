@@ -131,11 +131,11 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50/20">
+      <div className="min-h-screen bg-gradient-to-br from-background via-card to-accent/20">
         <div className="container mx-auto px-6 py-8">
           <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-slate-200 rounded w-1/4"></div>
-            <div className="h-96 bg-slate-200 rounded"></div>
+            <div className="h-8 bg-muted rounded w-1/4"></div>
+            <div className="h-96 bg-muted rounded"></div>
           </div>
         </div>
       </div>
@@ -145,68 +145,68 @@ export default function SettingsPage() {
   const renderProfileTab = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium text-slate-900 mb-4">Информация об организации</h3>
+        <h3 className="text-lg font-medium text-foreground mb-4">Информация об организации</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Название организации
             </label>
             <input
               type="text"
               value={orgSettings.name}
               onChange={(e) => setOrgSettings(prev => ({ ...prev, name: e.target.value }))}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="ООО Экологические решения"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               ИНН
             </label>
             <input
               type="text"
               value={orgSettings.taxId}
               onChange={(e) => setOrgSettings(prev => ({ ...prev, taxId: e.target.value }))}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="1234567890"
             />
           </div>
           
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Адрес
             </label>
             <textarea
               value={orgSettings.address}
               onChange={(e) => setOrgSettings(prev => ({ ...prev, address: e.target.value }))}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               rows={3}
               placeholder="г. Москва, ул. Примерная, д. 123"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Email для связи
             </label>
             <input
               type="email"
               value={orgSettings.contactEmail}
               onChange={(e) => setOrgSettings(prev => ({ ...prev, contactEmail: e.target.value }))}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="contact@example.com"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Часовой пояс
             </label>
             <select
               value={orgSettings.timezone}
               onChange={(e) => setOrgSettings(prev => ({ ...prev, timezone: e.target.value }))}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="Europe/Moscow">Москва (UTC+3)</option>
               <option value="Europe/Samara">Самара (UTC+4)</option>
@@ -218,15 +218,15 @@ export default function SettingsPage() {
       </div>
       
       <div>
-        <h3 className="text-lg font-medium text-slate-900 mb-4">Настройки отчетов</h3>
+        <h3 className="text-lg font-medium text-foreground mb-4">Настройки отчетов</h3>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             Формат отчетов по умолчанию
           </label>
           <select
             value={orgSettings.defaultReportFormat}
             onChange={(e) => setOrgSettings(prev => ({ ...prev, defaultReportFormat: e.target.value }))}
-            className="w-full md:w-1/3 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full md:w-1/3 px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
           >
             <option value="PDF">PDF</option>
             <option value="XLSX">Excel (XLSX)</option>
@@ -241,16 +241,16 @@ export default function SettingsPage() {
   const renderNotificationsTab = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium text-slate-900 mb-4">Email уведомления</h3>
+        <h3 className="text-lg font-medium text-foreground mb-4">Email уведомления</h3>
         <div className="space-y-4">
           <label className="flex items-center">
             <input
               type="checkbox"
               checked={userSettings.emailNotifications}
               onChange={(e) => setUserSettings(prev => ({ ...prev, emailNotifications: e.target.checked }))}
-              className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              className="rounded border-border text-primary focus:ring-primary"
             />
-            <span className="ml-3 text-sm text-slate-700">Общие уведомления</span>
+            <span className="ml-3 text-sm text-foreground">Общие уведомления</span>
           </label>
           
           <label className="flex items-center">
@@ -258,9 +258,9 @@ export default function SettingsPage() {
               type="checkbox"
               checked={userSettings.pricingAlerts}
               onChange={(e) => setUserSettings(prev => ({ ...prev, pricingAlerts: e.target.checked }))}
-              className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              className="rounded border-border text-primary focus:ring-primary"
             />
-            <span className="ml-3 text-sm text-slate-700">Уведомления о сезонном повышении цен (15-30 июня)</span>
+            <span className="ml-3 text-sm text-foreground">Уведомления о сезонном повышении цен (15-30 июня)</span>
           </label>
           
           <label className="flex items-center">
@@ -268,24 +268,24 @@ export default function SettingsPage() {
               type="checkbox"
               checked={userSettings.weeklyReports}
               onChange={(e) => setUserSettings(prev => ({ ...prev, weeklyReports: e.target.checked }))}
-              className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              className="rounded border-border text-primary focus:ring-primary"
             />
-            <span className="ml-3 text-sm text-slate-700">Еженедельные отчеты</span>
+            <span className="ml-3 text-sm text-foreground">Еженедельные отчеты</span>
           </label>
         </div>
       </div>
       
       <div>
-        <h3 className="text-lg font-medium text-slate-900 mb-4">Пороги уведомлений</h3>
+        <h3 className="text-lg font-medium text-foreground mb-4">Пороги уведомлений</h3>
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
+          <label className="block text-sm font-medium text-foreground mb-2">
             Предупреждение о низком балансе (т CO₂)
           </label>
           <input
             type="number"
             value={userSettings.lowBalanceThreshold}
             onChange={(e) => setUserSettings(prev => ({ ...prev, lowBalanceThreshold: parseInt(e.target.value) || 0 }))}
-            className="w-full md:w-1/3 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full md:w-1/3 px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
             min="0"
             max="1000"
           />
@@ -297,10 +297,10 @@ export default function SettingsPage() {
   const renderSecurityTab = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium text-slate-900 mb-4">API ключи</h3>
-        <div className="bg-slate-50 rounded-lg p-4">
+        <h3 className="text-lg font-medium text-foreground mb-4">API ключи</h3>
+        <div className="bg-muted rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-medium text-slate-700">Ваш API ключ</span>
+            <span className="text-sm font-medium text-foreground">Ваш API ключ</span>
             <Button
               variant="ghost"
               size="sm"
@@ -309,7 +309,7 @@ export default function SettingsPage() {
               {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </Button>
           </div>
-          <div className="font-mono text-sm bg-white rounded border p-3 mb-3">
+          <div className="font-mono text-sm bg-background rounded border border-border p-3 mb-3 text-foreground">
             {showApiKey ? apiKey : '••••••••••••••••••••••••••••••••'}
           </div>
           <Button
@@ -324,18 +324,18 @@ export default function SettingsPage() {
       </div>
       
       <div>
-        <h3 className="text-lg font-medium text-slate-900 mb-4">Двухфакторная аутентификация</h3>
-        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+        <h3 className="text-lg font-medium text-foreground mb-4">Двухфакторная аутентификация</h3>
+        <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
           <div>
-            <p className="text-sm font-medium text-slate-700">2FA</p>
-            <p className="text-xs text-slate-500">Дополнительная защита аккаунта</p>
+            <p className="text-sm font-medium text-foreground">2FA</p>
+            <p className="text-xs text-muted-foreground">Дополнительная защита аккаунта</p>
           </div>
           <label className="flex items-center">
             <input
               type="checkbox"
               checked={userSettings.twoFactorEnabled}
               onChange={(e) => setUserSettings(prev => ({ ...prev, twoFactorEnabled: e.target.checked }))}
-              className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              className="rounded border-border text-primary focus:ring-primary"
             />
           </label>
         </div>
@@ -346,19 +346,19 @@ export default function SettingsPage() {
   const renderBillingTab = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium text-slate-900 mb-4">Настройки биллинга</h3>
+        <h3 className="text-lg font-medium text-foreground mb-4">Настройки биллинга</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card className="p-4">
-            <h4 className="font-medium text-slate-900 mb-2">Текущий план</h4>
-            <p className="text-sm text-slate-600 mb-3">Lite Annual</p>
+          <Card className="p-4 bg-card border border-border">
+            <h4 className="font-medium text-foreground mb-2">Текущий план</h4>
+            <p className="text-sm text-muted-foreground mb-3">Lite Annual</p>
             <Button variant="secondary" size="sm">
               Изменить план
             </Button>
           </Card>
           
-          <Card className="p-4">
-            <h4 className="font-medium text-slate-900 mb-2">Баланс кредитов</h4>
-            <p className="text-sm text-slate-600 mb-3">1,250 т CO₂</p>
+          <Card className="p-4 bg-card border border-border">
+            <h4 className="font-medium text-foreground mb-2">Баланс кредитов</h4>
+            <p className="text-sm text-muted-foreground mb-3">1,250 т CO₂</p>
             <Button variant="secondary" size="sm">
               Пополнить
             </Button>
@@ -367,9 +367,9 @@ export default function SettingsPage() {
       </div>
       
       <div>
-        <h3 className="text-lg font-medium text-slate-900 mb-4">История платежей</h3>
-        <div className="bg-slate-50 rounded-lg p-4">
-          <p className="text-sm text-slate-500">История платежей будет отображаться здесь</p>
+        <h3 className="text-lg font-medium text-foreground mb-4">История платежей</h3>
+        <div className="bg-muted rounded-lg p-4">
+          <p className="text-sm text-muted-foreground">История платежей будет отображаться здесь</p>
         </div>
       </div>
     </div>
@@ -378,27 +378,27 @@ export default function SettingsPage() {
   const renderDataTab = () => (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-medium text-slate-900 mb-4">Управление данными</h3>
+        <h3 className="text-lg font-medium text-foreground mb-4">Управление данными</h3>
         <div className="space-y-4">
           <label className="flex items-center">
             <input
               type="checkbox"
               checked={userSettings.autoBackup}
               onChange={(e) => setUserSettings(prev => ({ ...prev, autoBackup: e.target.checked }))}
-              className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+              className="rounded border-border text-primary focus:ring-primary"
             />
-            <span className="ml-3 text-sm text-slate-700">Автоматическое резервное копирование</span>
+            <span className="ml-3 text-sm text-foreground">Автоматическое резервное копирование</span>
           </label>
           
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Период хранения данных (дни)
             </label>
             <input
               type="number"
               value={userSettings.dataRetention}
               onChange={(e) => setUserSettings(prev => ({ ...prev, dataRetention: parseInt(e.target.value) || 365 }))}
-              className="w-full md:w-1/3 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full md:w-1/3 px-3 py-2 border border-border bg-background text-foreground rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               min="30"
               max="3650"
             />
@@ -407,7 +407,7 @@ export default function SettingsPage() {
       </div>
       
       <div>
-        <h3 className="text-lg font-medium text-slate-900 mb-4">Экспорт и удаление</h3>
+        <h3 className="text-lg font-medium text-foreground mb-4">Экспорт и удаление</h3>
         <div className="space-y-3">
           <Button
             variant="secondary"
@@ -430,11 +430,11 @@ export default function SettingsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50/20">
+    <div className="min-h-screen bg-gradient-to-br from-background via-card to-accent/20">
       <div className="container mx-auto px-6 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Настройки</h1>
-          <p className="text-slate-600">Управление вашим аккаунтом и настройками системы</p>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Настройки</h1>
+          <p className="text-muted-foreground">Управление вашим аккаунтом и настройками системы</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
@@ -449,8 +449,8 @@ export default function SettingsPage() {
                     onClick={() => setActiveTab(tab.id as any)}
                     className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
                       activeTab === tab.id
-                        ? 'bg-emerald-100 text-emerald-700'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                        ? 'bg-primary/20 text-primary'
+                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
                     }`}
                   >
                     <Icon className="w-4 h-4 mr-3" />
@@ -463,7 +463,7 @@ export default function SettingsPage() {
 
           {/* Основной контент */}
           <div className="lg:col-span-3">
-            <Card className="p-6">
+            <Card className="p-6 bg-card border border-border">
               {activeTab === 'profile' && renderProfileTab()}
               {activeTab === 'notifications' && renderNotificationsTab()}
               {activeTab === 'security' && renderSecurityTab()}
@@ -471,7 +471,7 @@ export default function SettingsPage() {
               {activeTab === 'data' && renderDataTab()}
 
               {/* Кнопки действий */}
-              <div className="flex justify-end space-x-3 mt-8 pt-6 border-t border-slate-200">
+              <div className="flex justify-end space-x-3 mt-8 pt-6 border-t border-border">
                 <Button variant="secondary">
                   Отмена
                 </Button>

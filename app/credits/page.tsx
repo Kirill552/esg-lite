@@ -188,12 +188,12 @@ export default function CreditsPageOptimized() {
 
   const getTransactionTypeColor = (type: string) => {
     const colors = {
-      CREDIT: 'text-emerald-600',
-      DEBIT: 'text-red-600',
-      PURCHASE: 'text-blue-600',
-      SUBSCRIPTION_BONUS: 'text-purple-600'
+      CREDIT: 'text-emerald-600 dark:text-emerald-400',
+      DEBIT: 'text-red-600 dark:text-red-400',
+      PURCHASE: 'text-blue-600 dark:text-blue-400',
+      SUBSCRIPTION_BONUS: 'text-purple-600 dark:text-purple-400'
     };
-    return colors[type as keyof typeof colors] || 'text-gray-600';
+    return colors[type as keyof typeof colors] || 'text-muted-foreground';
   };
 
   const getBalanceStatus = (balance: number) => {
@@ -205,17 +205,17 @@ export default function CreditsPageOptimized() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-background py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-64 mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-96 mb-8"></div>
+            <div className="h-8 bg-accent rounded w-64 mb-4"></div>
+            <div className="h-4 bg-accent rounded w-96 mb-8"></div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="h-32 bg-gray-200 rounded-xl"></div>
-              <div className="h-32 bg-gray-200 rounded-xl"></div>
-              <div className="h-32 bg-gray-200 rounded-xl"></div>
+              <div className="h-32 bg-accent rounded-xl"></div>
+              <div className="h-32 bg-accent rounded-xl"></div>
+              <div className="h-32 bg-accent rounded-xl"></div>
             </div>
-            <div className="h-96 bg-gray-200 rounded-xl"></div>
+            <div className="h-96 bg-accent rounded-xl"></div>
           </div>
         </div>
       </div>
@@ -223,16 +223,16 @@ export default function CreditsPageOptimized() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8" data-testid="credits-page">
+    <div className="min-h-screen bg-background py-8" data-testid="credits-page">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl font-bold text-foreground mb-2">
                 Управление кредитами
               </h1>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Отслеживайте баланс кредитов и историю транзакций
               </p>
             </div>
@@ -247,7 +247,8 @@ export default function CreditsPageOptimized() {
               </Button>
               <Button
                 onClick={handleTopUpClick}
-                className="flex items-center space-x-2 bg-emerald-600 hover:bg-emerald-700"
+                variant="primary"
+                className="flex items-center space-x-2"
               >
                 <Plus className="w-4 h-4" />
                 <span>Пополнить</span>
@@ -259,7 +260,7 @@ export default function CreditsPageOptimized() {
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Current Balance */}
-          <Card className="relative overflow-hidden">
+          <Card className="relative overflow-hidden bg-card border border-border">
             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500 opacity-10 rounded-full transform translate-x-16 -translate-y-8"></div>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -270,7 +271,7 @@ export default function CreditsPageOptimized() {
             <CardContent>
               {balance ? (
                 <div>
-                  <div className="text-3xl font-bold text-gray-900 mb-2">
+                  <div className="text-3xl font-bold text-card-foreground mb-2">
                     {balance.balance_t_co2.toFixed(2)} т CO₂
                   </div>
                   <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
@@ -278,21 +279,21 @@ export default function CreditsPageOptimized() {
                   } ${getBalanceStatus(balance.balance_t_co2).color}`}>
                     {getBalanceStatus(balance.balance_t_co2).label}
                   </div>
-                  <div className="text-xs text-gray-500 mt-2">
+                  <div className="text-xs text-muted-foreground mt-2">
                     Обновлено: {formatDate(balance.updated_at)}
                   </div>
                 </div>
               ) : (
                 <div className="animate-pulse">
-                  <div className="h-8 bg-gray-200 rounded mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-24"></div>
+                  <div className="h-8 bg-accent rounded mb-2"></div>
+                  <div className="h-4 bg-accent rounded w-24"></div>
                 </div>
               )}
             </CardContent>
           </Card>
 
           {/* Credit Value */}
-          <Card className="relative overflow-hidden">
+          <Card className="relative overflow-hidden bg-card border border-border">
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500 opacity-10 rounded-full transform translate-x-16 -translate-y-8"></div>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -301,19 +302,19 @@ export default function CreditsPageOptimized() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-gray-900 mb-2">5 ₽/т CO₂</div>
+              <div className="text-3xl font-bold text-card-foreground mb-2">5 ₽/т CO₂</div>
               <div className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-600">
                 <Zap className="w-3 h-3 mr-1" />
-                Surge x2 (15-30 июня)
+                Повышение x2 (15-30 июня)
               </div>
-              <div className="text-xs text-gray-500 mt-2">
+              <div className="text-xs text-muted-foreground mt-2">
                 Актуальная цена с учетом сезонности
               </div>
             </CardContent>
           </Card>
 
           {/* Monthly Stats */}
-          <Card className="relative overflow-hidden">
+          <Card className="relative overflow-hidden bg-card border border-border">
             <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500 opacity-10 rounded-full transform translate-x-16 -translate-y-8"></div>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -322,7 +323,7 @@ export default function CreditsPageOptimized() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-gray-900 mb-2">{transactions.length}</div>
+              <div className="text-3xl font-bold text-card-foreground mb-2">{transactions.length}</div>
               <div className="flex items-center space-x-4 text-sm">
                 <div className="flex items-center space-x-1 text-emerald-600">
                   <TrendingUp className="w-4 h-4" />
@@ -333,7 +334,7 @@ export default function CreditsPageOptimized() {
                   <span>-{transactions.filter(t => t.transaction_type === 'DEBIT').length}</span>
                 </div>
               </div>
-              <div className="text-xs text-gray-500 mt-2">
+              <div className="text-xs text-muted-foreground mt-2">
                 Транзакций в текущем месяце
               </div>
             </CardContent>
@@ -341,23 +342,23 @@ export default function CreditsPageOptimized() {
         </div>
 
         {/* Transactions Table */}
-        <Card>
+        <Card className="bg-card border border-border">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center space-x-2">
-                <Eye className="w-5 h-5 text-gray-600" />
+                <Eye className="w-5 h-5 text-muted-foreground" />
                 <span>История транзакций</span>
               </CardTitle>
               <div className="flex items-center space-x-4">
                 {/* Filter Buttons */}
                 <div className="flex items-center space-x-2">
-                  <Filter className="w-4 h-4 text-gray-500" />
+                  <Filter className="w-4 h-4 text-muted-foreground" />
                   <button
                     onClick={() => handleFilterChange('all')}
                     className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                       filter === 'all'
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : 'text-gray-600 hover:text-gray-800'
+                        ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     Все
@@ -366,8 +367,8 @@ export default function CreditsPageOptimized() {
                     onClick={() => handleFilterChange('credit')}
                     className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                       filter === 'credit'
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : 'text-gray-600 hover:text-gray-800'
+                        ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     Пополнения
@@ -376,8 +377,8 @@ export default function CreditsPageOptimized() {
                     onClick={() => handleFilterChange('debit')}
                     className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${
                       filter === 'debit'
-                        ? 'bg-emerald-100 text-emerald-800'
-                        : 'text-gray-600 hover:text-gray-800'
+                        ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200'
+                        : 'text-muted-foreground hover:text-foreground'
                     }`}
                   >
                     Списания
@@ -489,11 +490,11 @@ export default function CreditsPageOptimized() {
             ) : (
               <div className="text-center py-8">
                 <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">Нет транзакций</h3>
-                <p className="text-gray-600 mb-4">Пока что нет транзакций для отображения</p>
+                <h3 className="text-lg font-medium text-foreground mb-2">Нет транзакций</h3>
+                <p className="text-muted-foreground mb-4">Пока что нет транзакций для отображения</p>
                 <Button
                   onClick={handleTopUpClick}
-                  className="bg-emerald-600 hover:bg-emerald-700"
+                  variant="primary"
                 >
                   Пополнить баланс
                 </Button>
@@ -504,16 +505,17 @@ export default function CreditsPageOptimized() {
 
         {/* Quick Actions */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="hover:shadow-card-hover transition-shadow cursor-pointer">
+          <Card className="hover:shadow-card-hover transition-shadow cursor-pointer bg-card border border-border">
             <CardContent className="text-center py-8">
               <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Plus className="w-6 h-6 text-emerald-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Пополнить баланс</h3>
-              <p className="text-gray-600 mb-4">Добавьте кредиты для обработки отчетов</p>
+              <h3 className="text-lg font-semibold text-foreground mb-2">Пополнить баланс</h3>
+              <p className="text-muted-foreground mb-4">Добавьте кредиты для обработки отчетов</p>
               <Button 
                 onClick={handleTopUpClick}
-                className="w-full bg-emerald-600 hover:bg-emerald-700"
+                variant="primary"
+                className="w-full"
               >
                 Пополнить
               </Button>
@@ -521,14 +523,14 @@ export default function CreditsPageOptimized() {
           </Card>
 
           <Link href="/subscription">
-            <Card className="hover:shadow-card-hover transition-shadow cursor-pointer h-full">
+            <Card className="hover:shadow-card-hover transition-shadow cursor-pointer h-full bg-card border border-border">
               <CardContent className="text-center py-8">
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CreditCard className="w-6 h-6 text-blue-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Управление тарифами</h3>
-                <p className="text-gray-600 mb-4">Просмотрите и измените тарифный план</p>
-                <Button variant="secondary" className="w-full">
+                <h3 className="text-lg font-semibold text-foreground mb-2">Управление тарифами</h3>
+                <p className="text-muted-foreground mb-4">Просмотрите и измените тарифный план</p>
+                <Button variant="secondary" className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg hover:shadow-xl border-0">
                   Тарифы
                 </Button>
               </CardContent>
@@ -536,14 +538,14 @@ export default function CreditsPageOptimized() {
           </Link>
 
           <Link href="/analytics">
-            <Card className="hover:shadow-card-hover transition-shadow cursor-pointer h-full">
+            <Card className="hover:shadow-card-hover transition-shadow cursor-pointer h-full bg-card border border-border">
               <CardContent className="text-center py-8">
                 <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Download className="w-6 h-6 text-purple-600" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Аналитика</h3>
-                <p className="text-gray-600 mb-4">Отчеты по использованию кредитов</p>
-                <Button variant="secondary" className="w-full">
+                <h3 className="text-lg font-semibold text-foreground mb-2">Аналитика</h3>
+                <p className="text-muted-foreground mb-4">Отчеты по использованию кредитов</p>
+                <Button variant="secondary" className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl border-0">
                   Аналитика
                 </Button>
               </CardContent>
@@ -554,9 +556,9 @@ export default function CreditsPageOptimized() {
         {/* Top-up Modal */}
         {showTopUpModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl p-6 max-w-md w-full">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Пополнение баланса</h3>
-              <p className="text-gray-600 mb-6">
+            <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full">
+              <h3 className="text-lg font-semibold text-foreground mb-4">Пополнение баланса</h3>
+              <p className="text-muted-foreground mb-6">
                 Интеграция с платежной системой будет доступна в следующей версии.
               </p>
               <div className="flex space-x-4">
@@ -569,7 +571,8 @@ export default function CreditsPageOptimized() {
                 </Button>
                 <Button
                   onClick={() => setShowTopUpModal(false)}
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                  variant="primary"
+                  className="flex-1"
                 >
                   Понятно
                 </Button>

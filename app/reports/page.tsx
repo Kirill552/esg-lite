@@ -182,13 +182,13 @@ export default function ReportsPage() {
   const getReportTypeColor = (type: string) => {
     switch (type) {
       case 'REPORT_296FZ':
-        return 'text-green-600 bg-green-100';
+        return 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/20';
       case 'CBAM_XML':
-        return 'text-purple-600 bg-purple-100';
+        return 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/20';
       case 'CARBON_FOOTPRINT':
-        return 'text-blue-600 bg-blue-100';
+        return 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/20';
       default:
-        return 'text-gray-600 bg-gray-100';
+        return 'text-muted-foreground bg-accent';
     }
   };
 
@@ -267,11 +267,11 @@ export default function ReportsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-purple-50 p-8">
+      <div className="min-h-screen bg-background p-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-            <span className="ml-2 text-lg text-slate-600">Загрузка отчетов...</span>
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <span className="ml-2 text-lg text-muted-foreground">Загрузка отчетов...</span>
           </div>
         </div>
       </div>
@@ -279,7 +279,7 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-purple-50">
+    <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto">
         {/* Breadcrumbs */}
         <div className="px-8 pt-8 pb-4">
@@ -293,17 +293,17 @@ export default function ReportsPage() {
         {/* Заголовок и кнопка создания */}
         <div className="flex items-center justify-between mb-8 px-8">
           <div>
-            <h1 className="text-4xl font-bold text-slate-900 mb-2">
+            <h1 className="text-4xl font-bold text-foreground mb-2">
               Мои отчеты
             </h1>
-            <p className="text-xl text-slate-600">
+            <p className="text-xl text-muted-foreground">
               Управление всеми созданными отчетами ESG
             </p>
           </div>
           <Link href="/create-report">
             <Button 
               size="lg" 
-              className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white px-6 py-3"
+              className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white px-6 py-3 shadow-lg hover:shadow-xl"
             >
               <Plus className="w-5 h-5 mr-2" />
               Создать отчет
@@ -312,17 +312,17 @@ export default function ReportsPage() {
         </div>
 
         {/* Sticky Sub-Header с KPI */}
-        <div className="sticky top-14 z-30 bg-white/80 backdrop-blur-md border border-slate-200/50 shadow-sm rounded-xl mx-8 mb-4">
+        <div className="sticky top-14 z-30 bg-card/80 backdrop-blur-md border border-border shadow-sm rounded-xl mx-8 mb-4">
           <div className="px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 {/* KPI чип */}
-                <button className="inline-flex items-center rounded-full bg-orange-50 px-3 py-1 text-xs font-medium text-orange-700 hover:bg-orange-100 transition-colors">
+                <button className="inline-flex items-center rounded-full bg-orange-100 dark:bg-orange-900/20 px-3 py-1 text-xs font-medium text-orange-700 dark:text-orange-400 hover:bg-orange-200 dark:hover:bg-orange-900/30 transition-colors">
                   <span className="mr-1">⚠️</span>
                   0 т CO₂
                 </button>
                 
-                <div className="flex items-center gap-2 text-sm text-slate-600">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span>Всего отчетов: {reports.length}</span>
                   <span>•</span>
                   <span>Скачиваний: {reports.reduce((sum, r) => sum + r.downloadCount, 0)}</span>
@@ -330,7 +330,7 @@ export default function ReportsPage() {
               </div>
               
               <div className="flex items-center gap-2">
-                <span className="text-xs text-slate-500">Показаны: {filteredAndSortedReports.length} из {reports.length}</span>
+                <span className="text-xs text-muted-foreground">Показаны: {filteredAndSortedReports.length} из {reports.length}</span>
               </div>
             </div>
           </div>
@@ -338,7 +338,7 @@ export default function ReportsPage() {
 
         {/* Поиск и фильтры */}
         <div className="px-8 pt-2">
-          <Card className="mb-6 rounded-xl">
+          <Card className="mb-6 rounded-xl bg-card border border-border">
             <div className="p-6">
               <div className="flex flex-col md:flex-row gap-4">
                 {/* Поиск */}
@@ -373,7 +373,7 @@ export default function ReportsPage() {
                     variant="secondary"
                     size="sm"
                     onClick={() => handleSort('name')}
-                    className="flex items-center gap-1"
+                    className="flex items-center gap-1 bg-secondary text-secondary-foreground hover:bg-secondary/80"
                   >
                     Имя
                     {sortField === 'name' && (
@@ -384,7 +384,7 @@ export default function ReportsPage() {
                     variant="secondary"
                     size="sm"
                     onClick={() => handleSort('date')}
-                    className="flex items-center gap-1"
+                    className="flex items-center gap-1 bg-secondary text-secondary-foreground hover:bg-secondary/80"
                   >
                     Дата
                     {sortField === 'date' && (
@@ -395,7 +395,7 @@ export default function ReportsPage() {
                     variant="secondary"
                     size="sm"
                     onClick={() => handleSort('type')}
-                    className="flex items-center gap-1"
+                    className="flex items-center gap-1 bg-secondary text-secondary-foreground hover:bg-secondary/80"
                   >
                     Тип
                     {sortField === 'type' && (
@@ -410,54 +410,54 @@ export default function ReportsPage() {
         {/* Статистика */}
         <div className="px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <Card className="p-4 rounded-xl">
+            <Card className="p-4 rounded-xl bg-card border border-border">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                  <FileText className="w-5 h-5 text-blue-600" />
+                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-600">Всего отчетов</p>
-                  <p className="text-xl font-bold text-slate-900">{reports.length}</p>
+                  <p className="text-xs text-muted-foreground">Всего отчетов</p>
+                  <p className="text-xl font-bold text-card-foreground">{reports.length}</p>
                 </div>
               </div>
             </Card>
             
-            <Card className="p-4 rounded-xl">
+            <Card className="p-4 rounded-xl bg-card border border-border">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
-                  <Download className="w-5 h-5 text-green-600" />
+                <div className="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center">
+                  <Download className="w-5 h-5 text-green-600 dark:text-green-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-600">Скачиваний</p>
-                  <p className="text-xl font-bold text-slate-900">
+                  <p className="text-xs text-muted-foreground">Скачиваний</p>
+                  <p className="text-xl font-bold text-card-foreground">
                     {reports.reduce((sum, r) => sum + r.downloadCount, 0)}
                   </p>
                 </div>
               </div>
             </Card>
             
-            <Card className="p-4 rounded-xl">
+            <Card className="p-4 rounded-xl bg-card border border-border">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                  <Calendar className="w-5 h-5 text-purple-600" />
+                <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-600">За этот месяц</p>
-                  <p className="text-xl font-bold text-slate-900">
+                  <p className="text-xs text-muted-foreground">За этот месяц</p>
+                  <p className="text-xl font-bold text-card-foreground">
                     {reports.filter(r => new Date(r.createdAt).getMonth() === new Date().getMonth()).length}
                   </p>
                 </div>
               </div>
             </Card>
             
-            <Card className="p-4 rounded-xl">
+            <Card className="p-4 rounded-xl bg-card border border-border">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
-                  <User className="w-5 h-5 text-amber-600" />
+                <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/20 rounded-xl flex items-center justify-center">
+                  <User className="w-5 h-5 text-amber-600 dark:text-amber-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-slate-600">Размер файлов</p>
-                  <p className="text-xl font-bold text-slate-900">
+                  <p className="text-xs text-muted-foreground">Размер файлов</p>
+                  <p className="text-xl font-bold text-card-foreground">
                     {formatFileSize(reports.reduce((sum, r) => sum + r.fileSize, 0))}
                   </p>
                 </div>
@@ -468,26 +468,26 @@ export default function ReportsPage() {
 
         {/* Список отчетов */}
         <div className="px-8">
-          <Card className="rounded-xl">
+          <Card className="rounded-xl bg-card border border-border">
             <div className="p-6">
-            <h2 className="text-xl font-semibold text-slate-900 mb-4">
+            <h2 className="text-xl font-semibold text-card-foreground mb-4">
               Отчеты ({filteredAndSortedReports.length})
             </h2>
             
             {filteredAndSortedReports.length === 0 ? (
               <div className="text-center py-12">
-                <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-slate-600 mb-2">
+                <FileText className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-muted-foreground mb-2">
                   Отчеты не найдены
                 </h3>
-                <p className="text-slate-500 mb-6">
+                <p className="text-muted-foreground mb-6">
                   {searchTerm || filterType !== 'all' 
                     ? 'Попробуйте изменить параметры поиска' 
                     : 'Создайте свой первый отчет'
                   }
                 </p>
                 <Link href="/create-report">
-                  <Button className="bg-blue-600 hover:bg-blue-700">
+                  <Button className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white shadow-lg hover:shadow-xl">
                     <Plus className="w-4 h-4 mr-2" />
                     Создать отчет
                   </Button>
@@ -498,7 +498,7 @@ export default function ReportsPage() {
                 {filteredAndSortedReports.map((report: Report) => (
                   <div 
                     key={report.id}
-                    className="group flex items-center justify-between p-4 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
+                    className="group flex items-center justify-between p-4 border border-border rounded-xl hover:bg-accent/50 transition-colors"
                   >
                     <div className="flex items-center gap-4">
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${getReportTypeColor(report.reportType)}`}>
@@ -506,8 +506,8 @@ export default function ReportsPage() {
                       </div>
                       
                       <div>
-                        <h3 className="font-medium text-slate-900">{report.fileName}</h3>
-                        <div className="flex items-center gap-4 text-sm text-slate-600 mt-1">
+                        <h3 className="font-medium text-card-foreground">{report.fileName}</h3>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                           <span className="font-medium">{getReportTypeName(report.reportType)}</span>
                           <span>•</span>
                           <span>{formatFileSize(report.fileSize)}</span>
@@ -526,17 +526,17 @@ export default function ReportsPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleView(report)}
-                          className="text-blue-600 hover:text-blue-700"
+                          className="text-primary hover:text-primary/80 hover:bg-primary/10"
                         >
                           <Eye className="w-4 h-4 mr-1" />
                           Просмотр
                         </Button>
                         
                         <Button
-                          variant="ghost"
+                          variant="primary"
                           size="sm"
                           onClick={() => handleDownload(report)}
-                          className="bg-blue-600 text-white hover:bg-blue-700"
+                          className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg hover:shadow-xl"
                         >
                           <Download className="w-4 h-4 mr-1" />
                           Скачать
@@ -548,16 +548,16 @@ export default function ReportsPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => setOpenMenuId(openMenuId === report.id ? null : report.id)}
-                          className="text-slate-600 hover:text-slate-700"
+                          className="text-muted-foreground hover:text-foreground hover:bg-accent"
                         >
                           <MoreVertical className="w-4 h-4" />
                         </Button>
                         
                         {openMenuId === report.id && (
-                          <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-slate-200 rounded-xl shadow-lg z-10">
+                          <div className="absolute right-0 top-full mt-1 w-48 bg-card border border-border rounded-xl shadow-lg z-10">
                             <button
                               onClick={() => handleDelete(report.id)}
-                              className="w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 rounded-xl flex items-center gap-2"
+                              className="w-full px-4 py-2 text-left text-destructive hover:bg-destructive/10 rounded-xl flex items-center gap-2"
                             >
                               <Trash2 className="w-4 h-4" />
                               Удалить отчет

@@ -91,7 +91,7 @@ const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
             <button
               type="button"
               onClick={handleClear}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
               aria-label="Очистить поиск"
             >
               <AccessibleIcon icon={X} className="w-4 h-4" label="Очистить" />
@@ -141,15 +141,17 @@ const FilterSelect = forwardRef<HTMLSelectElement, FilterSelectProps>(
         <select
           ref={ref}
           className={cn(
-            'block w-full appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 pr-10',
+            'block w-full appearance-none bg-background border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 pr-10',
+            'dark:[&>option]:bg-background dark:[&>option]:text-foreground',
+            '[&>option]:bg-background [&>option]:text-foreground',
             sizes[size],
             className
           )}
           {...props}
         >
-          <option value="">{placeholder}</option>
+          <option value="" className="bg-background text-foreground">{placeholder}</option>
           {options.map((option) => (
-            <option key={option.value} value={option.value}>
+            <option key={option.value} value={option.value} className="bg-background text-foreground">
               {option.label}
               {showCounts && option.count !== undefined && ` (${option.count})`}
             </option>
@@ -159,7 +161,7 @@ const FilterSelect = forwardRef<HTMLSelectElement, FilterSelectProps>(
         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
           <AccessibleIcon
             icon={ChevronDown}
-            className="w-5 h-5 text-gray-400 dark:text-gray-500"
+            className="w-5 h-5 text-muted-foreground"
             decorative
           />
         </div>

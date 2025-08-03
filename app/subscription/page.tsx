@@ -50,6 +50,26 @@ interface SubscriptionPlan {
   } | null;
 }
 
+const getStatusColors = (status: string) => {
+  const colors = {
+    ACTIVE: 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20',
+    CANCELLED: 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20',
+    EXPIRED: 'text-muted-foreground bg-accent',
+    PENDING: 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20'
+  };
+  return colors[status as keyof typeof colors] || 'text-muted-foreground bg-accent';
+};
+
+// Функция для получения стиля кнопки в зависимости от типа плана
+const getPlanButtonStyle = (planType: string) => {
+  const styles = {
+    'FREE': 'bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700 text-white shadow-lg hover:shadow-xl border-0',
+    'LITE_ANNUAL': 'bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg hover:shadow-xl border-0',
+    'CBAM_ADDON': 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg hover:shadow-xl border-0'
+  };
+  return styles[planType as keyof typeof styles] || 'bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700 text-white shadow-lg hover:shadow-xl border-0';
+};
+
 export default function SubscriptionPage() {
   const { user } = useUser();
   const [activeSubscription, setActiveSubscription] = useState<Subscription | null>(null);
@@ -241,22 +261,22 @@ export default function SubscriptionPage() {
   const getPlanColorScheme = (planType: string) => {
     const colorSchemes = {
       FREE: {
-        bg: 'bg-gray-100',
-        text: 'text-gray-600',
-        border: 'border-gray-200',
-        button: 'bg-gray-600 hover:bg-gray-700'
+        bg: 'bg-accent',
+        text: 'text-muted-foreground',
+        border: 'border-border',
+        button: 'bg-gradient-to-r from-slate-500 to-slate-600 hover:from-slate-600 hover:to-slate-700 text-white shadow-lg hover:shadow-xl'
       },
       LITE_ANNUAL: {
-        bg: 'bg-emerald-100',
-        text: 'text-emerald-600',
-        border: 'border-emerald-200',
-        button: 'bg-emerald-600 hover:bg-emerald-700'
+        bg: 'bg-emerald-100 dark:bg-emerald-900/20',
+        text: 'text-emerald-600 dark:text-emerald-400',
+        border: 'border-emerald-200 dark:border-emerald-800',
+        button: 'bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg hover:shadow-xl'
       },
       CBAM_ADDON: {
-        bg: 'bg-blue-100',
-        text: 'text-blue-600',
-        border: 'border-blue-200',
-        button: 'bg-blue-600 hover:bg-blue-700'
+        bg: 'bg-blue-100 dark:bg-blue-900/20',
+        text: 'text-blue-600 dark:text-blue-400',
+        border: 'border-blue-200 dark:border-blue-800',
+        button: 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg hover:shadow-xl'
       }
     };
     return colorSchemes[planType as keyof typeof colorSchemes] || colorSchemes.FREE;
@@ -265,17 +285,17 @@ export default function SubscriptionPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-background py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-64 mb-4"></div>
-            <div className="h-4 bg-gray-200 rounded w-96 mb-8"></div>
+            <div className="h-8 bg-accent rounded w-64 mb-4"></div>
+            <div className="h-4 bg-accent rounded w-96 mb-8"></div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="h-48 bg-gray-200 rounded-xl"></div>
-              <div className="h-48 bg-gray-200 rounded-xl"></div>
-              <div className="h-48 bg-gray-200 rounded-xl"></div>
+              <div className="h-48 bg-accent rounded-xl"></div>
+              <div className="h-48 bg-accent rounded-xl"></div>
+              <div className="h-48 bg-accent rounded-xl"></div>
             </div>
-            <div className="h-64 bg-gray-200 rounded-xl"></div>
+            <div className="h-64 bg-accent rounded-xl"></div>
           </div>
         </div>
       </div>
@@ -283,16 +303,16 @@ export default function SubscriptionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8" data-testid="subscription-page">
+    <div className="min-h-screen bg-background py-8" data-testid="subscription-page">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl font-bold text-foreground mb-2">
                 Управление тарифами
               </h1>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Просматривайте и управляйте вашим тарифным планом
               </p>
             </div>
@@ -311,7 +331,7 @@ export default function SubscriptionPage() {
 
         {/* Current Subscription Status */}
         {activeSubscription && (
-          <Card className="mb-8">
+          <Card className="mb-8 bg-card border border-border">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <CheckCircle2 className="w-5 h-5 text-emerald-600" />
@@ -327,12 +347,12 @@ export default function SubscriptionPage() {
                     {getStatusLabel(activeSubscription.status)}
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900">
+                    <h3 className="text-lg font-semibold text-card-foreground">
                       {activeSubscription.plan === 'FREE' ? 'Бесплатный план' :
                        activeSubscription.plan === 'LITE_ANNUAL' ? 'ESG-Lite Annual' :
                        'CBAM Add-on'}
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-muted-foreground">
                       {activeSubscription.end_date 
                         ? `Действует до ${formatDate(activeSubscription.end_date)}`
                         : 'Бессрочно'
@@ -359,8 +379,8 @@ export default function SubscriptionPage() {
 
         {/* Available Plans */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Доступные планы</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <h2 className="text-2xl font-bold text-foreground mb-6">Доступные планы</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {availablePlans.map((plan) => {
               const IconComponent = getPlanIcon(plan.planType);
               const colorScheme = getPlanColorScheme(plan.planType);
@@ -369,7 +389,7 @@ export default function SubscriptionPage() {
               return (
                 <Card 
                   key={plan.planType} 
-                  className={`relative overflow-hidden transition-shadow hover:shadow-card-hover ${
+                  className={`relative overflow-hidden transition-shadow hover:shadow-card-hover bg-card border border-border ${
                     plan.popular ? 'ring-2 ring-emerald-500' : ''
                   }`}
                 >
@@ -383,21 +403,21 @@ export default function SubscriptionPage() {
                     <div className={`w-12 h-12 ${colorScheme.bg} rounded-full flex items-center justify-center mx-auto mb-4`}>
                       <IconComponent className={`w-6 h-6 ${colorScheme.text}`} />
                     </div>
-                    <CardTitle className="text-xl font-bold text-gray-900">
+                    <CardTitle className="text-xl font-bold text-card-foreground">
                       {plan.name}
                     </CardTitle>
-                    <p className="text-gray-600 text-sm">
+                    <p className="text-muted-foreground text-sm">
                       {plan.description}
                     </p>
                   </CardHeader>
                   
                   <CardContent>
                     <div className="text-center mb-6">
-                      <div className="text-3xl font-bold text-gray-900">
+                      <div className="text-3xl font-bold text-card-foreground">
                         {plan.priceRub === 0 ? 'Бесплатно' : `${plan.priceRub.toLocaleString()} ₽`}
                       </div>
                       {plan.priceRub > 0 && (
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-muted-foreground">
                           {plan.durationMonths === 12 ? 'в год' : 'в месяц'}
                         </div>
                       )}
@@ -407,14 +427,14 @@ export default function SubscriptionPage() {
                       {plan.features.map((feature, index) => (
                         <li key={index} className="flex items-center space-x-2">
                           <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                          <span className="text-sm text-gray-700">{feature}</span>
+                          <span className="text-sm text-muted-foreground">{feature}</span>
                         </li>
                       ))}
                       
                       {plan.creditsIncluded > 0 && (
                         <li className="flex items-center space-x-2">
                           <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                          <span className="text-sm text-gray-700">
+                          <span className="text-sm text-muted-foreground">
                             {plan.creditsIncluded} т CO₂ кредитов включено
                           </span>
                         </li>
@@ -441,7 +461,7 @@ export default function SubscriptionPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
-                <Calendar className="w-5 h-5 text-gray-600" />
+                <Calendar className="w-5 h-5 text-muted-foreground" />
                 <span>История тарифов</span>
               </CardTitle>
             </CardHeader>
@@ -510,14 +530,14 @@ export default function SubscriptionPage() {
         {/* Plan Change Modal */}
         {showChangePlanModal && selectedPlan && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-xl p-6 max-w-md w-full">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full">
+              <h3 className="text-lg font-semibold text-foreground mb-4">
                 Изменить тарифный план
               </h3>
-              <p className="text-gray-600 mb-6">
-                Вы действительно хотите изменить план на <strong>{selectedPlan.name}</strong>?
+              <p className="text-muted-foreground mb-6">
+                Вы действительно хотите изменить план на <strong className="text-foreground">{selectedPlan.name}</strong>?
                 {selectedPlan.priceRub > 0 && (
-                  <span> Стоимость: <strong>{selectedPlan.priceRub.toLocaleString()} ₽</strong> {selectedPlan.durationMonths === 12 ? 'в год' : 'в месяц'}.</span>
+                  <span> Стоимость: <strong className="text-foreground">{selectedPlan.priceRub.toLocaleString()} ₽</strong> {selectedPlan.durationMonths === 12 ? 'в год' : 'в месяц'}.</span>
                 )}
               </p>
               <div className="flex space-x-4">
@@ -530,7 +550,7 @@ export default function SubscriptionPage() {
                 </Button>
                 <Button
                   onClick={handleConfirmPlanChange}
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+                  className={`flex-1 ${getPlanButtonStyle(selectedPlan.planType)}`}
                   loading={actionLoading === 'change-plan'}
                 >
                   Изменить план
@@ -543,14 +563,14 @@ export default function SubscriptionPage() {
         {/* Quick Actions */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
           <Link href="/credits">
-            <Card className="hover:shadow-card-hover transition-shadow cursor-pointer h-full">
+            <Card className="hover:shadow-card-hover transition-shadow cursor-pointer h-full bg-card border border-border">
               <CardContent className="text-center py-8">
-                <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CreditCard className="w-6 h-6 text-emerald-600" />
+                <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CreditCard className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Управление кредитами</h3>
-                <p className="text-gray-600 mb-4">Пополните баланс и отследите использование</p>
-                <Button variant="secondary" className="w-full">
+                <h3 className="text-lg font-semibold text-foreground mb-2">Управление кредитами</h3>
+                <p className="text-muted-foreground mb-4">Пополните баланс и отследите использование</p>
+                <Button variant="secondary" className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white shadow-lg hover:shadow-xl border-0">
                   Перейти к кредитам
                 </Button>
               </CardContent>
@@ -558,28 +578,28 @@ export default function SubscriptionPage() {
           </Link>
 
           <Link href="/analytics">
-            <Card className="hover:shadow-card-hover transition-shadow cursor-pointer h-full">
+            <Card className="hover:shadow-card-hover transition-shadow cursor-pointer h-full bg-card border border-border">
               <CardContent className="text-center py-8">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <TrendingUp className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <TrendingUp className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Аналитика использования</h3>
-                <p className="text-gray-600 mb-4">Отчеты по использованию тарифа</p>
-                <Button variant="secondary" className="w-full">
+                <h3 className="text-lg font-semibold text-foreground mb-2">Аналитика использования</h3>
+                <p className="text-muted-foreground mb-4">Отчеты по использованию тарифа</p>
+                <Button variant="secondary" className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg hover:shadow-xl border-0">
                   Открыть аналитику
                 </Button>
               </CardContent>
             </Card>
           </Link>
 
-          <Card className="hover:shadow-card-hover transition-shadow cursor-pointer">
+          <Card className="hover:shadow-card-hover transition-shadow cursor-pointer bg-card border border-border">
             <CardContent className="text-center py-8">
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Globe className="w-6 h-6 text-purple-600" />
+              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Globe className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Поддержка</h3>
-              <p className="text-gray-600 mb-4">Помощь по вопросам тарифа</p>
-              <Button variant="secondary" className="w-full">
+              <h3 className="text-lg font-semibold text-foreground mb-2">Поддержка</h3>
+              <p className="text-muted-foreground mb-4">Помощь по вопросам тарифа</p>
+              <Button variant="secondary" className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl border-0">
                 Связаться с поддержкой
               </Button>
             </CardContent>

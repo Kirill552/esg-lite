@@ -33,12 +33,12 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     const helperTextId = helperText ? `${inputId}-helper` : undefined
     const errorId = error ? `${inputId}-error` : undefined
     
-    const baseStyles = 'border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200'
+    const baseStyles = 'border border-border rounded-lg focus:ring-2 focus:ring-ring focus:border-ring disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 placeholder:text-muted-foreground'
     
     const variants = {
-      default: 'bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-white',
+      default: 'bg-background text-foreground',
       outlined: 'bg-transparent border-2',
-      filled: 'bg-gray-50 dark:bg-gray-700 border-transparent',
+      filled: 'bg-muted border-transparent',
     }
     
     const sizes = {
@@ -48,7 +48,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     }
     
     const errorStyles = error 
-      ? 'border-red-500 focus:ring-red-500 focus:border-red-500' 
+      ? 'border-destructive focus:ring-destructive focus:border-destructive' 
       : ''
     
     const wrapperStyles = cn(
@@ -74,8 +74,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             htmlFor={inputId}
             className={cn(
               'block text-sm font-medium mb-2',
-              error ? 'text-red-700 dark:text-red-400' : 'text-gray-700 dark:text-gray-300',
-              required && "after:content-['*'] after:text-red-500 after:ml-1"
+              error ? 'text-destructive' : 'text-foreground',
+              required && "after:content-['*'] after:text-destructive after:ml-1"
             )}
           >
             {label}
@@ -87,7 +87,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <div className={cn(
                 'w-5 h-5',
-                error ? 'text-red-500' : 'text-gray-400 dark:text-gray-500'
+                error ? 'text-destructive' : 'text-muted-foreground'
               )}>
                 {leftIcon}
               </div>
@@ -112,7 +112,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
               <div className={cn(
                 'w-5 h-5',
-                error ? 'text-red-500' : 'text-gray-400 dark:text-gray-500'
+                error ? 'text-destructive' : 'text-muted-foreground'
               )}>
                 {rightIcon}
               </div>
@@ -123,7 +123,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         {error && (
           <p 
             id={errorId}
-            className="mt-2 text-sm text-red-600 dark:text-red-400"
+            className="mt-2 text-sm text-destructive"
             role="alert"
             aria-live="polite"
           >
@@ -134,7 +134,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         {helperText && !error && (
           <p 
             id={helperTextId}
-            className="mt-2 text-sm text-gray-500 dark:text-gray-400"
+            className="mt-2 text-sm text-muted-foreground"
           >
             {helperText}
           </p>
