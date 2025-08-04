@@ -205,7 +205,7 @@ export default function CreditsPageOptimized() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-background py-8">
+      <div className="min-h-screen surface-base py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="animate-pulse">
             <div className="h-8 bg-accent rounded w-64 mb-4"></div>
@@ -223,7 +223,7 @@ export default function CreditsPageOptimized() {
   }
 
   return (
-    <div className="min-h-screen bg-background py-8" data-testid="credits-page">
+    <div className="min-h-screen surface-base py-8" data-testid="credits-page">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
@@ -260,7 +260,7 @@ export default function CreditsPageOptimized() {
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {/* Current Balance */}
-          <Card className="relative overflow-hidden bg-card border border-border">
+          <Card className="card-accent">
             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500 opacity-10 rounded-full transform translate-x-16 -translate-y-8"></div>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -293,7 +293,7 @@ export default function CreditsPageOptimized() {
           </Card>
 
           {/* Credit Value */}
-          <Card className="relative overflow-hidden bg-card border border-border">
+          <Card className="card-interactive">
             <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500 opacity-10 rounded-full transform translate-x-16 -translate-y-8"></div>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -314,7 +314,7 @@ export default function CreditsPageOptimized() {
           </Card>
 
           {/* Monthly Stats */}
-          <Card className="relative overflow-hidden bg-card border border-border">
+          <Card className="card-secondary relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500 opacity-10 rounded-full transform translate-x-16 -translate-y-8"></div>
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
@@ -342,7 +342,7 @@ export default function CreditsPageOptimized() {
         </div>
 
         {/* Transactions Table */}
-        <Card className="bg-card border border-border">
+        <Card className="surface-elevated rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center space-x-2">
@@ -403,38 +403,38 @@ export default function CreditsPageOptimized() {
             ) : transactions.length > 0 ? (
               <div>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-border/50">
+                    <thead className="surface-neutral rounded-t-lg">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                           Дата
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                           Тип
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                           Сумма
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                           Описание
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                           Статус
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="surface-base divide-y divide-border/30">
                       {transactions.map((transaction) => (
-                        <tr key={transaction.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <tr key={transaction.id} className="hover:surface-elevated hover:shadow-md transition-all duration-200">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                             {formatDate(transaction.created_at)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                              transaction.transaction_type === 'CREDIT' ? 'bg-emerald-100 text-emerald-800' :
-                              transaction.transaction_type === 'DEBIT' ? 'bg-red-100 text-red-800' :
-                              transaction.transaction_type === 'PURCHASE' ? 'bg-blue-100 text-blue-800' :
-                              'bg-purple-100 text-purple-800'
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                              transaction.transaction_type === 'CREDIT' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300' :
+                              transaction.transaction_type === 'DEBIT' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300' :
+                              transaction.transaction_type === 'PURCHASE' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300' :
+                              'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300'
                             }`}>
                               {getTransactionTypeLabel(transaction.transaction_type)}
                             </span>
@@ -445,7 +445,7 @@ export default function CreditsPageOptimized() {
                             {transaction.transaction_type === 'CREDIT' ? '+' : '-'}
                             {Math.abs(transaction.amount).toFixed(2)} т CO₂
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-900">
+                          <td className="px-6 py-4 text-sm text-foreground">
                             {transaction.description}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -459,8 +459,8 @@ export default function CreditsPageOptimized() {
 
                 {/* Pagination */}
                 {pagination.totalPages > 1 && (
-                  <div className="flex items-center justify-between mt-6">
-                    <div className="text-sm text-gray-700">
+                  <div className="flex items-center justify-between mt-6 p-4 surface-glass rounded-lg">
+                    <div className="text-sm text-muted-foreground">
                       Показано {(pagination.page - 1) * 10 + 1} - {Math.min(pagination.page * 10, pagination.total)} из {pagination.total} записей
                     </div>
                     <div className="flex items-center space-x-2">
@@ -472,7 +472,7 @@ export default function CreditsPageOptimized() {
                       >
                         Назад
                       </Button>
-                      <span className="px-3 py-1 text-sm font-medium">
+                      <span className="px-3 py-1 text-sm font-medium text-foreground surface-accent rounded-md">
                         {pagination.page} из {pagination.totalPages}
                       </span>
                       <Button
@@ -488,13 +488,14 @@ export default function CreditsPageOptimized() {
                 )}
               </div>
             ) : (
-              <div className="text-center py-8">
-                <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <div className="text-center py-12 surface-glass rounded-lg">
+                <AlertCircle className="w-12 h-12 text-muted-foreground/50 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-foreground mb-2">Нет транзакций</h3>
-                <p className="text-muted-foreground mb-4">Пока что нет транзакций для отображения</p>
+                <p className="text-muted-foreground mb-6">Пока что нет транзакций для отображения</p>
                 <Button
                   onClick={handleTopUpClick}
                   variant="primary"
+                  className="px-6"
                 >
                   Пополнить баланс
                 </Button>
@@ -505,10 +506,10 @@ export default function CreditsPageOptimized() {
 
         {/* Quick Actions */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="hover:shadow-card-hover transition-shadow cursor-pointer bg-card border border-border">
+          <Card className="card-accent hover:shadow-xl cursor-pointer">
             <CardContent className="text-center py-8">
-              <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Plus className="w-6 h-6 text-emerald-600" />
+              <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Plus className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
               </div>
               <h3 className="text-lg font-semibold text-foreground mb-2">Пополнить баланс</h3>
               <p className="text-muted-foreground mb-4">Добавьте кредиты для обработки отчетов</p>
@@ -523,10 +524,10 @@ export default function CreditsPageOptimized() {
           </Card>
 
           <Link href="/subscription">
-            <Card className="hover:shadow-card-hover transition-shadow cursor-pointer h-full bg-card border border-border">
+            <Card className="card-interactive h-full cursor-pointer">
               <CardContent className="text-center py-8">
-                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CreditCard className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CreditCard className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">Управление тарифами</h3>
                 <p className="text-muted-foreground mb-4">Просмотрите и измените тарифный план</p>
@@ -538,10 +539,10 @@ export default function CreditsPageOptimized() {
           </Link>
 
           <Link href="/analytics">
-            <Card className="hover:shadow-card-hover transition-shadow cursor-pointer h-full bg-card border border-border">
+            <Card className="card-secondary h-full cursor-pointer">
               <CardContent className="text-center py-8">
-                <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Download className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Download className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">Аналитика</h3>
                 <p className="text-muted-foreground mb-4">Отчеты по использованию кредитов</p>
@@ -555,8 +556,8 @@ export default function CreditsPageOptimized() {
 
         {/* Top-up Modal */}
         {showTopUpModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-card border border-border rounded-xl p-6 max-w-md w-full">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+            <div className="surface-elevated rounded-xl p-6 max-w-md w-full shadow-2xl border border-border/50">
               <h3 className="text-lg font-semibold text-foreground mb-4">Пополнение баланса</h3>
               <p className="text-muted-foreground mb-6">
                 Интеграция с платежной системой будет доступна в следующей версии.

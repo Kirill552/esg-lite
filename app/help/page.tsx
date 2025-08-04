@@ -28,7 +28,7 @@ import {
 
 export default function HelpPage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen surface-base">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
         {/* Хлебные крошки */}
@@ -58,7 +58,7 @@ export default function HelpPage() {
           <div className="lg:col-span-2 space-y-8">
             
             {/* Quick Start */}
-            <Card className="p-8 bg-card border border-border">
+            <Card className="card-accent">
               <div className="flex items-center mb-6">
                 <Zap className="w-8 h-8 text-emerald-600 mr-3" />
                 <h2 className="text-2xl font-bold text-foreground">🚀 Быстрый старт</h2>
@@ -92,7 +92,7 @@ export default function HelpPage() {
             </Card>
 
             {/* Best Practices */}
-            <Card className="p-8 bg-card border border-border">
+            <Card className="card-interactive">
               <div className="flex items-center mb-6">
                 <Target className="w-8 h-8 text-blue-600 mr-3" />
                 <h2 className="text-2xl font-bold text-foreground">💡 Лучшие практики 2025</h2>
@@ -154,7 +154,7 @@ export default function HelpPage() {
             </Card>
 
             {/* Pricing Guide */}
-            <Card className="p-8 bg-card border border-border">
+            <Card className="surface-secondary rounded-xl p-8 hover:shadow-xl hover:shadow-amber-500/10 transition-all duration-300">
               <div className="flex items-center mb-6">
                 <TrendingUp className="w-8 h-8 text-orange-600 mr-3" />
                 <h2 className="text-2xl font-bold text-foreground">💰 Система ценообразования</h2>
@@ -238,7 +238,7 @@ export default function HelpPage() {
             </Card>
 
             {/* Technical Guide */}
-            <Card className="p-8 bg-card border border-border">
+            <Card className="surface-neutral rounded-xl p-8 hover:shadow-lg transition-all duration-300">
               <div className="flex items-center mb-6">
                 <Settings className="w-8 h-8 text-indigo-600 mr-3" />
                 <h2 className="text-2xl font-bold text-foreground">⚙️ Техническое руководство</h2>
@@ -288,7 +288,7 @@ export default function HelpPage() {
           <div className="space-y-6">
             
             {/* Navigation */}
-            <Card className="p-6 bg-card border border-border">
+            <Card className="surface-elevated rounded-xl p-6 hover:shadow-lg transition-all duration-300">
               <h3 className="font-bold text-foreground mb-4">🔗 Быстрые ссылки</h3>
               <div className="space-y-3">
                 <Link href="/upload">
@@ -325,7 +325,7 @@ export default function HelpPage() {
             </Card>
 
             {/* Pricing Info */}
-            <Card className="p-6 bg-card border border-border">
+            <Card className="surface-glass rounded-xl p-6 hover:shadow-lg transition-all duration-300">
               <h3 className="font-bold text-foreground mb-4">💰 Ценообразование 2025</h3>
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
@@ -352,7 +352,7 @@ export default function HelpPage() {
             </Card>
 
             {/* Support */}
-            <Card className="p-6 bg-card border border-border">
+            <Card className="surface-glass-accent rounded-xl p-6 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300">
               <h3 className="font-bold text-foreground mb-4">🆘 Поддержка</h3>
               <div className="space-y-3">
                 <div className="flex items-center space-x-3">

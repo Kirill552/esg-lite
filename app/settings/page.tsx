@@ -131,11 +131,11 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-card to-accent/20">
+      <div className="min-h-screen surface-base py-8">
         <div className="container mx-auto px-6 py-8">
           <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-muted rounded w-1/4"></div>
-            <div className="h-96 bg-muted rounded"></div>
+            <div className="h-8 surface-neutral rounded w-1/4"></div>
+            <div className="h-96 surface-neutral rounded"></div>
           </div>
         </div>
       </div>
@@ -298,7 +298,7 @@ export default function SettingsPage() {
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-medium text-foreground mb-4">API ключи</h3>
-        <div className="bg-muted rounded-lg p-4">
+        <div className="surface-glass rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-medium text-foreground">Ваш API ключ</span>
             <Button
@@ -309,7 +309,7 @@ export default function SettingsPage() {
               {showApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </Button>
           </div>
-          <div className="font-mono text-sm bg-background rounded border border-border p-3 mb-3 text-foreground">
+          <div className="font-mono text-sm surface-elevated rounded border border-border/50 p-3 mb-3 text-foreground">
             {showApiKey ? apiKey : '••••••••••••••••••••••••••••••••'}
           </div>
           <Button
@@ -325,7 +325,7 @@ export default function SettingsPage() {
       
       <div>
         <h3 className="text-lg font-medium text-foreground mb-4">Двухфакторная аутентификация</h3>
-        <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+        <div className="flex items-center justify-between p-4 surface-interactive rounded-lg">
           <div>
             <p className="text-sm font-medium text-foreground">2FA</p>
             <p className="text-xs text-muted-foreground">Дополнительная защита аккаунта</p>
@@ -430,7 +430,7 @@ export default function SettingsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-card to-accent/20">
+    <div className="min-h-screen surface-base">
       <div className="container mx-auto px-6 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Настройки</h1>
@@ -440,17 +440,17 @@ export default function SettingsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Боковая навигация */}
           <div className="lg:col-span-1">
-            <nav className="space-y-1">
+            <nav className="space-y-1 surface-elevated rounded-xl p-4 shadow-lg">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id as any)}
-                    className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                    className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
                       activeTab === tab.id
-                        ? 'bg-primary/20 text-primary'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
+                        ? 'surface-accent text-emerald-700 dark:text-emerald-300 shadow-md'
+                        : 'text-muted-foreground hover:surface-interactive hover:text-foreground hover:shadow-sm'
                     }`}
                   >
                     <Icon className="w-4 h-4 mr-3" />
@@ -463,7 +463,7 @@ export default function SettingsPage() {
 
           {/* Основной контент */}
           <div className="lg:col-span-3">
-            <Card className="p-6 bg-card border border-border">
+            <Card className="card-modern">
               {activeTab === 'profile' && renderProfileTab()}
               {activeTab === 'notifications' && renderNotificationsTab()}
               {activeTab === 'security' && renderSecurityTab()}
@@ -471,7 +471,7 @@ export default function SettingsPage() {
               {activeTab === 'data' && renderDataTab()}
 
               {/* Кнопки действий */}
-              <div className="flex justify-end space-x-3 mt-8 pt-6 border-t border-border">
+              <div className="flex justify-end space-x-3 mt-8 pt-6 border-t border-border/30">
                 <Button variant="secondary">
                   Отмена
                 </Button>
