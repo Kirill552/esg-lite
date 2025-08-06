@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { CreditsService } from '../../../../lib/credits-service';
+import { creditsService } from '../../../../lib/credits-service';
 
 /**
  * GET /api/credits/balance
@@ -27,7 +27,6 @@ export async function GET(request: NextRequest) {
     }
 
     // Получаем баланс кредитов
-    const creditsService = new CreditsService();
     const balance = await creditsService.checkBalance(organizationId);
 
     // Получаем информацию о стоимости операций

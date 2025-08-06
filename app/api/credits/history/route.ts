@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { CreditsService } from '../../../../lib/credits-service';
+import { creditsService } from '../../../../lib/credits-service';
 
 /**
  * GET /api/credits/history
@@ -44,7 +44,6 @@ export async function GET(request: NextRequest) {
     }
 
     // Получаем историю транзакций
-    const creditsService = new CreditsService();
     const allTransactions = await creditsService.getTransactionHistory(organizationId);
 
     // Реализуем пагинацию на уровне API

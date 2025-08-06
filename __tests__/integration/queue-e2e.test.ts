@@ -44,7 +44,9 @@ jest.mock('../../lib/ocr', () => ({
 jest.mock('../../lib/credits-service', () => ({
   creditsService: {
     hasCredits: jest.fn() as jest.MockedFunction<any>,
-    debitCredits: jest.fn() as jest.MockedFunction<any>
+    debitCredits: jest.fn() as jest.MockedFunction<any>,
+    getOperationCost: jest.fn() as jest.MockedFunction<any>,
+    checkBalance: jest.fn() as jest.MockedFunction<any>
   }
 }));
 
@@ -106,7 +108,27 @@ describe('Queue E2E Tests', () => {
     
     // Настройка моков по умолчанию
     mockCreditsService.hasCredits.mockResolvedValue(true);
-    mockCreditsService.debitCredits.mockResolvedValue(undefined);
+    mockCreditsService.debitCredits.mockResolvedValue({
+      success: true,
+      newBalance: 9,
+      newBalanceDecimal: new (require('@prisma/client/runtime/library').Decimal)(9),
+      transactionId: 'tx-123'
+    });
+    mockCreditsService.getOperationCost.mockResolvedValue({
+      baseCost: 1,
+      surgePricingMultiplier: 1,
+      finalCost: 1,
+      pricePerTonRub: 5
+    });
+    mockCreditsService.checkBalance.mockResolvedValue({
+      organizationId: 'org-123',
+      balance: 10,
+      balanceDecimal: new (require('@prisma/client/runtime/library').Decimal)(10),
+      totalPurchased: 10,
+      totalUsed: 0,
+      planType: 'FREE',
+      lastUpdated: new Date()
+    });
     mockSurgePricingService.getSurgeMultiplier.mockReturnValue(1);
     mockSurgePricingService.isSurgePeriod.mockReturnValue(false);
     mockSurgePricingService.getJobPriority.mockReturnValue('normal');
@@ -262,11 +284,19 @@ describe('Queue E2E Tests', () => {
         }
       });
 
-      // Assert 4: Кредиты списаны
-      expect(mockCreditsService.debitCredits).toHaveBeenCalledWith(
+      // Assert 4: Кредиты заблокированы и списаны
+      expect(mockCreditsService.debitCredits).toHaveBeenNthCalledWith(
+        1,
         'org-123',
         1,
-        'OCR processing: doc-123'
+        'Credits blocked for OCR job: doc-123'
+      );
+      expect(mockCreditsService.debitCredits).toHaveBeenNthCalledWith(
+        2,
+        'org-123',
+        1,
+        expect.stringContaining('OCR обработка документа'),
+        expect.objectContaining({ documentId: 'doc-123' })
       );
 
       // Assert 5: Метрики записаны

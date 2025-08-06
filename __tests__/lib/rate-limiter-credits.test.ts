@@ -4,15 +4,15 @@
  */
 
 import { RateLimiter } from '../../lib/rate-limiter';
-import { CreditsService } from '../../lib/credits-service';
+import { creditsService } from '../../lib/credits-service';
 
 // Мокируем CreditsService
 jest.mock('../../lib/credits-service', () => ({
-  CreditsService: jest.fn().mockImplementation(() => ({
+  creditsService: {
     checkBalance: jest.fn(),
     getOperationCost: jest.fn(),
     hasCredits: jest.fn()
-  }))
+  }
 }));
 
 // Мокируем Prisma
@@ -28,7 +28,7 @@ jest.mock('../../lib/prisma', () => ({
 
 describe('Rate Limiter - Credits Integration', () => {
   let rateLimiter: RateLimiter;
-  let mockCreditsService: jest.Mocked<CreditsService>;
+  let mockCreditsService: jest.Mocked<typeof creditsService>;
 
   beforeEach(() => {
     jest.clearAllMocks();

@@ -6,7 +6,7 @@
 
 import { prisma } from './prisma';
 import { SubscriptionPlan, SubscriptionStatus } from '@prisma/client';
-import { CreditsService } from './credits-service';
+import { CreditsService, creditsService } from './credits-service';
 import { 
   calculatePricing, 
   determinePlanByEmissions,
@@ -155,13 +155,13 @@ export class SubscriptionService {
   };
 
   constructor() {
-    this.creditsService = new CreditsService();
+    this.creditsService = creditsService;
   }
 
   /**
    * Преобразовать тип плана из новой модели в Prisma enum
    */
-  private mapPlanTypeToPrisma(planType: 'TRIAL' | 'LITE' | 'STANDARD' | 'LARGE'): SubscriptionPlan {
+  private mapPlanTypeToPrisma(planType: 'TRIAL' | 'LITE' | 'STANDARD' | 'LARGE' | 'CBAM_ADDON'): SubscriptionPlan | null {
     switch (planType) {
       case 'TRIAL':
         return SubscriptionPlan.TRIAL;
@@ -171,16 +171,20 @@ export class SubscriptionService {
         return SubscriptionPlan.STANDARD;
       case 'LARGE':
         return SubscriptionPlan.LARGE;
+      case 'CBAM_ADDON':
+        return SubscriptionPlan.CBAM_ADDON;
       default:
-        return SubscriptionPlan.FREE;
+        return null;
     }
   }
 
   /**
    * Преобразовать Prisma enum в тип новой модели
    */
-  private mapPrismaTypeToPlan(planType: SubscriptionPlan): 'TRIAL' | 'LITE' | 'STANDARD' | 'LARGE' {
+  private mapPrismaTypeToPlan(planType: SubscriptionPlan): 'FREE' | 'TRIAL' | 'LITE' | 'STANDARD' | 'LARGE' | 'CBAM_ADDON' {
     switch (planType) {
+      case SubscriptionPlan.FREE:
+        return 'FREE';
       case SubscriptionPlan.TRIAL:
         return 'TRIAL';
       case SubscriptionPlan.LITE:
@@ -189,6 +193,8 @@ export class SubscriptionService {
         return 'STANDARD';
       case SubscriptionPlan.LARGE:
         return 'LARGE';
+      case SubscriptionPlan.CBAM_ADDON:
+        return 'CBAM_ADDON';
       default:
         return 'TRIAL';
     }
@@ -206,6 +212,7 @@ export class SubscriptionService {
    */
   getPlanInfo(planType: 'TRIAL' | 'LITE' | 'STANDARD' | 'LARGE' | 'CBAM_ADDON'): SubscriptionPlanInfo | null {
     const prismaPlanType = this.mapPlanTypeToPrisma(planType as any);
+    if (!prismaPlanType) return null;
     return this.SUBSCRIPTION_PLANS[prismaPlanType] || null;
   }
 
