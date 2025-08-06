@@ -7,7 +7,7 @@
 const PgBoss = require('pg-boss');
 import { createPgBoss, QUEUE_NAMES, OcrJobData, OcrJobResult } from '../lib/pg-boss-config';
 import { processS3File } from '../lib/ocr';
-import { CreditsService } from '../lib/credits-service';
+import { CreditsService, creditsService } from '../lib/credits-service';
 import { prisma } from '../lib/prisma';
 import { metricsCollector } from '../lib/metrics';
 import { workerLogger } from '../lib/structured-logger';
@@ -40,7 +40,7 @@ export class OcrWorker {
       maxRetries: config.maxRetries || 3
     };
     
-    this.creditsService = new CreditsService();
+    this.creditsService = creditsService;
     
     console.log('🔧 OCR Worker инициализирован с конфигурацией:', this.config);
   }

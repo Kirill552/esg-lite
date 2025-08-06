@@ -63,7 +63,7 @@ describe('Enhanced Report Generator', () => {
       expect(result.success).toBe(true);
       expect(result.pricing).toEqual(mockPricingCalculation);
       expect(result.canGenerate).toBe(false); // Нет подписки и есть стоимость
-      expect(result.reason).toContain('требуется CBAM подписка');
+      expect(result.reason).toContain('требуется CBAM тариф');
       expect(mockCBAMPricing.calculateCBAMPricing).toHaveBeenCalledWith({
         organizationId: 'org_123',
         lineItems: testData.lineItems,
@@ -221,7 +221,7 @@ describe('Enhanced Report Generator', () => {
 
       expect(result.success).toBe(false);
       expect(result.blocked).toBe(true);
-      expect(result.blockReason).toContain('требуется CBAM подписка или оплата 20400₽');
+      expect(result.blockReason).toContain('требуется CBAM тариф или оплата 20400₽');
       expect(result.pricingInfo?.totalCost).toBe(20400);
       expect(mockReportGenerator.generateCBAMReport).not.toHaveBeenCalled();
     });

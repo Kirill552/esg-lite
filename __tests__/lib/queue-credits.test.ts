@@ -4,19 +4,19 @@
  */
 
 import { QueueManager } from '../../lib/queue';
-import { CreditsService } from '../../lib/credits-service';
+import { creditsService } from '../../lib/credits-service';
 
 // Мокируем pg-boss
 jest.mock('pg-boss');
 
 // Мокируем CreditsService
 jest.mock('../../lib/credits-service', () => ({
-  CreditsService: jest.fn().mockImplementation(() => ({
+  creditsService: {
     hasCredits: jest.fn(),
     getOperationCost: jest.fn(),
     debitCredits: jest.fn(),
     checkBalance: jest.fn()
-  }))
+  }
 }));
 
 // Мокируем createPgBoss
@@ -24,7 +24,8 @@ jest.mock('../../lib/pg-boss-config', () => ({
   createPgBoss: jest.fn().mockResolvedValue({
     send: jest.fn(),
     work: jest.fn(),
-    stop: jest.fn()
+    stop: jest.fn(),
+    createQueue: jest.fn()
   }),
   QUEUE_NAMES: {
     OCR: 'ocr'
@@ -38,7 +39,7 @@ jest.mock('../../lib/pg-boss-config', () => ({
 
 describe('Queue Manager - Credits Integration', () => {
   let queueManager: QueueManager;
-  let mockCreditsService: jest.Mocked<CreditsService>;
+  let mockCreditsService: jest.Mocked<typeof creditsService>;
   let mockBoss: any;
 
   beforeEach(async () => {
@@ -46,7 +47,7 @@ describe('Queue Manager - Credits Integration', () => {
     
     queueManager = new QueueManager();
     await queueManager.initialize();
-    
+
     // Получаем мок CreditsService
     mockCreditsService = (queueManager as any).creditsService;
     

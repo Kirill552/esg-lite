@@ -21,7 +21,8 @@ jest.mock('../../lib/ocr', () => ({
 jest.mock('../../lib/credits-service', () => ({
   creditsService: {
     hasCredits: jest.fn(),
-    debitCredits: jest.fn()
+    debitCredits: jest.fn(),
+    getOperationCost: jest.fn()
   }
 }));
 
@@ -86,6 +87,12 @@ describe('OcrWorker', () => {
     // Настройка моков по умолчанию
     mockCreditsService.hasCredits.mockResolvedValue(true);
     mockCreditsService.debitCredits.mockResolvedValue(undefined);
+    mockCreditsService.getOperationCost.mockResolvedValue({
+      baseCost: 1,
+      surgePricingMultiplier: 1,
+      finalCost: 1,
+      pricePerTonRub: 5
+    });
     mockSurgePricingService.getSurgeMultiplier.mockReturnValue(1);
     mockProcessS3File.mockResolvedValue('Extracted text content from document');
     mockPrisma.document.update.mockResolvedValue({});

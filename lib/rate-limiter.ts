@@ -6,7 +6,7 @@
  */
 
 import { prisma } from './prisma';
-import { CreditsService } from './credits-service';
+import { CreditsService, creditsService } from './credits-service';
 
 export interface RateLimitConfig {
   windowSizeMs: number;      // Размер временного окна в миллисекундах
@@ -63,7 +63,7 @@ export class RateLimiter {
       }
     };
 
-    this.creditsService = new CreditsService();
+    this.creditsService = creditsService;
 
     console.log('🔧 Rate Limiter инициализирован:', {
       windowSizeMs: this.config.windowSizeMs,

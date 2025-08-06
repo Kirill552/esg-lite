@@ -6,7 +6,7 @@
 
 const PgBoss = require('pg-boss');
 import { createPgBoss, QUEUE_NAMES, JOB_PRIORITIES, OcrJobData, OcrJobResult } from './pg-boss-config';
-import { CreditsService } from './credits-service';
+import { CreditsService, creditsService } from './credits-service';
 import { metricsCollector } from './metrics';
 import { queueLogger } from './structured-logger';
 
@@ -72,7 +72,7 @@ export class QueueManager {
   private creditsService: CreditsService;
 
   constructor() {
-    this.creditsService = new CreditsService();
+    this.creditsService = creditsService;
   }
 
   /**
