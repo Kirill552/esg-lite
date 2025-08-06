@@ -14,9 +14,9 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
     const baseStyles = 'rounded-xl transition-shadow duration-200 focus-within:ring-2 focus-within:ring-emerald-500 focus-within:ring-offset-2'
     
     const variants = {
-      default: 'bg-white shadow-card',
-      elevated: 'bg-white shadow-card-hover',
-      outlined: 'bg-white border border-gray-200',
+      default: 'bg-white dark:bg-gray-800 shadow-card',
+      elevated: 'bg-white dark:bg-gray-800 shadow-card-hover',
+      outlined: 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700',
     }
     
     const paddings = {

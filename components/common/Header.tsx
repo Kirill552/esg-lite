@@ -21,8 +21,11 @@ import {
   Zap
 } from 'lucide-react'
 
-interface BalanceData {
-  balance: number;
+interface SubscriptionData {
+  currentPlan: string;
+  monthlyUsage: number;
+  totalEmissions: number;
+  planName?: string;
 }
 
 interface QueueData {
@@ -32,7 +35,7 @@ interface QueueData {
 export function Header() {
   const pathname = usePathname()
   const { user } = useUser()
-  const [balanceData, setBalanceData] = useState<BalanceData | null>(null)
+  const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null)
   const [queueData, setQueueData] = useState<QueueData | null>(null)
   const [isBillingOpen, setIsBillingOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -44,10 +47,10 @@ export function Header() {
     { href: '/documents', label: 'Документы', icon: FolderOpen },
   ]
 
-  // Загрузка баланса и данных очереди
+  // Загрузка данных подписки и очереди
   useEffect(() => {
     if (user) {
-      fetchBalance()
+      fetchSubscription()
       fetchQueueData()
       
       // Обновляем данные очереди каждые 30 секунд
@@ -56,17 +59,28 @@ export function Header() {
     }
   }, [user])
 
-  const fetchBalance = async () => {
+  const fetchSubscription = async () => {
     try {
-      const response = await fetch(`/api/credits/balance?organizationId=${user?.id}`)
+      const response = await fetch(`/api/subscription/current?organizationId=${user?.id}`)
       if (response.ok) {
-        const result = await response.json()
-        // API возвращает { success: true, data: { balance: "..." } }
-        const balance = result.success && result.data ? parseFloat(result.data.balance) : 0
-        setBalanceData({ balance })
+        const data = await response.json()
+        
+        // Определяем русское название плана
+        const planNames: Record<string, string> = {
+          'LITE': 'Лайт',
+          'STANDARD': 'Стандарт',
+          'LARGE': 'Крупное предприятие'
+        }
+        
+        setSubscriptionData({
+          currentPlan: data.currentPlan,
+          monthlyUsage: data.monthlyUsage || 0,
+          totalEmissions: data.totalEmissions || 0,
+          planName: planNames[data.currentPlan] || data.currentPlan
+        })
       }
     } catch (error) {
-      console.error('Ошибка загрузки баланса:', error)
+      console.error('Ошибка загрузки данных подписки:', error)
     }
   }
 
@@ -88,12 +102,17 @@ export function Header() {
     return pathname === href || (href !== '/dashboard' && pathname.startsWith(href))
   }
 
-  const formatBalance = (balance: number) => {
-    return balance.toLocaleString('ru-RU')
+  const formatEmissions = (emissions: number) => {
+    if (emissions >= 1000000) {
+      return `${(emissions / 1000000).toFixed(1)}М`
+    } else if (emissions >= 1000) {
+      return `${(emissions / 1000).toFixed(0)}k`
+    }
+    return emissions.toLocaleString('ru-RU')
   }
 
-  const isLowBalance = (balance: number) => {
-    return balance < 100
+  const isHighUsage = (usage: number, total: number) => {
+    return total > 0 && (usage / total) > 0.8 // Более 80% от годового объема за месяц
   }
 
   return (
@@ -127,14 +146,14 @@ export function Header() {
           <div className="flex-1" />
 
           <SignedIn>
-            {/* Баланс-чип (скрыт на очень маленьких экранах) */}
-            {balanceData && (
+            {/* План-чип (скрыт на очень маленьких экранах) */}
+            {subscriptionData && (
               <button
                 onClick={() => setIsBillingOpen(true)}
                 className="hidden sm:inline-flex items-center rounded-full bg-emerald-50 dark:bg-emerald-900/30 px-2 sm:px-3 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
               >
-                <span className="font-mono text-xs sm:text-sm">{formatBalance(balanceData.balance)} т CO₂</span>
-                {isLowBalance(balanceData.balance) && (
+                <span className="font-mono text-xs sm:text-sm">{subscriptionData.planName} • {formatEmissions(subscriptionData.monthlyUsage)} т CO₂</span>
+                {isHighUsage(subscriptionData.monthlyUsage, subscriptionData.totalEmissions / 12) && (
                   <AlertTriangle className="ml-1 h-3 w-3 text-orange-500" />
                 )}
               </button>
@@ -235,9 +254,9 @@ export function Header() {
             <div id="mobile-nav" className="lg:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg">
               <div className="px-4 py-3 space-y-2">
                 
-                {/* Баланс и очередь в мобильном меню */}
+                {/* План и очередь в мобильном меню */}
                 <div className="flex items-center justify-between pb-2">
-                  {balanceData && (
+                  {subscriptionData && (
                     <button
                       onClick={() => {
                         setIsBillingOpen(true)
@@ -245,8 +264,8 @@ export function Header() {
                       }}
                       className="inline-flex items-center rounded-full bg-emerald-50 dark:bg-emerald-900/30 px-3 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
                     >
-                      <span className="font-mono">{formatBalance(balanceData.balance)} т CO₂</span>
-                      {isLowBalance(balanceData.balance) && (
+                      <span className="font-mono">{subscriptionData.planName} • {formatEmissions(subscriptionData.monthlyUsage)} т CO₂</span>
+                      {isHighUsage(subscriptionData.monthlyUsage, subscriptionData.totalEmissions / 12) && (
                         <AlertTriangle className="ml-1 h-3 w-3 text-orange-500" />
                       )}
                     </button>

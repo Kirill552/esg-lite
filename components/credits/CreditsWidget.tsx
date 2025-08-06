@@ -98,7 +98,7 @@ export function CreditsWidget() {
       </div>
 
       {/* Кнопка подробнее */}
-      <Link href="/credits">
+      <Link href="/tariffs">
         <Button 
           variant="ghost" 
           size="sm"

@@ -292,17 +292,19 @@ model organization_credit_transactions {
 }
 
 model organization_subscriptions {
-  id             String             @id @default(dbgenerated("(gen_random_uuid())::text"))
-  organizationId String             @unique
-  plan_type      SubscriptionPlan   @default(FREE)
-  status         SubscriptionStatus @default(INACTIVE)
-  starts_at      DateTime?          @db.Timestamp(6)
-  expires_at     DateTime?          @db.Timestamp(6)
-  auto_renew     Boolean            @default(false)
-  price_rub      Decimal?           @db.Decimal(10, 2)
-  features       Json?
-  createdAt      DateTime           @default(now()) @db.Timestamp(6)
-  updatedAt      DateTime           @default(now()) @updatedAt @db.Timestamp(6)
+  id               String             @id @default(dbgenerated("(gen_random_uuid())::text"))
+  organizationId   String             @unique
+  plan_type        SubscriptionPlan   @default(FREE)
+  status           SubscriptionStatus @default(INACTIVE)
+  starts_at        DateTime?          @db.Timestamp(6)
+  expires_at       DateTime?          @db.Timestamp(6)
+  auto_renew       Boolean            @default(false)
+  price_rub        Decimal?           @db.Decimal(10, 2)
+  annual_emissions Int?               @default(0)
+  has_cbam_addon   Boolean            @default(false)
+  features         Json?
+  createdAt        DateTime           @default(now()) @db.Timestamp(6)
+  updatedAt        DateTime           @default(now()) @updatedAt @db.Timestamp(6)
 
   @@index([organizationId], map: "org_subscriptions_organizationId_idx")
   @@index([plan_type], map: "org_subscriptions_plan_type_idx")
@@ -371,7 +373,10 @@ enum CreditTransactionType {
 
 enum SubscriptionPlan {
   FREE
-  LITE_ANNUAL
+  TRIAL
+  LITE
+  STANDARD
+  LARGE
   CBAM_ADDON
 }
 

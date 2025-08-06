@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Emission Factors Package",
+  "type": "object",
+  "required": [
+    "package_id",
+    "method_ref",
+    "version",
+    "valid_from",
+    "factors"
+  ],
+  "properties": {
+    "package_id": {
+      "type": "string"
+    },
+    "method_ref": {
+      "type": "string",
+      "description": "Приказ Минприроды №371, приложение N"
+    },
+    "version": {
+      "type": "string"
+    },
+    "valid_from": {
+      "type": "string",
+      "format": "date"
+    },
+    "valid_to": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "source_url": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "factors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "factor_id",
+          "name",
+          "category",
+          "unit",
+          "value"
+        ],
+        "properties": {
+          "factor_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "value": {
+            "type": "number"
+          },
+          "uncertainty": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "source": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

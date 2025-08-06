@@ -33,7 +33,7 @@ export function Footer() {
             <h3 className="font-semibold text-white mb-4">Продукт</h3>
             <ul className="space-y-2 text-sm">
               <li><Link href="/" className="text-gray-300 hover:text-white transition-colors">Главная</Link></li>
-              <li><Link href="/credits" className="text-gray-300 hover:text-white transition-colors">Тарифы</Link></li>
+              <li><Link href="/tariffs" className="text-gray-300 hover:text-white transition-colors">Тарифы и подписка</Link></li>
               <li><Link href="/api/docs" className="text-gray-300 hover:text-white transition-colors">Документация</Link></li>
               <li><Link href="/privacy" className="text-gray-300 hover:text-white transition-colors">Конфиденциальность</Link></li>
               <li><Link href="/dashboard" className="text-gray-300 hover:text-white transition-colors">Статус системы</Link></li>

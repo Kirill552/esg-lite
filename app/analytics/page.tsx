@@ -408,11 +408,11 @@ export default function AnalyticsPage() {
               </Button>
             </Link>
 
-            <Link href="/credits">
+            <Link href="/tariffs">
               <Button variant="secondary" className="w-full h-auto p-4 flex flex-col items-center bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl">
                 <Zap className="w-6 h-6 mb-2" />
-                <span className="font-medium text-white">Кредиты</span>
-                <span className="text-xs opacity-80 text-white">Управление балансом</span>
+                <span className="font-medium text-white">Тарифы</span>
+                <span className="text-xs opacity-80 text-white">Подписки и оплата</span>
               </Button>
             </Link>
           </div>

@@ -5,7 +5,6 @@ import { Dialog, Transition, Tab } from '@headlessui/react';
 import { 
   X, 
   CreditCard, 
-  Coins, 
   TrendingUp, 
   AlertCircle,
   Crown,
@@ -19,101 +18,122 @@ interface BillingDrawerProps {
   onClose: () => void;
 }
 
-interface BalanceData {
-  balance: number;
-  totalPurchased: number;
-  totalUsed: number;
-  planType: string;
+interface SubscriptionData {
+  currentPlan: string;
+  nextBillingDate: string;
+  monthlyUsage: number;
+  totalEmissions: number;
+  lastPayment?: {
+    amount: number;
+    date: string;
+  };
 }
 
-interface Transaction {
-  id: string;
-  amount: number;
-  type: 'CREDIT' | 'DEBIT';
-  description: string;
-  createdAt: string;
-}
-
-interface Plan {
+interface PricingPlan {
   id: string;
   name: string;
-  price: number;
-  credits: number;
+  basePayment: number;
+  perTonRate: number;
+  maxEmissions: number;
   features: string[];
   popular?: boolean;
+  recommended?: boolean;
 }
 
 export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
   const { user } = useUser();
-  const [balanceData, setBalanceData] = useState<BalanceData | null>(null);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [subscriptionData, setSubscriptionData] = useState<SubscriptionData | null>(null);
   const [loading, setLoading] = useState(false);
-  const [isAnnual, setIsAnnual] = useState(true); // Переключатель месяц/год
+  const [calculatorEmissions, setCalculatorEmissions] = useState(100000);
+  const [planPricing, setPlanPricing] = useState<any>(null);
 
-  const plans: Plan[] = [
+  // Статические данные о планах (структура и описания) - цены получаем из API
+  const planTemplates = [
     {
-      id: 'FREE',
-      name: 'Бесплатный',
-      price: 0,
-      credits: 1000,
-      features: ['1000 т CO₂ бесплатно', 'Базовые отчеты', 'Email поддержка']
+      id: 'LITE',
+      name: 'Лайт',
+      maxEmissions: 150000,
+      features: [
+        'От 50 000 до 150 000 т CO₂/год',
+        'Базовая отчетность',
+        'Email поддержка',
+        'Экспорт в Excel/PDF'
+      ]
     },
     {
-      id: 'LITE_ANNUAL',
-      name: 'Lite',
-      price: isAnnual ? 40000 : 4000, // 40k/год или 4k/месяц
-      credits: 1000,
-      features: ['1000 т CO₂ в подарок', 'Приоритетная поддержка', 'Расширенная аналитика'],
+      id: 'STANDARD',
+      name: 'Стандарт',
+      maxEmissions: 1000000,
+      features: [
+        'От 150 000 до 1 млн т CO₂/год',
+        'Расширенная аналитика',
+        'Приоритетная поддержка',
+        'API доступ',
+        'Интеграция с 1С'
+      ],
       popular: true
     },
     {
-      id: 'CBAM_ADDON',
-      name: 'CBAM Add-on',
-      price: isAnnual ? 15000 : 1500, // 15k/год или 1.5k/месяц
-      credits: 0,
-      features: ['CBAM отчеты', 'Европейское соответствие', 'Экспертная поддержка']
+      id: 'LARGE',
+      name: 'Крупное предприятие',
+      maxEmissions: 3000000,
+      features: [
+        'От 1 млн до 3 млн т CO₂/год',
+        'Персональный менеджер',
+        '24/7 поддержка',
+        'Кастомизация отчетов',
+        'Белый лейбл',
+        'SLA 99.9%'
+      ],
+      recommended: true
+    },
+    {
+      id: 'ENTERPRISE',
+      name: 'Индивидуальный',
+      maxEmissions: 10000000,
+      features: [
+        'Свыше 3 млн т CO₂/год',
+        'Индивидуальные условия',
+        'Выделенные ресурсы',
+        'Полная кастомизация',
+        'Интеграция с корп. системами',
+        'Консультации экспертов'
+      ]
     }
   ];
 
-  // Расчет экономии при годовой оплате
-  const getAnnualSavings = (planId: string) => {
-    if (planId === 'FREE') return 0;
-    const monthlyTotal = planId === 'LITE_ANNUAL' ? 4000 * 12 : 1500 * 12;
-    const annualPrice = planId === 'LITE_ANNUAL' ? 40000 : 15000;
-    return monthlyTotal - annualPrice;
+  // Получение ценообразования из API (читает .env)
+  const fetchPricingForEmissions = async (emissions: number) => {
+    try {
+      const response = await fetch(`/api/pricing/calculate?emissions=${emissions}&cbam=false`);
+      if (response.ok) {
+        const data = await response.json();
+        return data;
+      }
+    } catch (error) {
+      console.error('Error fetching pricing:', error);
+    }
+    return null;
   };
 
   useEffect(() => {
     if (isOpen && user) {
-      fetchBalanceData();
-      fetchTransactions();
+      fetchSubscriptionData();
     }
   }, [isOpen, user]);
 
-  const fetchBalanceData = async () => {
+  const fetchSubscriptionData = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/credits/balance?organizationId=${user?.id}`);
+      const response = await fetch(`/api/subscription/current?organizationId=${user?.id}`);
       if (response.ok) {
         const data = await response.json();
-        setBalanceData(data);
+        setSubscriptionData(data);
       }
     } catch (error) {
-      console.error('Ошибка загрузки баланса:', error);
+      console.error('Ошибка загрузки данных подписки:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchTransactions = async () => {
-    try {
-      const response = await fetch(`/api/credits/history?organizationId=${user?.id}&limit=10`);
-      if (response.ok) {
-        const data = await response.json();
-        setTransactions(data.transactions || []);
-      }
-    } catch (error) {
-      console.error('Ошибка загрузки транзакций:', error);
     }
   };
 
@@ -137,11 +157,11 @@ export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
 
   const getPlanIcon = (planId: string) => {
     switch (planId) {
-      case 'FREE':
+      case 'LITE':
         return <Users className="h-5 w-5" />;
-      case 'LITE_ANNUAL':
+      case 'STANDARD':
         return <Crown className="h-5 w-5" />;
-      case 'CBAM_ADDON':
+      case 'LARGE':
         return <Shield className="h-5 w-5" />;
       default:
         return <CreditCard className="h-5 w-5" />;
@@ -194,17 +214,31 @@ export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
                         </button>
                       </div>
                       
-                      {/* Баланс */}
+                      {/* Текущий план и использование */}
                       <div className="mt-4">
-                        <div className="text-emerald-100 text-sm">Текущий баланс</div>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-2xl font-bold text-white font-mono">
-                            {balanceData ? (balanceData.balance || 0).toLocaleString() : '0'} т CO₂
-                          </span>
-                          {balanceData && (balanceData.balance || 0) < 100 && (
-                            <AlertCircle className="h-5 w-5 text-orange-300" />
-                          )}
-                        </div>
+                        {subscriptionData ? (
+                          <>
+                            <div className="text-emerald-100 text-sm">Текущий план</div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-xl font-bold text-white">
+                                {planTemplates.find(p => p.id === subscriptionData.currentPlan)?.name || 'Неизвестен'}
+                              </span>
+                              <div className="text-right">
+                                <div className="text-emerald-100 text-xs">В этом месяце</div>
+                                <div className="text-white font-mono text-sm">
+                                  {subscriptionData.monthlyUsage.toLocaleString()} т CO₂
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="text-emerald-100 text-sm">Нет активной подписки</div>
+                            <div className="text-white text-lg font-semibold">
+                              Выберите тарифный план
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
 
@@ -216,257 +250,266 @@ export default function BillingDrawer({ isOpen, onClose }: BillingDrawerProps) {
                             className="w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all ui-selected:bg-card ui-selected:text-foreground ui-selected:shadow ui-not-selected:text-muted-foreground ui-not-selected:hover:bg-card/50 ui-not-selected:hover:text-foreground"
                           >
                             <div className="flex items-center justify-center space-x-2">
-                              <Coins className="h-4 w-4" />
-                              <span>Кредиты</span>
+                              <TrendingUp className="h-4 w-4" />
+                              <span>Подписка</span>
                             </div>
                           </Tab>
                           <Tab
                             className="w-full rounded-lg py-2.5 text-sm font-medium leading-5 transition-all ui-selected:bg-card ui-selected:text-foreground ui-selected:shadow ui-not-selected:text-muted-foreground ui-not-selected:hover:bg-card/50 ui-not-selected:hover:text-foreground"
                           >
                             <div className="flex items-center justify-center space-x-2">
-                              <TrendingUp className="h-4 w-4" />
+                              <CreditCard className="h-4 w-4" />
                               <span>Тарифы</span>
                             </div>
                           </Tab>
                         </Tab.List>
 
                         <Tab.Panels className="mt-6">
-                          {/* Панель кредитов */}
+                          {/* Панель подписки */}
                           <Tab.Panel>
                             <div className="space-y-6">
-                              {/* Статистика */}
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="rounded-lg border border-border bg-card p-4">
-                                  <div className="text-sm text-muted-foreground">Всего куплено</div>
-                                  <div className="text-lg font-semibold text-foreground font-mono">
-                                    {balanceData ? (balanceData.totalPurchased || 0).toLocaleString() : '0'} т
-                                  </div>
-                                </div>
-                                <div className="rounded-lg border border-border bg-card p-4">
-                                  <div className="text-sm text-muted-foreground">Использовано</div>
-                                  <div className="text-lg font-semibold text-foreground font-mono">
-                                    {balanceData ? (balanceData.totalUsed || 0).toLocaleString() : '0'} т
-                                  </div>
-                                </div>
-                              </div>
-
-                              {/* График прогресса "Куплено / Использовано" */}
-                              {balanceData && (balanceData.totalPurchased > 0) && (
-                                <div className="rounded-lg border border-border bg-card p-4">
-                                  <div className="flex items-center justify-between mb-3">
-                                    <h4 className="text-sm font-medium text-foreground">Использование кредитов</h4>
-                                    <span className="text-xs text-muted-foreground">
-                                      {Math.round((balanceData.totalUsed / balanceData.totalPurchased) * 100)}%
-                                    </span>
-                                  </div>
-                                  
-                                  {/* Progress Bar */}
-                                  <div className="w-full bg-muted rounded-full h-3 mb-3">
-                                    <div 
-                                      className="bg-gradient-to-r from-emerald-500 to-green-600 h-3 rounded-full transition-all duration-300 ease-out"
-                                      style={{ 
-                                        width: `${Math.min((balanceData.totalUsed / balanceData.totalPurchased) * 100, 100)}%` 
-                                      }}
-                                    ></div>
-                                  </div>
-                                  
-                                  {/* Детали */}
-                                  <div className="flex justify-between text-xs text-muted-foreground">
-                                    <span>Использовано: {balanceData.totalUsed.toLocaleString()} т</span>
-                                    <span>Всего: {balanceData.totalPurchased.toLocaleString()} т</span>
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Прогноз затрат */}
-                              {balanceData && (
-                                <div className="rounded-lg border border-amber-200 bg-amber-50/50 dark:bg-amber-950/20 dark:border-amber-800 p-4">
-                                  <div className="flex items-center space-x-2 mb-3">
-                                    <TrendingUp className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-                                    <h4 className="text-sm font-medium text-amber-900 dark:text-amber-200">Прогноз затрат до конца месяца</h4>
-                                  </div>
-                                  
-                                  <div className="space-y-2">
-                                    {(() => {
-                                      const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
-                                      const currentDay = new Date().getDate();
-                                      const daysRemaining = daysInMonth - currentDay;
-                                      
-                                      // Средний расход в день (если есть данные об использовании)
-                                      const dailyUsage = balanceData.totalUsed > 0 ? balanceData.totalUsed / currentDay : 5;
-                                      const projectedUsage = dailyUsage * daysRemaining;
-                                      const projectedCost = projectedUsage * 5; // 5₽ за тонну
-                                      
-                                      return (
-                                        <>
-                                          <div className="flex justify-between text-sm">
-                                            <span className="text-amber-700 dark:text-amber-300">Прогноз использования:</span>
-                                            <span className="font-mono text-amber-900 dark:text-amber-100">{Math.round(projectedUsage)} т CO₂</span>
-                                          </div>
-                                          <div className="flex justify-between text-sm">
-                                            <span className="text-amber-700 dark:text-amber-300">Ориентировочная стоимость:</span>
-                                            <span className="font-mono font-semibold text-amber-900 dark:text-amber-100">{formatCurrency(projectedCost)}</span>
-                                          </div>
-                                          <div className="text-xs text-amber-600 dark:text-amber-400 mt-2">
-                                            *Прогноз основан на среднем потреблении
-                                          </div>
-                                        </>
-                                      );
-                                    })()}
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Кнопка пополнения */}
-                              <button className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors">
-                                <CreditCard className="h-4 w-4 mr-2" />
-                                Пополнить баланс
-                              </button>
-
-                              {/* История транзакций */}
-                              <div>
-                                <h3 className="text-sm font-medium text-foreground mb-3">
-                                  Последние операции
-                                </h3>
-                                <div className="space-y-3">
-                                  {transactions.length > 0 ? (
-                                    transactions.map((transaction) => (
-                                      <div
-                                        key={transaction.id}
-                                        className="flex items-center justify-between py-2 px-3 rounded-lg bg-muted"
-                                      >
-                                        <div className="flex-1">
-                                          <div className="text-sm font-medium text-foreground">
-                                            {transaction.description}
-                                          </div>
-                                          <div className="text-xs text-muted-foreground">
-                                            {formatDate(transaction.createdAt)}
-                                          </div>
+                              {subscriptionData ? (
+                                <>
+                                  {/* Текущий план */}
+                                  <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 dark:bg-emerald-950/20 dark:border-emerald-600 p-4">
+                                    <div className="flex items-center justify-between mb-4">
+                                      <div className="flex items-center space-x-3">
+                                        <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/50">
+                                          {getPlanIcon(subscriptionData.currentPlan)}
                                         </div>
-                                        <div
-                                          className={`text-sm font-semibold font-mono ${
-                                            transaction.type === 'CREDIT'
-                                              ? 'text-emerald-600'
-                                              : 'text-red-600'
-                                          }`}
-                                        >
-                                          {transaction.type === 'CREDIT' ? '+' : '-'}
-                                          {transaction.amount.toLocaleString()} т
+                                        <div>
+                                          <h3 className="font-semibold text-emerald-900 dark:text-emerald-100">
+                                            {planTemplates.find(p => p.id === subscriptionData.currentPlan)?.name}
+                                          </h3>
+                                          <p className="text-sm text-emerald-700 dark:text-emerald-300">
+                                            Активен до {new Date(subscriptionData.nextBillingDate).toLocaleDateString('ru-RU')}
+                                          </p>
                                         </div>
                                       </div>
-                                    ))
-                                  ) : (
-                                    <div className="text-center py-6 text-muted-foreground">
-                                      <Coins className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
-                                      <p className="text-sm">Нет транзакций</p>
+                                      <div className="text-right">
+                                        {subscriptionData.lastPayment && (
+                                          <>
+                                            <div className="font-semibold text-emerald-900 dark:text-emerald-100">
+                                              {formatCurrency(subscriptionData.lastPayment.amount)}
+                                            </div>
+                                            <div className="text-xs text-emerald-700 dark:text-emerald-300">
+                                              {new Date(subscriptionData.lastPayment.date).toLocaleDateString('ru-RU')}
+                                            </div>
+                                          </>
+                                        )}
+                                      </div>
                                     </div>
-                                  )}
+                                  </div>
+
+                                  {/* Статистика использования */}
+                                  <div className="grid grid-cols-2 gap-4">
+                                    <div className="rounded-lg border border-border bg-card p-4">
+                                      <div className="text-sm text-muted-foreground">В этом месяце</div>
+                                      <div className="text-lg font-semibold text-foreground font-mono">
+                                        {subscriptionData.monthlyUsage.toLocaleString()} т CO₂
+                                      </div>
+                                    </div>
+                                    <div className="rounded-lg border border-border bg-card p-4">
+                                      <div className="text-sm text-muted-foreground">Всего за год</div>
+                                      <div className="text-lg font-semibold text-foreground font-mono">
+                                        {subscriptionData.totalEmissions.toLocaleString()} т CO₂
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Прогноз стоимости */}
+                                  {(() => {
+                                    const currentPlan = planTemplates.find(p => p.id === subscriptionData.currentPlan);
+                                    if (!currentPlan) return null;
+                                    
+                                    // Простые моковые расчеты для демонстрации
+                                    const estimatedMonthlyCost = subscriptionData.monthlyUsage * 2; // 2₽ за тонну примерно
+                                    const estimatedYearlyCost = subscriptionData.totalEmissions * 1.5; // 1.5₽ за тонну примерно
+                                    
+                                    return (
+                                      <div className="rounded-lg border border-blue-200 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-600 p-4">
+                                        <div className="flex items-center space-x-2 mb-3">
+                                          <TrendingUp className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                          <h4 className="text-sm font-medium text-blue-900 dark:text-blue-200">Расчет стоимости</h4>
+                                        </div>
+                                        
+                                        <div className="space-y-2">
+                                          <div className="flex justify-between text-sm">
+                                            <span className="text-blue-700 dark:text-blue-300">За текущий месяц:</span>
+                                            <span className="font-mono font-semibold text-blue-900 dark:text-blue-100">
+                                              {formatCurrency(estimatedMonthlyCost)}
+                                            </span>
+                                          </div>
+                                          <div className="flex justify-between text-sm">
+                                            <span className="text-blue-700 dark:text-blue-300">Прогноз на год:</span>
+                                            <span className="font-mono font-semibold text-blue-900 dark:text-blue-100">
+                                              {formatCurrency(estimatedYearlyCost)}
+                                            </span>
+                                          </div>
+                                          <div className="text-xs text-blue-600 dark:text-blue-400 mt-2 border-t border-blue-200 dark:border-blue-700 pt-2">
+                                            Базовая оплата + переменная часть по объему выбросов
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  })()}
+
+                                  {/* Кнопки управления */}
+                                  <div className="space-y-3">
+                                    <a 
+                                      href="/tariffs"
+                                      className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                                    >
+                                      <TrendingUp className="h-4 w-4 mr-2" />
+                                      Управление подпиской
+                                    </a>
+                                    <button className="w-full flex items-center justify-center px-4 py-2 border border-muted text-sm font-medium rounded-md text-muted-foreground hover:text-foreground hover:border-border transition-colors">
+                                      Скачать счет-фактуру
+                                    </button>
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="text-center py-8">
+                                  <AlertCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground/50" />
+                                  <h3 className="text-lg font-medium text-foreground mb-2">Нет активной подписки</h3>
+                                  <p className="text-muted-foreground mb-6">
+                                    Выберите тарифный план для начала работы с платформой
+                                  </p>
+                                  <a 
+                                    href="/tariffs"
+                                    className="px-6 py-3 bg-emerald-600 text-white rounded-md font-medium hover:bg-emerald-700 transition-colors inline-block"
+                                  >
+                                    Выбрать план
+                                  </a>
                                 </div>
-                              </div>
+                              )}
                             </div>
                           </Tab.Panel>
 
                           {/* Панель тарифов */}
                           <Tab.Panel>
                             <div className="space-y-6">
-                              {/* Переключатель месяц/год */}
-                              <div className="flex items-center justify-center">
-                                <div className="flex items-center bg-muted rounded-lg p-1">
-                                  <button
-                                    onClick={() => setIsAnnual(false)}
-                                    className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                                      !isAnnual
-                                        ? 'bg-card text-foreground shadow-sm'
-                                        : 'text-muted-foreground hover:text-foreground'
-                                    }`}
-                                  >
-                                    Месяц
-                                  </button>
-                                  <button
-                                    onClick={() => setIsAnnual(true)}
-                                    className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                                      isAnnual
-                                        ? 'bg-card text-foreground shadow-sm'
-                                        : 'text-muted-foreground hover:text-foreground'
-                                    }`}
-                                  >
-                                    Год
-                                    {isAnnual && (
-                                      <span className="ml-2 text-xs bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 px-2 py-1 rounded-full">
-                                        Экономия
-                                      </span>
-                                    )}
-                                  </button>
+                              {/* Калькулятор стоимости */}
+                              <div className="rounded-lg border border-muted bg-card p-4">
+                                <h3 className="text-sm font-medium text-foreground mb-3">
+                                  Калькулятор стоимости
+                                </h3>
+                                <div className="space-y-3">
+                                  <div>
+                                    <label className="text-xs text-muted-foreground">Объем выбросов (т CO₂/год)</label>
+                                    <input
+                                      type="number"
+                                      placeholder="100000"
+                                      className="w-full mt-1 px-3 py-2 border border-muted rounded-md text-sm bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600"
+                                      onChange={(e) => {
+                                        const value = parseInt(e.target.value) || 0;
+                                        // Здесь можно добавить логику для обновления расчетов
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    *Введите ожидаемый годовой объем для точного расчета
+                                  </div>
                                 </div>
                               </div>
-                            </div>
+
                               {/* Планы */}
                               <div className="space-y-4">
-                              {plans.map((plan) => (
-                                <div
-                                  key={plan.id}
-                                  className={`relative rounded-lg border p-4 ${
-                                    plan.popular
-                                      ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 dark:border-emerald-600'
-                                      : 'border-border bg-card'
-                                  }`}
-                                >
-                                  {plan.popular && (
-                                    <div className="absolute -top-2 left-4">
-                                      <span className="bg-emerald-500 text-white px-3 py-1 text-xs font-semibold rounded-full">
-                                        Популярный
-                                      </span>
-                                    </div>
-                                  )}
-                                  
-                                  <div className="flex items-start justify-between">
-                                    <div className="flex items-center space-x-3">
-                                      <div className={`p-2 rounded-lg ${
-                                        plan.popular ? 'bg-emerald-100 dark:bg-emerald-900/50' : 'bg-muted'
-                                      }`}>
-                                        {getPlanIcon(plan.id)}
+                                {planTemplates.map((planTemplate) => (
+                                  <div
+                                    key={planTemplate.id}
+                                    className={`relative rounded-lg border p-4 ${
+                                      planTemplate.popular
+                                        ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-950/20 dark:border-emerald-600'
+                                        : planTemplate.recommended
+                                        ? 'border-blue-500 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-600'
+                                        : 'border-border bg-card'
+                                    }`}
+                                  >
+                                    {planTemplate.popular && (
+                                      <div className="absolute -top-2 left-4">
+                                        <span className="bg-emerald-500 text-white px-3 py-1 text-xs font-semibold rounded-full">
+                                          Популярный
+                                        </span>
                                       </div>
-                                      <div>
-                                        <h3 className="font-medium text-foreground">{plan.name}</h3>
-                                        <div className="flex items-baseline space-x-2">
-                                          <p className="text-sm text-foreground font-semibold">
-                                            {formatCurrency(plan.price)}
-                                            {plan.id !== 'FREE' && (
-                                              <span className="text-muted-foreground font-normal">
-                                                /{isAnnual ? 'год' : 'мес'}
-                                              </span>
+                                    )}
+                                    
+                                    {planTemplate.recommended && (
+                                      <div className="absolute -top-2 right-4">
+                                        <span className="bg-blue-500 text-white px-3 py-1 text-xs font-semibold rounded-full">
+                                          Рекомендуем
+                                        </span>
+                                      </div>
+                                    )}
+                                    
+                                    <div className="flex items-start justify-between">
+                                      <div className="flex items-center space-x-3">
+                                        <div className={`p-2 rounded-lg ${
+                                          planTemplate.popular 
+                                            ? 'bg-emerald-100 dark:bg-emerald-900/50' 
+                                            : planTemplate.recommended
+                                            ? 'bg-blue-100 dark:bg-blue-900/50'
+                                            : 'bg-muted'
+                                        }`}>
+                                          {getPlanIcon(planTemplate.id)}
+                                        </div>
+                                        <div>
+                                          <h3 className="font-medium text-foreground">{planTemplate.name}</h3>
+                                          <div className="space-y-1">
+                                            <div className="text-sm text-foreground">
+                                              <span className="font-semibold">Загрузка...</span>
+                                              <span className="text-muted-foreground"> базовый платеж</span>
+                                            </div>
+                                            <div className="text-sm text-muted-foreground">
+                                              + расчет по объему
+                                            </div>
+                                            {planTemplate.maxEmissions !== Infinity && (
+                                              <div className="text-xs text-muted-foreground">
+                                                до {(planTemplate.maxEmissions / 1000).toLocaleString()}К т/год
+                                              </div>
                                             )}
-                                          </p>
-                                          {isAnnual && plan.id !== 'FREE' && (
-                                            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                                              Экономия {formatCurrency(getAnnualSavings(plan.id))}
-                                            </span>
-                                          )}
+                                          </div>
                                         </div>
                                       </div>
                                     </div>
+                                    
+                                    <ul className="mt-3 space-y-1">
+                                      {planTemplate.features.map((feature, index) => (
+                                        <li key={index} className="text-sm text-muted-foreground flex items-center">
+                                          <span className="mr-2 text-emerald-500">•</span>
+                                          {feature}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                    
+                                    <button
+                                      className={`mt-4 w-full rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                                        planTemplate.popular
+                                          ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                                          : planTemplate.recommended
+                                          ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                          : 'bg-muted text-foreground hover:bg-muted/80'
+                                      }`}
+                                    >
+                                      {subscriptionData?.currentPlan === planTemplate.id ? 'Текущий план' : 'Выбрать план'}
+                                    </button>
                                   </div>
-                                  
-                                  <ul className="mt-3 space-y-1">
-                                    {plan.features.map((feature, index) => (
-                                      <li key={index} className="text-sm text-muted-foreground flex items-center">
-                                        <span className="mr-2">•</span>
-                                        {feature}
-                                      </li>
-                                    ))}
-                                  </ul>
-                                  
-                                  <button
-                                    className={`mt-4 w-full rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                                      plan.popular
-                                        ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                                        : 'bg-muted text-foreground hover:bg-muted/80'
-                                    }`}
-                                  >
-                                    {plan.id === 'FREE' ? 'Текущий план' : 'Выбрать план'}
-                                  </button>
+                                ))}
+                              </div>
+
+                              {/* Информация о CBAM */}
+                              <div className="rounded-lg border border-orange-200 bg-orange-50/50 dark:bg-orange-950/20 dark:border-orange-600 p-4">
+                                <div className="flex items-center space-x-2 mb-2">
+                                  <AlertCircle className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                                  <h4 className="text-sm font-medium text-orange-900 dark:text-orange-200">CBAM отчетность</h4>
                                 </div>
-                              ))}
+                                <p className="text-sm text-orange-700 dark:text-orange-300 mb-3">
+                                  Для экспорта в ЕС требуется дополнительная отчетность CBAM
+                                </p>
+                                <div className="text-xs text-orange-600 dark:text-orange-400">
+                                  <strong>Доплата за CBAM:</strong> +0.5₽ за тонну CO₂ для всех планов
+                                </div>
+                              </div>
                             </div>
                           </Tab.Panel>
                         </Tab.Panels>

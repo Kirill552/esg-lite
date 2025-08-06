@@ -144,7 +144,7 @@ export function CreditsDisplay({ className = '' }: CreditsDisplayProps) {
 
         {/* Action buttons */}
         <div className="flex space-x-2">
-          <Link href="/credits" className="flex-1">
+          <Link href="/tariffs" className="flex-1">
             <Button variant="ghost" size="sm" className="w-full text-xs">
               Подробнее
             </Button>

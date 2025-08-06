@@ -1,0 +1,19 @@
+{
+  "package_id": "371-2022",
+  "method_ref": "Приказ Минприроды №371, Приложение N …",
+  "version": "v2022-05-27",
+  "valid_from": "2022-07-29",
+  "valid_to": null,
+  "source_url": "https://publication.pravo.gov.ru/Document/View/0001202207290034",
+  "factors": [
+    {
+      "factor_id": "F.STF.NG.CO2",
+      "name": "CO2 emission factor for natural gas combustion",
+      "category": "Стационарные источники/Топливо",
+      "unit": "tCO2/TJ",
+      "value": 56.1,
+      "uncertainty": 0.02,
+      "source": "Приложение …"
+    }
+  ]
+}

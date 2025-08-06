@@ -309,15 +309,9 @@ export default function HelpPage() {
                     Годовая аналитика
                   </Button>
                 </Link>
-                <Link href="/credits">
+                <Link href="/tariffs">
                   <Button variant="ghost" size="sm" className="w-full justify-start">
                     <Calculator className="w-4 h-4 mr-3" />
-                    Управление кредитами
-                  </Button>
-                </Link>
-                <Link href="/subscription">
-                  <Button variant="ghost" size="sm" className="w-full justify-start">
-                    <Shield className="w-4 h-4 mr-3" />
                     Тарифы и подписки
                   </Button>
                 </Link>

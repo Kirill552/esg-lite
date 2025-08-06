@@ -1,34 +1,44 @@
 /**
  * Subscription Service - система управления тарифами ESG-Lite
- * Задача 3.1: Создать систему тарифов
- * Требования: 1.1 Annual Lite тариф 30-50k ₽/год, включает 1 000 т CO₂ кредитов
+ * Новая модель монетизации 2025
+ * Интеграция с системой базовых платежей и переменной ставкой за тонну
  */
 
 import { prisma } from './prisma';
 import { SubscriptionPlan, SubscriptionStatus } from '@prisma/client';
 import { CreditsService } from './credits-service';
+import { 
+  calculatePricing, 
+  determinePlanByEmissions,
+  getPlanDetails,
+  isSurgePeriodActive,
+  type PricingCalculation 
+} from './monetization-config';
 
 export interface SubscriptionInfo {
   id: string;
   organizationId: string;
-  planType: SubscriptionPlan;
+  planType: 'TRIAL' | 'LITE' | 'STANDARD' | 'LARGE';
   status: SubscriptionStatus;
+  annualEmissions: number;
+  hasCbamAddon: boolean;
+  pricing: PricingCalculation;
   startsAt?: Date;
   expiresAt?: Date;
   autoRenew: boolean;
-  priceRub?: number;
-  features?: any;
+  finalPrice: number;
+  features?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface CreateSubscriptionRequest {
   organizationId: string;
-  planType: SubscriptionPlan;
-  durationMonths?: number; // По умолчанию 12 для LITE_ANNUAL
+  annualEmissions: number;
+  hasCbamAddon?: boolean;
+  durationMonths?: number;
   autoRenew?: boolean;
-  customPriceRub?: number;
-  features?: any;
+  startDate?: Date;
 }
 
 export interface SubscriptionPlanInfo {
@@ -55,7 +65,7 @@ export class SubscriptionService {
   private readonly SUBSCRIPTION_PLANS: Record<SubscriptionPlan, SubscriptionPlanInfo> = {
     [SubscriptionPlan.FREE]: {
       planType: SubscriptionPlan.FREE,
-      name: 'Бесплатный план',
+      name: 'Бесплатный пробный план',
       description: 'Базовая функциональность с ограничениями',
       priceRub: 0,
       durationMonths: 0,
@@ -66,40 +76,122 @@ export class SubscriptionService {
         'Ограниченное количество запросов'
       ]
     },
-    [SubscriptionPlan.LITE_ANNUAL]: {
-      planType: SubscriptionPlan.LITE_ANNUAL,
-      name: 'Ежегодный LITE',
-      description: 'Годовой тариф для средних предприятий',
-      priceRub: 40000, // 30-50k ₽/год
-      durationMonths: 12,
-      creditsIncluded: 1000, // 1000 т CO₂ включено в тариф
+    [SubscriptionPlan.TRIAL]: {
+      planType: SubscriptionPlan.TRIAL,
+      name: 'Пробный план (14 дней)',
+      description: 'Полный доступ на 14 дней',
+      priceRub: 0,
+      durationMonths: 0, // 14 дней
+      creditsIncluded: 0,
       features: [
-        '1000 т CO₂ кредитов включено',
-        'Приоритетная обработка',
-        'Увеличенные лимиты запросов',
+        '14 дней полного доступа',
+        '1 отчёт до 200 МБ',
+        'Все функции платформы'
+      ]
+    },
+    [SubscriptionPlan.LITE]: {
+      planType: SubscriptionPlan.LITE,
+      name: 'План "Лайт"',
+      description: 'Для предприятий с выбросами 50-150 тыс. тонн CO₂',
+      priceRub: 75000, // Базовый платёж
+      durationMonths: 12,
+      creditsIncluded: 0, // Рассчитывается по формуле
+      features: [
+        'Базовый платёж 75 000 ₽/год',
+        'Дополнительно 1,5 ₽ за тонну CO₂',
+        'Автоматический расчёт отчётности',
         'Техническая поддержка',
-        'Расширенная аналитика'
+        'Интеграция с ГИС Экология'
+      ]
+    },
+    [SubscriptionPlan.STANDARD]: {
+      planType: SubscriptionPlan.STANDARD,
+      name: 'План "Стандарт"',
+      description: 'Для предприятий с выбросами 150к-1М тонн CO₂',
+      priceRub: 150000, // Базовый платёж
+      durationMonths: 12,
+      creditsIncluded: 0, // Рассчитывается по формуле
+      features: [
+        'Базовый платёж 150 000 ₽/год',
+        'Дополнительно 0,32 ₽ за тонну CO₂',
+        'Приоритетная поддержка',
+        'Модуль 1С-ESG коннектор',
+        'Расширенная аналитика',
+        'API доступ'
+      ]
+    },
+    [SubscriptionPlan.LARGE]: {
+      planType: SubscriptionPlan.LARGE,
+      name: 'План "Крупный"',
+      description: 'Для крупных предприятий с выбросами 1-3М тонн CO₂',
+      priceRub: 250000, // Базовый платёж
+      durationMonths: 12,
+      creditsIncluded: 0, // Рассчитывается по формуле
+      features: [
+        'Базовый платёж 250 000 ₽/год',
+        'Дополнительно 0,33 ₽ за тонну CO₂',
+        'Персональный менеджер',
+        'Все интеграции (1С, СБИС, Контур)',
+        'Белый лейбл решения',
+        'SLA 99.9%'
       ]
     },
     [SubscriptionPlan.CBAM_ADDON]: {
       planType: SubscriptionPlan.CBAM_ADDON,
-      name: 'CBAM Add-on',
-      description: 'Дополнительный модуль CBAM',
-      priceRub: 15000, // ~3 EUR/т CO₂ * 5000 т * 85 ₽/EUR
+      name: 'Модуль CBAM',
+      description: 'Дополнительный модуль для экспортёров в ЕС',
+      priceRub: 15000, // Годовая подписка
       durationMonths: 12,
-      creditsIncluded: 0, // CBAM оплачивается отдельно
+      creditsIncluded: 0, // 255 ₽ за тонну дополнительно
       features: [
-        'CBAM отчеты по строкам',
+        'Годовая подписка 15 000 ₽',
+        'Дополнительно 255 ₽ за тонну импорта',
+        'CBAM отчеты по стандартам ЕС',
         'Поддержка EUR валюты',
         'Специализированные шаблоны',
-        'Интеграция с EU ETS',
-        'CBAM калькулятор'
+        'Интеграция с EU ETS'
       ]
     }
   };
 
   constructor() {
     this.creditsService = new CreditsService();
+  }
+
+  /**
+   * Преобразовать тип плана из новой модели в Prisma enum
+   */
+  private mapPlanTypeToPrisma(planType: 'TRIAL' | 'LITE' | 'STANDARD' | 'LARGE'): SubscriptionPlan {
+    switch (planType) {
+      case 'TRIAL':
+        return SubscriptionPlan.TRIAL;
+      case 'LITE':
+        return SubscriptionPlan.LITE;
+      case 'STANDARD':
+        return SubscriptionPlan.STANDARD;
+      case 'LARGE':
+        return SubscriptionPlan.LARGE;
+      default:
+        return SubscriptionPlan.FREE;
+    }
+  }
+
+  /**
+   * Преобразовать Prisma enum в тип новой модели
+   */
+  private mapPrismaTypeToPlan(planType: SubscriptionPlan): 'TRIAL' | 'LITE' | 'STANDARD' | 'LARGE' {
+    switch (planType) {
+      case SubscriptionPlan.TRIAL:
+        return 'TRIAL';
+      case SubscriptionPlan.LITE:
+        return 'LITE';
+      case SubscriptionPlan.STANDARD:
+        return 'STANDARD';
+      case SubscriptionPlan.LARGE:
+        return 'LARGE';
+      default:
+        return 'TRIAL';
+    }
   }
 
   /**
@@ -112,8 +204,9 @@ export class SubscriptionService {
   /**
    * Получить информацию о конкретном плане
    */
-  getPlanInfo(planType: SubscriptionPlan): SubscriptionPlanInfo | null {
-    return this.SUBSCRIPTION_PLANS[planType] || null;
+  getPlanInfo(planType: 'TRIAL' | 'LITE' | 'STANDARD' | 'LARGE' | 'CBAM_ADDON'): SubscriptionPlanInfo | null {
+    const prismaPlanType = this.mapPlanTypeToPrisma(planType as any);
+    return this.SUBSCRIPTION_PLANS[prismaPlanType] || null;
   }
 
   /**
@@ -144,14 +237,17 @@ export class SubscriptionService {
   }
 
   /**
-   * Создать новую подписку
+   * Создать новую подписку на основе годовых выбросов
    */
   async createSubscription(request: CreateSubscriptionRequest): Promise<SubscriptionInfo> {
     try {
-      const planInfo = this.getPlanInfo(request.planType);
-      if (!planInfo) {
-        throw new Error(`Invalid subscription plan: ${request.planType}`);
-      }
+      // Определяем план автоматически на основе выбросов
+      const planType = determinePlanByEmissions(request.annualEmissions);
+      const pricing = calculatePricing(
+        request.annualEmissions, 
+        request.hasCbamAddon || false,
+        request.startDate || new Date()
+      );
 
       // Проверить, нет ли уже активной подписки
       const existingSubscription = await this.getActiveSubscription(request.organizationId);
@@ -159,8 +255,8 @@ export class SubscriptionService {
         throw new Error(`Organization ${request.organizationId} already has an active subscription`);
       }
 
-      const now = new Date();
-      const durationMonths = request.durationMonths || planInfo.durationMonths;
+      const now = request.startDate || new Date();
+      const durationMonths = request.durationMonths || 12;
       const expiresAt = durationMonths > 0 
         ? new Date(now.getTime() + durationMonths * 30 * 24 * 60 * 60 * 1000)
         : null;
@@ -168,17 +264,32 @@ export class SubscriptionService {
       const subscription = await prisma.organization_subscriptions.create({
         data: {
           organizationId: request.organizationId,
-          plan_type: request.planType,
+          plan_type: this.mapPlanTypeToPrisma(planType),
           status: SubscriptionStatus.PENDING, // Начинаем с PENDING до активации
           starts_at: now,
           expires_at: expiresAt,
           auto_renew: request.autoRenew ?? false,
-          price_rub: request.customPriceRub ?? planInfo.priceRub,
-          features: request.features ?? planInfo.features
+          price_rub: pricing.finalPrice,
+          annual_emissions: request.annualEmissions,
+          has_cbam_addon: request.hasCbamAddon || false,
         }
       });
 
-      return this.mapToSubscriptionInfo(subscription);
+      return {
+        id: subscription.id,
+        organizationId: subscription.organizationId,
+        planType: planType,
+        status: subscription.status,
+        annualEmissions: request.annualEmissions,
+        hasCbamAddon: request.hasCbamAddon || false,
+        pricing,
+        startsAt: subscription.starts_at || undefined,
+        expiresAt: subscription.expires_at || undefined,
+        autoRenew: subscription.auto_renew,
+        finalPrice: pricing.finalPrice,
+        createdAt: subscription.createdAt,
+        updatedAt: subscription.updatedAt,
+      };
     } catch (error) {
       console.error('Error creating subscription:', error);
       throw new Error(`Failed to create subscription: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -202,7 +313,7 @@ export class SubscriptionService {
         return { success: false, error: 'Subscription is already active' };
       }
 
-      const planInfo = this.getPlanInfo(subscription.plan_type);
+      const planInfo = this.getPlanInfo(this.mapPrismaTypeToPlan(subscription.plan_type));
       if (!planInfo) {
         return { success: false, error: 'Invalid subscription plan' };
       }
@@ -419,12 +530,24 @@ export class SubscriptionService {
     return {
       id: subscription.id,
       organizationId: subscription.organizationId,
-      planType: subscription.plan_type,
+      planType: this.mapPrismaTypeToPlan(subscription.plan_type),
       status: subscription.status,
+      annualEmissions: subscription.annual_emissions || 0,
+      hasCbamAddon: subscription.has_cbam_addon || false,
+      pricing: {
+        planType: this.mapPrismaTypeToPlan(subscription.plan_type),
+        basePrice: subscription.price_rub ? Number(subscription.price_rub) : 0,
+        surgeMultiplier: 1,
+        finalPrice: subscription.price_rub ? Number(subscription.price_rub) : 0,
+        emissions: subscription.annual_emissions || 0,
+        currency: 'RUB',
+        period: 'YEAR',
+        hasCbamAddon: subscription.has_cbam_addon || false,
+      },
       startsAt: subscription.starts_at,
       expiresAt: subscription.expires_at,
       autoRenew: subscription.auto_renew,
-      priceRub: subscription.price_rub ? Number(subscription.price_rub) : undefined,
+      finalPrice: subscription.price_rub ? Number(subscription.price_rub) : 0,
       features: subscription.features,
       createdAt: subscription.createdAt,
       updatedAt: subscription.updatedAt
