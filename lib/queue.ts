@@ -86,28 +86,11 @@ export class QueueManager {
 
     try {
       this.boss = await createPgBoss();
-      
-      // Создаем необходимые очереди
-      await this.boss.createQueue(QUEUE_NAMES.OCR, {
-        retryLimit: 3,
-        retryDelay: 2000,
-        expireInHours: 1
-      });
-      
-      await this.boss.createQueue(QUEUE_NAMES.PDF_GENERATION, {
-        retryLimit: 2,
-        retryDelay: 5000,
-        expireInHours: 2
-      });
-      
-      await this.boss.createQueue(QUEUE_NAMES.CLEANUP, {
-        retryLimit: 1,
-        retryDelay: 10000,
-        expireInHours: 24
-      });
-      
+
+      // В современных версиях pg-boss очереди создаются автоматически при публикации задач,
+      // поэтому явное создание очередей больше не требуется
       console.log('✅ Queue Manager инициализирован успешно');
-      console.log('✅ Очереди созданы:', Object.values(QUEUE_NAMES));
+      console.log('ℹ️ Очереди будут созданы автоматически при первой публикации задач');
     } catch (error) {
       console.error('❌ Ошибка инициализации Queue Manager:', error);
       throw error;

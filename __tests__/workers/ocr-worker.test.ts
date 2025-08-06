@@ -22,7 +22,8 @@ jest.mock('../../lib/credits-service', () => ({
   creditsService: {
     hasCredits: jest.fn(),
     debitCredits: jest.fn(),
-    getOperationCost: jest.fn()
+    getOperationCost: jest.fn(),
+    checkBalance: jest.fn()
   }
 }));
 
@@ -86,7 +87,8 @@ describe('OcrWorker', () => {
     
     // Настройка моков по умолчанию
     mockCreditsService.hasCredits.mockResolvedValue(true);
-    mockCreditsService.debitCredits.mockResolvedValue(undefined);
+    mockCreditsService.debitCredits.mockResolvedValue({ success: true, newBalance: 0 });
+    mockCreditsService.checkBalance.mockResolvedValue({ balance: 0 });
     mockCreditsService.getOperationCost.mockResolvedValue({
       baseCost: 1,
       surgePricingMultiplier: 1,
@@ -232,13 +234,19 @@ describe('OcrWorker', () => {
           ocrConfidence: 0.95
         }
       });
-      expect(mockCreditsService.debitCredits).toHaveBeenCalledWith('org-123', 1, 'OCR processing: doc-123');
+      expect(mockCreditsService.debitCredits).toHaveBeenCalledWith(
+        'org-123',
+        1,
+        expect.stringContaining('OCR обработка документа'),
+        expect.objectContaining({ documentId: 'doc-123' })
+      );
       expect(mockMetricsCollector.recordProcessingTime).toHaveBeenCalledWith('job-123', expect.any(Number));
     });
 
     test('должен отклонить задачу при недостатке кредитов', async () => {
       // Arrange
       mockCreditsService.hasCredits.mockResolvedValue(false);
+      mockCreditsService.checkBalance.mockResolvedValue({ balance: 0 });
 
       // Act & Assert
       await expect(processOcrJobMethod(mockJob)).rejects.toThrow('INSUFFICIENT_CREDITS');
@@ -298,18 +306,33 @@ describe('OcrWorker', () => {
 
       // Assert
       expect(mockCreditsService.hasCredits).toHaveBeenCalledWith('user-123', 1);
-      expect(mockCreditsService.debitCredits).toHaveBeenCalledWith('user-123', 1, 'OCR processing: doc-123');
+      expect(mockCreditsService.debitCredits).toHaveBeenCalledWith(
+        'user-123',
+        1,
+        expect.stringContaining('OCR обработка документа'),
+        expect.objectContaining({ documentId: 'doc-123' })
+      );
     });
 
     test('должен применить surge pricing множитель', async () => {
       // Arrange
-      mockSurgePricingService.getSurgeMultiplier.mockReturnValue(2);
+      mockCreditsService.getOperationCost.mockResolvedValue({
+        baseCost: 1,
+        surgePricingMultiplier: 2,
+        finalCost: 2,
+        pricePerTonRub: 5
+      });
 
       // Act
       await processOcrJobMethod(mockJob);
 
       // Assert
-      expect(mockCreditsService.debitCredits).toHaveBeenCalledWith('org-123', 2, 'OCR processing: doc-123');
+      expect(mockCreditsService.debitCredits).toHaveBeenCalledWith(
+        'org-123',
+        2,
+        expect.stringContaining('OCR обработка документа'),
+        expect.objectContaining({ documentId: 'doc-123' })
+      );
     });
 
     test('должен обрабатывать длинный текст и создавать preview', async () => {
@@ -509,14 +532,20 @@ describe('OcrWorker', () => {
       expect(mockCreditsService.debitCredits).toHaveBeenCalledWith(
         'org-123',
         1,
-        'OCR processing: doc-123'
+        expect.stringContaining('OCR обработка документа'),
+        expect.objectContaining({ documentId: 'doc-123' })
       );
     });
 
     test('должен корректно интегрироваться с surge pricing service', async () => {
       // Arrange
       await ocrWorker.start();
-      mockSurgePricingService.getSurgeMultiplier.mockReturnValue(1.5);
+      mockCreditsService.getOperationCost.mockResolvedValue({
+        baseCost: 1,
+        surgePricingMultiplier: 1.5,
+        finalCost: 1.5,
+        pricePerTonRub: 5
+      });
       
       const workCall = mockBoss.work.mock.calls[0];
       const processOcrJobMethod = workCall[2];
@@ -537,11 +566,12 @@ describe('OcrWorker', () => {
       await processOcrJobMethod(mockJob);
 
       // Assert
-      expect(mockSurgePricingService.getSurgeMultiplier).toHaveBeenCalled();
+      expect(mockCreditsService.getOperationCost).toHaveBeenCalledWith('ocr');
       expect(mockCreditsService.debitCredits).toHaveBeenCalledWith(
         'org-123',
         1.5,
-        'OCR processing: doc-123'
+        expect.stringContaining('OCR обработка документа'),
+        expect.objectContaining({ documentId: 'doc-123' })
       );
     });
 

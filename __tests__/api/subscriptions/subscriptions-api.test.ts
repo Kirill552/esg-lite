@@ -41,7 +41,7 @@ describe('Subscriptions API Endpoints', () => {
       const mockActiveSubscription = {
         id: 'sub_123',
         organizationId: testOrganizationId,
-        planType: SubscriptionPlan.LITE_ANNUAL,
+        planType: SubscriptionPlan.LITE,
         status: SubscriptionStatus.ACTIVE,
         startsAt: new Date('2025-01-01'),
         expiresAt: new Date('2026-01-01'),
@@ -96,13 +96,13 @@ describe('Subscriptions API Endpoints', () => {
   });
 
   describe('POST /api/subscriptions', () => {
-    it('должен создать новую подписку LITE_ANNUAL', async () => {
+    it('должен создать новую подписку LITE', async () => {
       mockAuth.mockResolvedValue({ userId: testUserId, orgId: testOrganizationId });
 
       const mockCreatedSubscription = {
         id: 'sub_new123',
         organizationId: testOrganizationId,
-        planType: SubscriptionPlan.LITE_ANNUAL,
+        planType: SubscriptionPlan.LITE,
         status: SubscriptionStatus.PENDING,
         startsAt: new Date(),
         expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
@@ -116,7 +116,7 @@ describe('Subscriptions API Endpoints', () => {
       mockSubscriptionService.createSubscription.mockResolvedValue(mockCreatedSubscription);
 
       const requestBody = {
-        planType: SubscriptionPlan.LITE_ANNUAL,
+        planType: SubscriptionPlan.LITE,
         autoRenew: false
       };
 
@@ -136,7 +136,7 @@ describe('Subscriptions API Endpoints', () => {
       expect(data.data.subscription.status).toBe(mockCreatedSubscription.status);
       expect(mockSubscriptionService.createSubscription).toHaveBeenCalledWith({
         organizationId: testOrganizationId,
-        planType: SubscriptionPlan.LITE_ANNUAL,
+        planType: SubscriptionPlan.LITE,
         autoRenew: false
       });
     });
@@ -183,7 +183,7 @@ describe('Subscriptions API Endpoints', () => {
 
       const request = new NextRequest('http://localhost:3000/api/subscriptions', {
         method: 'POST',
-        body: JSON.stringify({ planType: SubscriptionPlan.LITE_ANNUAL }),
+        body: JSON.stringify({ planType: SubscriptionPlan.LITE }),
         headers: { 'Content-Type': 'application/json' }
       });
 
@@ -204,7 +204,7 @@ describe('Subscriptions API Endpoints', () => {
         subscription: {
           id: 'sub_123',
           organizationId: testOrganizationId,
-          planType: SubscriptionPlan.LITE_ANNUAL,
+          planType: SubscriptionPlan.LITE,
           status: SubscriptionStatus.ACTIVE,
           startsAt: new Date(),
           expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
@@ -247,7 +247,7 @@ describe('Subscriptions API Endpoints', () => {
         subscription: {
           id: 'sub_123',
           organizationId: testOrganizationId,
-          planType: SubscriptionPlan.LITE_ANNUAL,
+          planType: SubscriptionPlan.LITE,
           status: SubscriptionStatus.ACTIVE,
           startsAt: new Date('2025-01-01'),
           expiresAt: new Date('2027-01-01'), // Продлено на год
@@ -274,7 +274,7 @@ describe('Subscriptions API Endpoints', () => {
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
       expect(data.data.action).toBe('renew');
-      expect(data.data.message).toContain('продлена');
+      expect(data.data.message).toContain('продлен');
     });
 
     it('должен отменить подписку', async () => {
@@ -293,7 +293,7 @@ describe('Subscriptions API Endpoints', () => {
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
       expect(data.data.action).toBe('cancel');
-      expect(data.data.message).toContain('отменена');
+      expect(data.data.message).toContain('отменен');
     });
 
     it('должен отклонить запрос с недопустимым action', async () => {
@@ -327,7 +327,7 @@ describe('Subscriptions API Endpoints', () => {
           features: ['До 1000 т CO₂ бесплатно']
         },
         {
-          planType: SubscriptionPlan.LITE_ANNUAL,
+          planType: SubscriptionPlan.LITE,
           name: 'Annual Lite',
           description: 'Годовая подписка для средних предприятий',
           priceRub: 40000,
@@ -347,7 +347,7 @@ describe('Subscriptions API Endpoints', () => {
       expect(data.success).toBe(true);
       expect(data.data.plans).toHaveLength(2);
       expect(data.data.plans[0].recommended).toBe(false); // FREE план не рекомендуемый
-      expect(data.data.plans[1].recommended).toBe(true);  // LITE_ANNUAL рекомендуемый
+      expect(data.data.plans[1].recommended).toBe(true);  // LITE план рекомендуемый
       expect(data.data.currency).toBe('RUB');
     });
   });
@@ -373,12 +373,12 @@ describe('Subscriptions API Endpoints', () => {
       const mockNewSubscription = {
         ...mockCurrentSubscription,
         id: 'sub_new',
-        planType: SubscriptionPlan.LITE_ANNUAL,
+        planType: SubscriptionPlan.LITE,
         priceRub: 40000
       };
 
       const mockPlanInfo = {
-        planType: SubscriptionPlan.LITE_ANNUAL,
+        planType: SubscriptionPlan.LITE,
         name: 'Annual Lite',
         description: 'Годовая подписка',
         priceRub: 40000,
@@ -398,7 +398,7 @@ describe('Subscriptions API Endpoints', () => {
       });
 
       const requestBody = {
-        newPlanType: SubscriptionPlan.LITE_ANNUAL,
+        newPlanType: SubscriptionPlan.LITE,
         immediate: true
       };
 
@@ -415,7 +415,7 @@ describe('Subscriptions API Endpoints', () => {
       expect(data.success).toBe(true);
       expect(data.data.changeResult.type).toBe('immediate');
       expect(data.data.changeResult.oldPlan).toBe(SubscriptionPlan.FREE);
-      expect(data.data.changeResult.newPlan).toBe(SubscriptionPlan.LITE_ANNUAL);
+      expect(data.data.changeResult.newPlan).toBe(SubscriptionPlan.LITE);
       expect(data.data.changeResult.creditsAdded).toBe(1000);
     });
 
@@ -425,7 +425,7 @@ describe('Subscriptions API Endpoints', () => {
       const mockCurrentSubscription = {
         id: 'sub_current',
         organizationId: testOrganizationId,
-        planType: SubscriptionPlan.LITE_ANNUAL,
+        planType: SubscriptionPlan.LITE,
         status: SubscriptionStatus.ACTIVE,
         startsAt: new Date('2025-01-01'),
         expiresAt: new Date('2026-01-01'),
@@ -484,7 +484,7 @@ describe('Subscriptions API Endpoints', () => {
       const mockCurrentSubscription = {
         id: 'sub_current',
         organizationId: testOrganizationId,
-        planType: SubscriptionPlan.LITE_ANNUAL,
+        planType: SubscriptionPlan.LITE,
         status: SubscriptionStatus.ACTIVE,
         startsAt: new Date('2025-01-01'),
         expiresAt: new Date('2026-01-01'),
@@ -498,7 +498,7 @@ describe('Subscriptions API Endpoints', () => {
       mockSubscriptionService.getActiveSubscription.mockResolvedValue(mockCurrentSubscription);
 
       const requestBody = {
-        newPlanType: SubscriptionPlan.LITE_ANNUAL, // Тот же план
+        newPlanType: SubscriptionPlan.LITE, // Тот же план
         immediate: true
       };
 

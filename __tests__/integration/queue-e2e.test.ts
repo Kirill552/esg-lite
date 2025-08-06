@@ -284,11 +284,19 @@ describe('Queue E2E Tests', () => {
         }
       });
 
-      // Assert 4: Кредиты списаны
-      expect(mockCreditsService.debitCredits).toHaveBeenCalledWith(
+      // Assert 4: Кредиты заблокированы и списаны
+      expect(mockCreditsService.debitCredits).toHaveBeenNthCalledWith(
+        1,
         'org-123',
         1,
-        'OCR processing: doc-123'
+        'Credits blocked for OCR job: doc-123'
+      );
+      expect(mockCreditsService.debitCredits).toHaveBeenNthCalledWith(
+        2,
+        'org-123',
+        1,
+        expect.stringContaining('OCR обработка документа'),
+        expect.objectContaining({ documentId: 'doc-123' })
       );
 
       // Assert 5: Метрики записаны

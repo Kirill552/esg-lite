@@ -19,16 +19,10 @@ jest.mock('../../lib/prisma', () => ({
 
 jest.mock('../../lib/credits-service', () => ({
   creditsService: {
-    hasCredits: jest.fn(),
     checkBalance: jest.fn(),
+    getOperationCost: jest.fn(),
+    hasCredits: jest.fn(),
     debitCredits: jest.fn()
-  }
-}));
-
-jest.mock('../../lib/surge-pricing', () => ({
-  surgePricingService: {
-    isSurgePeriod: jest.fn(),
-    getCurrentMultiplier: jest.fn()
   }
 }));
 
@@ -37,7 +31,6 @@ import { RateLimiter, RateLimitConfig } from '../../lib/rate-limiter';
 // Получаем ссылки на моки после импорта
 const mockPrisma = require('../../lib/prisma').prisma;
 const mockCreditsService = require('../../lib/credits-service').creditsService;
-const mockSurgePricingService = require('../../lib/surge-pricing').surgePricingService;
 
 describe('RateLimiter', () => {
   let rateLimiter: RateLimiter;
@@ -56,13 +49,18 @@ describe('RateLimiter', () => {
   beforeEach(() => {
     // Сбрасываем все моки
     jest.clearAllMocks();
-    
+
     // Создаем новый экземпляр для каждого теста
     rateLimiter = new RateLimiter(testConfig);
-    
+
     // Настройка моков по умолчанию
-    mockCreditsService.hasCredits.mockResolvedValue(true);
-    mockSurgePricingService.isSurgePeriod.mockReturnValue(false);
+    mockCreditsService.checkBalance.mockResolvedValue({ balance: 10, planType: 'FREE' });
+    mockCreditsService.getOperationCost.mockResolvedValue({
+      baseCost: 1,
+      surgePricingMultiplier: 1,
+      finalCost: 1,
+      pricePerTonRub: 5
+    });
   });
 
   afterEach(async () => {
@@ -74,7 +72,7 @@ describe('RateLimiter', () => {
     test('должен разрешить запрос при наличии кредитов и в пределах лимита', async () => {
       // Arrange
       const organizationId = 'org-123';
-      mockCreditsService.hasCredits.mockResolvedValue(true);
+      mockCreditsService.checkBalance.mockResolvedValue({ balance: 10, planType: 'LITE_ANNUAL' });
       mockPrisma.rateLimit.upsert.mockResolvedValue({
         organizationId,
         requestCount: 5,
@@ -95,7 +93,7 @@ describe('RateLimiter', () => {
     test('должен отклонить запрос при недостатке кредитов', async () => {
       // Arrange
       const organizationId = 'org-123';
-      mockCreditsService.hasCredits.mockResolvedValue(false);
+      mockCreditsService.checkBalance.mockResolvedValue({ balance: 0, planType: 'FREE' });
 
       // Act
       const result = await rateLimiter.checkLimit(organizationId);
@@ -110,7 +108,7 @@ describe('RateLimiter', () => {
     test('должен отклонить запрос при превышении лимита', async () => {
       // Arrange
       const organizationId = 'org-123';
-      mockCreditsService.hasCredits.mockResolvedValue(true);
+      mockCreditsService.checkBalance.mockResolvedValue({ balance: 10, planType: 'LITE_ANNUAL' });
       mockPrisma.rateLimit.upsert.mockResolvedValue({
         organizationId,
         requestCount: 10, // Достигнут лимит
@@ -131,8 +129,13 @@ describe('RateLimiter', () => {
     test('должен применить surge pricing лимиты', async () => {
       // Arrange
       const organizationId = 'org-123';
-      mockCreditsService.hasCredits.mockResolvedValue(true);
-      mockSurgePricingService.isSurgePeriod.mockReturnValue(true);
+      mockCreditsService.checkBalance.mockResolvedValue({ balance: 10, planType: 'LITE_ANNUAL' });
+      mockCreditsService.getOperationCost.mockResolvedValueOnce({
+        baseCost: 1,
+        surgePricingMultiplier: 2,
+        finalCost: 2,
+        pricePerTonRub: 5
+      });
       mockPrisma.rateLimit.upsert.mockResolvedValue({
         organizationId,
         requestCount: 6, // Больше чем 50% от 10 (5)
@@ -151,7 +154,7 @@ describe('RateLimiter', () => {
     test('должен обрабатывать ошибки базы данных (fail-open)', async () => {
       // Arrange
       const organizationId = 'org-123';
-      mockCreditsService.hasCredits.mockResolvedValue(true);
+      mockCreditsService.checkBalance.mockResolvedValue({ balance: 10, planType: 'FREE' });
       mockPrisma.rateLimit.upsert.mockRejectedValue(new Error('Database error'));
 
       // Act
@@ -239,8 +242,13 @@ describe('RateLimiter', () => {
         windowStart,
         updatedAt: new Date()
       });
-      mockCreditsService.hasCredits.mockResolvedValue(true);
-      mockSurgePricingService.isSurgePeriod.mockReturnValue(false);
+      mockCreditsService.checkBalance.mockResolvedValue({ balance: 5, planType: 'LITE_ANNUAL' });
+      mockCreditsService.getOperationCost.mockResolvedValueOnce({
+        baseCost: 1,
+        surgePricingMultiplier: 1,
+        finalCost: 1,
+        pricePerTonRub: 5
+      });
 
       // Act
       const stats = await rateLimiter.getStats(organizationId);
@@ -249,11 +257,13 @@ describe('RateLimiter', () => {
       expect(stats).toEqual({
         organizationId,
         currentCount: 7,
-        maxRequests: testConfig.maxRequests,
+        maxRequests: testConfig.subscriptionLimits.LITE_ANNUAL,
         windowStart: expect.any(Date),
         windowEnd: expect.any(Date),
         hasCredits: true,
-        isSurgePeriod: false
+        isSurgePeriod: false,
+        subscriptionType: 'LITE_ANNUAL',
+        creditsBalance: 5
       });
     });
 
@@ -261,8 +271,13 @@ describe('RateLimiter', () => {
       // Arrange
       const organizationId = 'org-new';
       mockPrisma.rateLimit.findUnique.mockResolvedValue(null);
-      mockCreditsService.hasCredits.mockResolvedValue(true);
-      mockSurgePricingService.isSurgePeriod.mockReturnValue(false);
+      mockCreditsService.checkBalance.mockResolvedValue({ balance: 10, planType: 'FREE' });
+      mockCreditsService.getOperationCost.mockResolvedValueOnce({
+        baseCost: 1,
+        surgePricingMultiplier: 1,
+        finalCost: 1,
+        pricePerTonRub: 5
+      });
 
       // Act
       const stats = await rateLimiter.getStats(organizationId);
@@ -288,7 +303,9 @@ describe('RateLimiter', () => {
         windowStart: expect.any(Date),
         windowEnd: expect.any(Date),
         hasCredits: false,
-        isSurgePeriod: false
+        isSurgePeriod: false,
+        subscriptionType: 'FREE',
+        creditsBalance: 0
       });
     });
   });
@@ -324,7 +341,7 @@ describe('RateLimiter', () => {
     test('должен корректно вычислять временные окна', async () => {
       // Arrange
       const organizationId = 'org-123';
-      mockCreditsService.hasCredits.mockResolvedValue(true);
+      mockCreditsService.checkBalance.mockResolvedValue({ balance: 10, planType: 'FREE' });
       
       // Мокаем текущее время
       const fixedTime = new Date('2024-01-01T12:30:45.000Z').getTime();
@@ -362,7 +379,7 @@ describe('RateLimiter', () => {
     test('должен использовать разные окна для разного времени', async () => {
       // Arrange
       const organizationId = 'org-123';
-      mockCreditsService.hasCredits.mockResolvedValue(true);
+      mockCreditsService.checkBalance.mockResolvedValue({ balance: 10, planType: 'FREE' });
       
       // Первый запрос в 12:30
       const time1 = new Date('2024-01-01T12:30:45.000Z').getTime();
@@ -410,21 +427,25 @@ describe('RateLimiter', () => {
     test('должен проверять кредиты через credits service', async () => {
       // Arrange
       const organizationId = 'org-123';
-      const requiredCredits = 1;
-
+      
       // Act
       await rateLimiter.checkLimit(organizationId);
 
       // Assert
-      expect(mockCreditsService.hasCredits).toHaveBeenCalledWith(organizationId, requiredCredits);
+      expect(mockCreditsService.checkBalance).toHaveBeenCalledWith(organizationId);
     });
 
     test('должен учитывать surge pricing период', async () => {
       // Arrange
       const organizationId = 'org-123';
-      mockCreditsService.hasCredits.mockResolvedValue(true);
-      mockSurgePricingService.isSurgePeriod.mockReturnValue(true);
-      
+      mockCreditsService.checkBalance.mockResolvedValue({ balance: 10, planType: 'LITE_ANNUAL' });
+      mockCreditsService.getOperationCost.mockResolvedValueOnce({
+        baseCost: 1,
+        surgePricingMultiplier: 2,
+        finalCost: 2,
+        pricePerTonRub: 5
+      });
+
       // В surge период лимит должен быть 50% от обычного (5 вместо 10)
       mockPrisma.rateLimit.upsert.mockResolvedValue({
         organizationId,
@@ -437,7 +458,7 @@ describe('RateLimiter', () => {
       const result = await rateLimiter.checkLimit(organizationId);
 
       // Assert
-      expect(mockSurgePricingService.isSurgePeriod).toHaveBeenCalled();
+      expect(mockCreditsService.getOperationCost).toHaveBeenCalled();
       expect(result.allowed).toBe(true);
       expect(result.remaining).toBe(2); // 5 - 3 = 2 (surge лимит)
     });
@@ -445,9 +466,14 @@ describe('RateLimiter', () => {
     test('должен отклонить запрос в surge период при превышении уменьшенного лимита', async () => {
       // Arrange
       const organizationId = 'org-123';
-      mockCreditsService.hasCredits.mockResolvedValue(true);
-      mockSurgePricingService.isSurgePeriod.mockReturnValue(true);
-      
+      mockCreditsService.checkBalance.mockResolvedValue({ balance: 10, planType: 'LITE_ANNUAL' });
+      mockCreditsService.getOperationCost.mockResolvedValueOnce({
+        baseCost: 1,
+        surgePricingMultiplier: 2,
+        finalCost: 2,
+        pricePerTonRub: 5
+      });
+
       // В surge период лимит 5, а у нас уже 5 запросов
       mockPrisma.rateLimit.upsert.mockResolvedValue({
         organizationId,
