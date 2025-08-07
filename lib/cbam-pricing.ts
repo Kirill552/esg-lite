@@ -55,10 +55,10 @@ export async function checkCBAMSubscription(organizationId: string): Promise<boo
     const isActive = subscription.status === 'ACTIVE' && 
                     subscription.expiresAt && subscription.expiresAt > now;
 
-    // Проверяем наличие CBAM плана
-    const hasCBAMPlan = subscription.planType === 'CBAM_ADDON';
+    // Проверяем наличие CBAM addon
+    const hasCBAMAddon = subscription.hasCbamAddon === true;
 
-    return Boolean(isActive && hasCBAMPlan);
+    return Boolean(isActive && hasCBAMAddon);
   } catch (error) {
     console.error('Error checking CBAM subscription:', error);
     return false;

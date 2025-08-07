@@ -18,7 +18,7 @@ import {
 export interface SubscriptionInfo {
   id: string;
   organizationId: string;
-  planType: 'TRIAL' | 'LITE' | 'STANDARD' | 'LARGE';
+  planType: 'TRIAL' | 'LITE' | 'STANDARD' | 'LARGE' | 'ENTERPRISE';
   status: SubscriptionStatus;
   annualEmissions: number;
   hasCbamAddon: boolean;
@@ -161,7 +161,7 @@ export class SubscriptionService {
   /**
    * Преобразовать тип плана из новой модели в Prisma enum
    */
-  private mapPlanTypeToPrisma(planType: 'TRIAL' | 'LITE' | 'STANDARD' | 'LARGE'): SubscriptionPlan {
+  private mapPlanTypeToPrisma(planType: 'TRIAL' | 'LITE' | 'STANDARD' | 'LARGE' | 'ENTERPRISE'): SubscriptionPlan {
     switch (planType) {
       case 'TRIAL':
         return SubscriptionPlan.TRIAL;
@@ -171,6 +171,8 @@ export class SubscriptionService {
         return SubscriptionPlan.STANDARD;
       case 'LARGE':
         return SubscriptionPlan.LARGE;
+      case 'ENTERPRISE':
+        return SubscriptionPlan.LARGE; // ENTERPRISE использует LARGE plan в БД
       default:
         return SubscriptionPlan.FREE;
     }
@@ -204,8 +206,10 @@ export class SubscriptionService {
   /**
    * Получить информацию о конкретном плане
    */
-  getPlanInfo(planType: 'TRIAL' | 'LITE' | 'STANDARD' | 'LARGE' | 'CBAM_ADDON'): SubscriptionPlanInfo | null {
-    const prismaPlanType = this.mapPlanTypeToPrisma(planType as any);
+  getPlanInfo(planType: 'TRIAL' | 'LITE' | 'STANDARD' | 'LARGE' | 'ENTERPRISE' | 'CBAM_ADDON'): SubscriptionPlanInfo | null {
+    // Для ENTERPRISE используем LARGE план как базу
+    const effectivePlanType = planType === 'ENTERPRISE' ? 'LARGE' : planType;
+    const prismaPlanType = this.mapPlanTypeToPrisma(effectivePlanType as any);
     return this.SUBSCRIPTION_PLANS[prismaPlanType] || null;
   }
 

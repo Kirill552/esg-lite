@@ -83,12 +83,12 @@ export async function POST(request: NextRequest) {
 
     // Парсинг тела запроса
     const body = await request.json();
-    const { planType, durationMonths, autoRenew, customPriceRub } = body;
+    const { planType, annualEmissions, hasCbamAddon, durationMonths, autoRenew, customPriceRub } = body;
 
     // Валидация обязательных полей
-    if (!planType) {
+    if (!annualEmissions || annualEmissions <= 0) {
       return NextResponse.json(
-        { error: 'Bad Request', message: 'Поле planType обязательно' },
+        { error: 'Bad Request', message: 'Поле annualEmissions обязательно и должно быть больше 0' },
         { status: 400 }
       );
     }
@@ -125,10 +125,10 @@ export async function POST(request: NextRequest) {
     // Создаем подписку
     const createRequest: CreateSubscriptionRequest = {
       organizationId,
-      planType,
+      annualEmissions,
+      hasCbamAddon: hasCbamAddon || false,
       durationMonths,
-      autoRenew: typeof autoRenew === 'boolean' ? autoRenew : false,
-      customPriceRub
+      autoRenew: typeof autoRenew === 'boolean' ? autoRenew : false
     };
 
     const newSubscription = await subscriptionService.createSubscription(createRequest);

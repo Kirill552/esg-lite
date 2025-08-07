@@ -59,7 +59,7 @@ export default function TariffsPage() {
   const [calculatorEmissions, setCalculatorEmissions] = useState(100000);
   const [calculatedPrices, setCalculatedPrices] = useState<Record<string, PricingResponse>>({});
 
-  // Статические данные о планах (описания) - цены получаем из API
+  // Статические даны о планах (описания) - цены получаем из API
   const planTemplates: PlanTemplate[] = [
     {
       id: 'TRIAL',
@@ -79,12 +79,10 @@ export default function TariffsPage() {
       name: 'Лайт',
       maxEmissions: 150000,
       features: [
-        'От 50 000 ₽/год + 1,00 ₽/т',
         'ГИС «Экология» API, SSO (Сбер ID), шифрование, аудит',
         'Экспорт в Excel/PDF/форма ПП № 707',
         'Пользователи: до 5. Проекты: до 3',
         'Интеграции: импорт CSV/JSON (1С вручную)'
-        
       ]
     },
     {
@@ -92,12 +90,11 @@ export default function TariffsPage() {
       name: 'Стандарт',
       maxEmissions: 1000000,
       features: [
-        'От 120 000 ₽/год + 0,28 ₽/т',
         'Всё из «Лайт» + коннектор 1С-ESG (REST), планировщик загрузок',
         'Контроль качества данных (валидаторы/аномалии)',
         'Пользователи: до 15. Юрлица: до 3. API: доступ',
         'SLA: приоритетная поддержка в рабочие часы',
-        'Auto-upgrade: при >1 000 000 т — переход на «Крупный»'
+        'Авто-повышение: при >1 000 000 т — переход на «Крупный»'
       ],
       popular: true
     },
@@ -106,12 +103,10 @@ export default function TariffsPage() {
       name: 'Крупное предприятие',
       maxEmissions: 3000000,
       features: [
-        'От 175 000 ₽/год + 0,18 ₽/т',
         'Всё из «Стандарт» + один ЭДО-модуль на выбор (СБИС ESG или Контур.Диадок)',
         'Персональный менеджер, расширенные роли/мульти-юрлица',
         'SLA: 99,9% + окно июня. 24/7 реакция на P1',
         'Подготовка к внешней верификации.'
-        
       ],
       recommended: true
     },
@@ -120,7 +115,6 @@ export default function TariffsPage() {
       name: 'Индивидуальный',
       maxEmissions: 10000000,
       features: [
-        'Индивидуально, потолок цены — 480 000 ₽/год',
         'Выделенные ресурсы/on-prem, доп. ЭДО-каналы, белый лейбл.',
         'Индивидуальные SLA/интеграции/сегрегация данных.'
       ]
@@ -130,10 +124,8 @@ export default function TariffsPage() {
       name: 'CBAM отчетность',
       maxEmissions: 0,
       features: [
-        '15 000 ₽/год + 255 ₽/т (переходный учёт/квартальная отчётность)',
         'Карта углеродного следа продукции, выгрузки CBAM',
         'Режим «переходного периода 2025», подготовка к 2026.'
-        
       ]
     }
   ];
@@ -170,42 +162,27 @@ export default function TariffsPage() {
     const prices: Record<string, PricingResponse> = {};
     
     for (const plan of planTemplates) {
-      // Для каждого плана используем минимальные объемы выбросов для показа базовой цены
-      let demoEmissions;
-      switch (plan.id) {
-        case 'TRIAL':
-          demoEmissions = 0; // Пробный бесплатный
-          break;
-        case 'LITE':
-          demoEmissions = 50000; // Минимум для лайт
-          break;
-        case 'STANDARD':
-          demoEmissions = 200000; // Для показа стандартной цены
-          break;
-        case 'LARGE':
-          demoEmissions = 1000000; // Минимум для Large
-          break;
-        case 'ENTERPRISE':
-          demoEmissions = 3000000; // Минимум для Enterprise
-          break;
-        case 'CBAM':
-          demoEmissions = 100000; // Для расчета CBAM
-          break;
-        default:
-          demoEmissions = 100000;
-      }
+      // Используем значения из калькулятора для всех планов
+      const emissionsToCalculate = calculatorEmissions || 100000;
       
       try {
-        const response = await fetch(`/api/pricing/calculate?emissions=${demoEmissions}&cbam=${plan.id === 'CBAM'}&plan=${plan.id}`);
+        const url = `/api/pricing/calculate?emissions=${emissionsToCalculate}&cbam=${plan.id === 'CBAM'}&plan=${plan.id}`;
+        console.log(`Запрос для плана ${plan.id}:`, url);
+        
+        const response = await fetch(url);
         if (response.ok) {
           const data: PricingResponse = await response.json();
+          console.log(`Ответ для плана ${plan.id}:`, data);
           prices[plan.id] = data;
+        } else {
+          console.error(`Ошибка HTTP для плана ${plan.id}:`, response.status, response.statusText);
         }
       } catch (error) {
         console.error(`Ошибка расчета для плана ${plan.id}:`, error);
       }
     }
     
+    console.log('Все цены загружены:', prices);
     setCalculatedPrices(prices);
   };
 
@@ -236,6 +213,12 @@ export default function TariffsPage() {
       default:
         return <CreditCard className="h-5 w-5" />;
     }
+  };
+
+  // Функция для получения динамических features без дублирования цены
+  const getDynamicFeatures = (plan: PlanTemplate) => {
+    // Возвращаем только базовые функции без добавления цены
+    return [...plan.features];
   };
 
   return (
@@ -343,32 +326,47 @@ export default function TariffsPage() {
 
                 {/* Результат калькулятора */}
                 {calculatorEmissions > 0 && (
-                  <div className="mt-4 p-3 bg-emerald-50 dark:bg-emerald-950/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                    <h4 className="text-sm font-medium text-emerald-800 dark:text-emerald-200 mb-2">
+                  <div className="mt-4 p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg border-2 border-emerald-200 dark:border-emerald-700">
+                    <h4 className="text-sm font-semibold text-emerald-800 dark:text-emerald-200 mb-3 flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4" />
                       Расчет для {calculatorEmissions.toLocaleString()} т CO₂/год:
                     </h4>
                     {(() => {
                       // Определяем подходящий план для введенного объема
                       let suitablePlan = 'LITE';
-                      if (calculatorEmissions >= 150000 && calculatorEmissions <= 1000000) suitablePlan = 'STANDARD';
+                      if (calculatorEmissions > 150000 && calculatorEmissions <= 1000000) suitablePlan = 'STANDARD';
                       else if (calculatorEmissions > 1000000 && calculatorEmissions <= 3000000) suitablePlan = 'LARGE';
                       else if (calculatorEmissions > 3000000) suitablePlan = 'ENTERPRISE';
                       
                       const planData = calculatedPrices[suitablePlan];
                       if (planData?.breakdown) {
-                        const calculatedPrice = suitablePlan === 'ENTERPRISE' ? 
-                          Math.min(480000, planData.breakdown.basePayment + (calculatorEmissions * planData.breakdown.perTonRate)) :
-                          planData.breakdown.basePayment + (calculatorEmissions * planData.breakdown.perTonRate);
+                        let calculatedPrice;
+                        if (suitablePlan === 'ENTERPRISE') {
+                          calculatedPrice = Math.min(480000, planData.breakdown.basePayment + (calculatorEmissions * planData.breakdown.perTonRate));
+                        } else {
+                          calculatedPrice = planData.breakdown.basePayment + (calculatorEmissions * planData.breakdown.perTonRate);
+                        }
                         
                         return (
-                          <div className="text-xs text-emerald-700 dark:text-emerald-300">
-                            План: <strong>{planTemplates.find(p => p.id === suitablePlan)?.name}</strong><br/>
-                            Итого: <strong>{formatCurrency(calculatedPrice)}</strong><br/>
-                            ({formatCurrency(planData.breakdown.basePayment)} + {calculatorEmissions.toLocaleString()} × {planData.breakdown.perTonRate}₽)
+                          <div className="space-y-2">
+                            <div className="text-sm text-emerald-700 dark:text-emerald-300">
+                              Рекомендуемый план: <span className="font-bold text-emerald-800 dark:text-emerald-200">{planTemplates.find(p => p.id === suitablePlan)?.name}</span>
+                            </div>
+                            <div className="text-xl font-bold text-emerald-900 dark:text-emerald-100 bg-white dark:bg-emerald-900/20 rounded px-3 py-2 border border-emerald-300 dark:border-emerald-600">
+                              {formatCurrency(calculatedPrice)}
+                            </div>
+                            <div className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/40 rounded px-2 py-1">
+                              📊 Расчет: {formatCurrency(planData.breakdown.basePayment)} + {calculatorEmissions.toLocaleString()} × {planData.breakdown.perTonRate}₽/т
+                            </div>
+                            {suitablePlan === 'ENTERPRISE' && calculatedPrice === 480000 && (
+                              <div className="text-xs text-orange-700 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/40 rounded px-2 py-1">
+                                ⚠️ Применен потолок цены 480 000₽
+                              </div>
+                            )}
                           </div>
                         );
                       }
-                      return <div className="text-xs text-emerald-700 dark:text-emerald-300">Загрузка...</div>;
+                      return <div className="text-sm text-emerald-700 dark:text-emerald-300 animate-pulse">Загрузка расчета...</div>;
                     })()}
                   </div>
                 )}
@@ -419,42 +417,90 @@ export default function TariffsPage() {
 
                   <CardContent>
                     <div className="space-y-4">
-                      {/* Цена */}
+                      {/* Персональная цена для введенного объема */}
                       <div className="text-center">
-                        {pricing ? (
-                          <>
-                            <div className="text-2xl font-bold">
-                              {plan.id === 'TRIAL' ? 'Бесплатно' : 
-                               plan.id === 'ENTERPRISE' ? 'До 480 000₽' : 
-                               plan.id === 'CBAM' ? 'От 15 000₽' :
-                               `От ${formatCurrency(pricing.breakdown?.basePayment || 0)}`}
-                            </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
-                              {plan.id === 'TRIAL' ? '14 дней' :
-                               plan.id === 'ENTERPRISE' ? 'в год' :
-                               plan.id === 'CBAM' ? 'в год + за тонну' :
-                               'в год + за тонну'}
-                            </div>
-                            <div className="text-xs text-gray-500 mt-1">
-                              {plan.id === 'TRIAL' ? 'Затем выберите план' :
-                               plan.id === 'ENTERPRISE' ? 'Индивидуальная цена' :
-                               plan.id === 'CBAM' ? '15 000₽ фикс + 255₽/т' :
-                               pricing.breakdown ? `${formatCurrency(pricing.breakdown.basePayment)} базовый + ${pricing.breakdown.perTonRate}₽/т` : 'Расчет...'}
-                            </div>
-                          </>
-                        ) : (
-                          <div className="text-2xl font-bold text-gray-400">
-                            Загрузка...
-                          </div>
-                        )}
+                        {(() => {
+                          // Рассчитываем цену для введенного в калькуляторе объема
+                          const calculatePersonalPrice = () => {
+                            if (plan.id === 'TRIAL') return { price: 0, text: 'Бесплатно', subtext: '14 дней' };
+                            
+                            const planPricing = calculatedPrices[plan.id];
+                            if (!planPricing?.breakdown) {
+                              return { price: null, text: 'Загрузка...', subtext: '' };
+                            }
+
+                            // Определяем, подходит ли этот план для введенного объема
+                            const isApplicable = calculatorEmissions <= plan.maxEmissions || plan.id === 'ENTERPRISE' || plan.id === 'CBAM';
+                            
+                            if (!isApplicable && calculatorEmissions > plan.maxEmissions) {
+                              return { 
+                                price: null, 
+                                text: 'Не подходит', 
+                                subtext: `Макс. ${plan.maxEmissions.toLocaleString()} т CO₂` 
+                              };
+                            }
+
+                            let finalPrice;
+                            if (plan.id === 'ENTERPRISE') {
+                              // Для Enterprise используем введенный объем и потолок 480k
+                              finalPrice = Math.min(480000, planPricing.breakdown.basePayment + (calculatorEmissions * planPricing.breakdown.perTonRate));
+                              return { 
+                                price: finalPrice, 
+                                text: formatCurrency(finalPrice), 
+                                subtext: `для ${calculatorEmissions.toLocaleString()} т CO₂/год` 
+                              };
+                            } else if (plan.id === 'CBAM') {
+                              // Для CBAM фиксированная формула
+                              finalPrice = 15000 + (calculatorEmissions * 255);
+                              return { 
+                                price: finalPrice, 
+                                text: formatCurrency(finalPrice), 
+                                subtext: `для ${calculatorEmissions.toLocaleString()} т CO₂/год` 
+                              };
+                            } else {
+                              // Для остальных планов используем цену из API (уже рассчитанную для нужного объема)
+                              finalPrice = planPricing.breakdown.basePayment + (calculatorEmissions * planPricing.breakdown.perTonRate);
+                              return { 
+                                price: finalPrice, 
+                                text: formatCurrency(finalPrice), 
+                                subtext: `для ${calculatorEmissions.toLocaleString()} т CO₂/год` 
+                              };
+                            }
+                          };
+
+                          const result = calculatePersonalPrice();
+                          return (
+                            <>
+                              <div className={`text-3xl font-bold ${
+                                result.price === null 
+                                  ? 'text-gray-400 dark:text-gray-500' 
+                                  : result.price === 0 
+                                  ? 'text-emerald-600 dark:text-emerald-400'
+                                  : 'text-gray-900 dark:text-white'
+                              }`}>
+                                {result.text}
+                              </div>
+                              <div className="text-sm text-gray-600 dark:text-gray-300 font-medium bg-gray-50 dark:bg-gray-800 rounded px-2 py-1 mt-1">
+                                {result.subtext}
+                              </div>
+                              {result.price && result.price > 0 && plan.id !== 'TRIAL' && (
+                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 p-2 bg-gray-100 dark:bg-gray-700 rounded border">
+                                  {plan.id === 'ENTERPRISE' ? 'Индивидуальная цена (макс. 480 000₽)' :
+                                   plan.id === 'CBAM' ? '15 000₽ фикс + 255₽/т' :
+                                   pricing?.breakdown ? `${formatCurrency(pricing.breakdown.basePayment)} базовый + ${pricing.breakdown.perTonRate}₽/т` : ''}
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
                       </div>
 
                       {/* Функции */}
                       <ul className="space-y-2">
-                        {plan.features.map((feature, index) => (
+                        {getDynamicFeatures(plan).map((feature, index) => (
                           <li key={index} className="flex items-center text-sm">
                             <Check className="h-4 w-4 text-emerald-500 mr-2 flex-shrink-0" />
-                            {feature}
+                            <span className="text-gray-900 dark:text-gray-100">{feature}</span>
                           </li>
                         ))}
                       </ul>

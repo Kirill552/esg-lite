@@ -4,7 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { calculatePricing, determinePlanByEmissions, loadMonetizationConfig } from '@/lib/monetization-config';
+import { calculatePricing, determinePlanByEmissions, loadMonetizationConfig, isSurgePeriodActive } from '@/lib/monetization-config';
 
 export interface PricingRequest {
   annualEmissions: number;
@@ -139,8 +139,10 @@ export async function GET(request: NextRequest) {
 
   try {
     const calculationDate = date ? new Date(date) : new Date();
+    const config = loadMonetizationConfig();
+    const isSurge = isSurgePeriodActive(calculationDate);
     
-    // Специальная обработка для TRIAL и CBAM планов
+    // Специальная обработка для TRIAL плана
     if (plan === 'TRIAL' || emissions === 0) {
       return NextResponse.json({
         planType: 'TRIAL',
@@ -149,7 +151,7 @@ export async function GET(request: NextRequest) {
         surgeMultiplier: 1,
         finalPrice: 0,
         emissions: emissions,
-        currency: 'RUB',
+        currency: config.currency,
         period: 'TRIAL',
         breakdown: {
           basePayment: 0,
@@ -161,18 +163,19 @@ export async function GET(request: NextRequest) {
       });
     }
     
+    // Специальная обработка для CBAM плана
     if (cbam || plan === 'CBAM') {
-      const config = loadMonetizationConfig();
-      const cbamPrice = config.cbam.annualFee + (emissions * config.cbam.ratePerTon);
+      const surgeMultiplier = isSurge ? config.surge.multiplier : 1.0;
+      const cbamPrice = (config.cbam.annualFee + (emissions * config.cbam.ratePerTon)) * surgeMultiplier;
       
       return NextResponse.json({
         planType: 'CBAM',
         basePrice: cbamPrice,
         variablePrice: emissions * config.cbam.ratePerTon,
-        surgeMultiplier: 1,
+        surgeMultiplier,
         finalPrice: cbamPrice,
         emissions: emissions,
-        currency: 'RUB',
+        currency: config.currency,
         period: 'YEAR',
         hasCbamAddon: true,
         cbamPrice: cbamPrice,
@@ -183,14 +186,84 @@ export async function GET(request: NextRequest) {
           variableCost: emissions * config.cbam.ratePerTon,
           cbamAnnualFee: config.cbam.annualFee,
           cbamPerTonCost: config.cbam.ratePerTon,
-          surgeApplied: false,
+          surgeApplied: isSurge,
         }
       });
     }
     
-    const pricing = calculatePricing(emissions, cbam, calculationDate);
+    // Определяем план: либо из параметра, либо автоматически по выбросам
+    let planType: 'LITE' | 'STANDARD' | 'LARGE' | 'ENTERPRISE';
+    if (plan && ['LITE', 'STANDARD', 'LARGE', 'ENTERPRISE'].includes(plan)) {
+      planType = plan as 'LITE' | 'STANDARD' | 'LARGE' | 'ENTERPRISE';
+    } else {
+      planType = determinePlanByEmissions(emissions);
+    }
+    
+    // Получаем конфигурацию для выбранного плана
+    let planConfig;
+    let basePrice = 0;
+    let variableCost = 0;
+    
+    switch (planType) {
+      case 'LITE':
+        planConfig = config.lite;
+        basePrice = planConfig.basePayment;
+        variableCost = emissions * planConfig.ratePerTon;
+        break;
+      case 'STANDARD':
+        planConfig = config.standard;
+        basePrice = planConfig.basePayment;
+        variableCost = emissions * planConfig.ratePerTon;
+        break;
+      case 'LARGE':
+        planConfig = config.large;
+        basePrice = planConfig.basePayment;
+        variableCost = emissions * planConfig.ratePerTon;
+        break;
+      case 'ENTERPRISE':
+        planConfig = config.enterprise;
+        basePrice = planConfig.priceCap;
+        variableCost = 0; // Для Enterprise плана фиксированная стоимость
+        break;
+      default:
+        return NextResponse.json(
+          { error: `Неизвестный план: ${planType}` },
+          { status: 400 }
+        );
+    }
+    
+    // Применяем surge multiplier
+    const surgeMultiplier = isSurge ? config.surge.multiplier : 1.0;
+    const finalPrice = (basePrice + variableCost) * surgeMultiplier;
+    
+    const response: PricingResponse = {
+      planType,
+      basePrice: basePrice,
+      variablePrice: variableCost,
+      surgeMultiplier,
+      finalPrice,
+      emissions,
+      currency: config.currency,
+      period: 'YEAR',
+      breakdown: {
+        basePayment: basePrice,
+        perTonRate: planType === 'ENTERPRISE' ? 0 : (planConfig as any).ratePerTon || 0,
+        tonnageAboveMin: emissions,
+        variableCost,
+        surgeApplied: surgeMultiplier > 1,
+      }
+    };
 
-    return NextResponse.json(pricing);
+    console.log(`[GET API] Расчет для плана ${planType}:`, {
+      emissions,
+      planType,
+      basePrice,
+      variableCost,
+      surgeMultiplier,
+      finalPrice
+    });
+
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Error calculating pricing:', error);
     return NextResponse.json(

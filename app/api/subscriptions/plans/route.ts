@@ -15,8 +15,8 @@ export async function GET(request: NextRequest) {
     // Добавляем дополнительную информацию о планах
     const plansWithDetails = plans.map(plan => ({
       ...plan,
-      recommended: plan.planType === 'LITE_ANNUAL', // Рекомендуемый план
-      popular: plan.planType === 'LITE_ANNUAL', // Популярный план
+      recommended: plan.planType === 'STANDARD', // Рекомендуемый план
+      popular: plan.planType === 'STANDARD', // Популярный план
       features: plan.features || [],
       // Форматирование цены для отображения
       formattedPrice: plan.priceRub > 0 
