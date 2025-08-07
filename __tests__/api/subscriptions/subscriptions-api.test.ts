@@ -9,6 +9,7 @@ import { GET as getPlans } from '../../../app/api/subscriptions/plans/route';
 import { POST as changePlan } from '../../../app/api/subscriptions/change-plan/route';
 import { SubscriptionService } from '../../../lib/subscription-service';
 import { SubscriptionPlan, SubscriptionStatus } from '@prisma/client';
+import { createMockSubscriptionInfo } from '../../utils/subscription-mocks';
 
 // Mock auth функции
 jest.mock('@clerk/nextjs/server', () => ({
@@ -38,19 +39,12 @@ describe('Subscriptions API Endpoints', () => {
       mockAuth.mockResolvedValue({ userId: testUserId, orgId: testOrganizationId });
 
       // Mock данных
-      const mockActiveSubscription = {
+      const mockActiveSubscription = createMockSubscriptionInfo({
         id: 'sub_123',
         organizationId: testOrganizationId,
-        planType: SubscriptionPlan.LITE_ANNUAL,
-        status: SubscriptionStatus.ACTIVE,
-        startsAt: new Date('2025-01-01'),
-        expiresAt: new Date('2026-01-01'),
-        autoRenew: true,
-        priceRub: 40000,
-        features: ['1000 т CO₂ кредитов'],
-        createdAt: new Date('2025-01-01'),
-        updatedAt: new Date('2025-01-01')
-      };
+        planType: 'LITE' as const,
+        annualEmissions: 75000
+      });
 
       const mockHistory = [mockActiveSubscription];
 
@@ -96,27 +90,15 @@ describe('Subscriptions API Endpoints', () => {
   });
 
   describe('POST /api/subscriptions', () => {
-    it('должен создать новую подписку LITE_ANNUAL', async () => {
+    it('должен создать новую подписку LITE', async () => {
       mockAuth.mockResolvedValue({ userId: testUserId, orgId: testOrganizationId });
 
-      const mockCreatedSubscription = {
-        id: 'sub_new123',
-        organizationId: testOrganizationId,
-        planType: SubscriptionPlan.LITE_ANNUAL,
-        status: SubscriptionStatus.PENDING,
-        startsAt: new Date(),
-        expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-        autoRenew: false,
-        priceRub: 40000,
-        features: [],
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
+      const mockSubscription = createMockSubscriptionInfo();
 
-      mockSubscriptionService.createSubscription.mockResolvedValue(mockCreatedSubscription);
+      mockSubscriptionService.createSubscription.mockResolvedValue(mockSubscription);
 
       const requestBody = {
-        planType: SubscriptionPlan.LITE_ANNUAL,
+        planType: SubscriptionPlan.LITE,
         autoRenew: false
       };
 
@@ -131,12 +113,12 @@ describe('Subscriptions API Endpoints', () => {
 
       expect(response.status).toBe(201);
       expect(data.success).toBe(true);
-      expect(data.data.subscription.id).toBe(mockCreatedSubscription.id);
-      expect(data.data.subscription.planType).toBe(mockCreatedSubscription.planType);
-      expect(data.data.subscription.status).toBe(mockCreatedSubscription.status);
+      expect(data.data.subscription.id).toBe(mockSubscription.id);
+      expect(data.data.subscription.planType).toBe(mockSubscription.planType);
+      expect(data.data.subscription.status).toBe(mockSubscription.status);
       expect(mockSubscriptionService.createSubscription).toHaveBeenCalledWith({
         organizationId: testOrganizationId,
-        planType: SubscriptionPlan.LITE_ANNUAL,
+        planType: SubscriptionPlan.LITE,
         autoRenew: false
       });
     });
@@ -183,7 +165,7 @@ describe('Subscriptions API Endpoints', () => {
 
       const request = new NextRequest('http://localhost:3000/api/subscriptions', {
         method: 'POST',
-        body: JSON.stringify({ planType: SubscriptionPlan.LITE_ANNUAL }),
+        body: JSON.stringify({ planType: SubscriptionPlan.LITE }),
         headers: { 'Content-Type': 'application/json' }
       });
 
@@ -201,19 +183,13 @@ describe('Subscriptions API Endpoints', () => {
 
       const mockActivationResult = {
         success: true,
-        subscription: {
+        subscription: createMockSubscriptionInfo({
           id: 'sub_123',
           organizationId: testOrganizationId,
-          planType: SubscriptionPlan.LITE_ANNUAL,
+          planType: 'LITE' as const,
           status: SubscriptionStatus.ACTIVE,
-          startsAt: new Date(),
-          expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-          autoRenew: false,
-          priceRub: 40000,
-          features: [],
-          createdAt: new Date(),
-          updatedAt: new Date()
-        },
+          annualEmissions: 75000
+        }),
         creditsAdded: 1000
       };
 
@@ -244,19 +220,16 @@ describe('Subscriptions API Endpoints', () => {
 
       const mockRenewalResult = {
         success: true,
-        subscription: {
+        subscription: createMockSubscriptionInfo({
           id: 'sub_123',
           organizationId: testOrganizationId,
-          planType: SubscriptionPlan.LITE_ANNUAL,
+          planType: 'LITE' as const,
           status: SubscriptionStatus.ACTIVE,
-          startsAt: new Date('2025-01-01'),
-          expiresAt: new Date('2027-01-01'), // Продлено на год
+          annualEmissions: 75000,
           autoRenew: true,
-          priceRub: 40000,
-          features: [],
-          createdAt: new Date('2025-01-01'),
-          updatedAt: new Date()
-        },
+          startsAt: new Date('2025-01-01'),
+          expiresAt: new Date('2027-01-01')
+        }),
         creditsAdded: 1000
       };
 
@@ -327,7 +300,7 @@ describe('Subscriptions API Endpoints', () => {
           features: ['До 1000 т CO₂ бесплатно']
         },
         {
-          planType: SubscriptionPlan.LITE_ANNUAL,
+          planType: SubscriptionPlan.LITE,
           name: 'Annual Lite',
           description: 'Годовая подписка для средних предприятий',
           priceRub: 40000,
@@ -347,7 +320,7 @@ describe('Subscriptions API Endpoints', () => {
       expect(data.success).toBe(true);
       expect(data.data.plans).toHaveLength(2);
       expect(data.data.plans[0].recommended).toBe(false); // FREE план не рекомендуемый
-      expect(data.data.plans[1].recommended).toBe(true);  // LITE_ANNUAL рекомендуемый
+      expect(data.data.plans[1].recommended).toBe(true);  // LITE рекомендуемый
       expect(data.data.currency).toBe('RUB');
     });
   });
@@ -356,29 +329,8 @@ describe('Subscriptions API Endpoints', () => {
     it('должен немедленно изменить план подписки', async () => {
       mockAuth.mockResolvedValue({ userId: testUserId, orgId: testOrganizationId });
 
-      const mockCurrentSubscription = {
-        id: 'sub_current',
-        organizationId: testOrganizationId,
-        planType: SubscriptionPlan.FREE,
-        status: SubscriptionStatus.ACTIVE,
-        startsAt: new Date('2025-01-01'),
-        expiresAt: new Date('2026-01-01'),
-        autoRenew: false,
-        priceRub: 0,
-        features: [],
-        createdAt: new Date('2025-01-01'),
-        updatedAt: new Date('2025-01-01')
-      };
-
-      const mockNewSubscription = {
-        ...mockCurrentSubscription,
-        id: 'sub_new',
-        planType: SubscriptionPlan.LITE_ANNUAL,
-        priceRub: 40000
-      };
-
       const mockPlanInfo = {
-        planType: SubscriptionPlan.LITE_ANNUAL,
+        planType: SubscriptionPlan.LITE,
         name: 'Annual Lite',
         description: 'Годовая подписка',
         priceRub: 40000,
@@ -387,18 +339,18 @@ describe('Subscriptions API Endpoints', () => {
         features: []
       };
 
-      mockSubscriptionService.getActiveSubscription.mockResolvedValue(mockCurrentSubscription);
+      mockSubscriptionService.getActiveSubscription.mockResolvedValue(createMockSubscriptionInfo());
       mockSubscriptionService.getPlanInfo.mockReturnValue(mockPlanInfo);
       mockSubscriptionService.cancelSubscription.mockResolvedValue(true);
-      mockSubscriptionService.createSubscription.mockResolvedValue(mockNewSubscription);
+      mockSubscriptionService.createSubscription.mockResolvedValue(createMockSubscriptionInfo());
       mockSubscriptionService.activateSubscription.mockResolvedValue({
         success: true,
-        subscription: mockNewSubscription,
+        subscription: createMockSubscriptionInfo(),
         creditsAdded: 1000
       });
 
       const requestBody = {
-        newPlanType: SubscriptionPlan.LITE_ANNUAL,
+        newPlanType: SubscriptionPlan.LITE,
         immediate: true
       };
 
@@ -415,34 +367,12 @@ describe('Subscriptions API Endpoints', () => {
       expect(data.success).toBe(true);
       expect(data.data.changeResult.type).toBe('immediate');
       expect(data.data.changeResult.oldPlan).toBe(SubscriptionPlan.FREE);
-      expect(data.data.changeResult.newPlan).toBe(SubscriptionPlan.LITE_ANNUAL);
+      expect(data.data.changeResult.newPlan).toBe(SubscriptionPlan.LITE);
       expect(data.data.changeResult.creditsAdded).toBe(1000);
     });
 
     it('должен запланировать смену плана', async () => {
       mockAuth.mockResolvedValue({ userId: testUserId, orgId: testOrganizationId });
-
-      const mockCurrentSubscription = {
-        id: 'sub_current',
-        organizationId: testOrganizationId,
-        planType: SubscriptionPlan.LITE_ANNUAL,
-        status: SubscriptionStatus.ACTIVE,
-        startsAt: new Date('2025-01-01'),
-        expiresAt: new Date('2026-01-01'),
-        autoRenew: false,
-        priceRub: 40000,
-        features: [],
-        createdAt: new Date('2025-01-01'),
-        updatedAt: new Date('2025-01-01')
-      };
-
-      const mockPendingSubscription = {
-        ...mockCurrentSubscription,
-        id: 'sub_pending',
-        planType: SubscriptionPlan.CBAM_ADDON,
-        status: SubscriptionStatus.PENDING,
-        priceRub: 15000
-      };
 
       const mockPlanInfo = {
         planType: SubscriptionPlan.CBAM_ADDON,
@@ -454,9 +384,9 @@ describe('Subscriptions API Endpoints', () => {
         features: []
       };
 
-      mockSubscriptionService.getActiveSubscription.mockResolvedValue(mockCurrentSubscription);
+      mockSubscriptionService.getActiveSubscription.mockResolvedValue(createMockSubscriptionInfo());
       mockSubscriptionService.getPlanInfo.mockReturnValue(mockPlanInfo);
-      mockSubscriptionService.createSubscription.mockResolvedValue(mockPendingSubscription);
+      mockSubscriptionService.createSubscription.mockResolvedValue(createMockSubscriptionInfo());
 
       const requestBody = {
         newPlanType: SubscriptionPlan.CBAM_ADDON,
@@ -475,30 +405,17 @@ describe('Subscriptions API Endpoints', () => {
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
       expect(data.data.changeResult.type).toBe('scheduled');
-      expect(data.data.changeResult.effectiveDate).toBe(mockCurrentSubscription.expiresAt.toISOString());
+      const mockSub = createMockSubscriptionInfo();
+      expect(data.data.changeResult.effectiveDate).toBe(mockSub.expiresAt?.toISOString());
     });
 
     it('должен отклонить смену на тот же план', async () => {
       mockAuth.mockResolvedValue({ userId: testUserId, orgId: testOrganizationId });
 
-      const mockCurrentSubscription = {
-        id: 'sub_current',
-        organizationId: testOrganizationId,
-        planType: SubscriptionPlan.LITE_ANNUAL,
-        status: SubscriptionStatus.ACTIVE,
-        startsAt: new Date('2025-01-01'),
-        expiresAt: new Date('2026-01-01'),
-        autoRenew: false,
-        priceRub: 40000,
-        features: [],
-        createdAt: new Date('2025-01-01'),
-        updatedAt: new Date('2025-01-01')
-      };
-
-      mockSubscriptionService.getActiveSubscription.mockResolvedValue(mockCurrentSubscription);
+      mockSubscriptionService.getActiveSubscription.mockResolvedValue(createMockSubscriptionInfo());
 
       const requestBody = {
-        newPlanType: SubscriptionPlan.LITE_ANNUAL, // Тот же план
+        newPlanType: SubscriptionPlan.LITE, // Тот же план
         immediate: true
       };
 

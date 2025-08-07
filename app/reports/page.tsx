@@ -17,7 +17,8 @@ import {
   Search,
   Loader2,
   SortAsc,
-  SortDesc
+  SortDesc,
+  Calculator
 } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@clerk/nextjs';
@@ -531,6 +532,17 @@ export default function ReportsPage() {
                           <Eye className="w-4 h-4 mr-1" />
                           Просмотр
                         </Button>
+
+                        <Link href={`/reports/${report.id}/audit-trail`}>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
+                          >
+                            <Calculator className="w-4 h-4 mr-1" />
+                            Ведомость
+                          </Button>
+                        </Link>
                         
                         <Button
                           variant="primary"

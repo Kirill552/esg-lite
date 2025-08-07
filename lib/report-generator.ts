@@ -99,6 +99,69 @@ function prepareTemplateData(
     baseData.signer_pos = data.signer_position;
   }
   
+  // Маппинг полей для шаблона 296-FZ (исправляем несоответствие токенов)
+  if (reportType === '296-FZ') {
+    // Основные поля организации
+    baseData.inn = data.org_inn || baseData.inn || 'Не указано';
+    baseData.address = data.org_address || baseData.address || 'Не указано';
+    baseData.phone = data.org_phone || baseData.phone || 'Не указано';
+    baseData.email = data.org_email || baseData.email || 'Не указано';
+    baseData.okpo = data.org_okpo || baseData.okpo || 'Не указано';
+    baseData.oktmo = data.org_oktmo || baseData.oktmo || 'Не указано';
+    
+    // Поля подписанта для 296-FZ (executor)
+    baseData.executor_fio = data.signer_name || baseData.executor_fio || 'Не указано';
+    baseData.executor_phone = data.org_phone || baseData.executor_phone || 'Не указано';
+    
+    // Дополнительные поля для 296-FZ
+    baseData.legal_form = baseData.legal_form || 'ООО';
+    baseData.ogrn = baseData.ogrn || data.org_okpo || 'Не указано';
+    baseData.okved = baseData.okved || '38.11';
+    baseData.submission_basis = baseData.submission_basis || 'п. 4 ст. 23 296-ФЗ';
+    
+    // Данные о выбросах (заполняем базовыми значениями если не указаны)
+    baseData.co2_mass = baseData.co2_mass || '0';
+    baseData.co2e_co2 = baseData.co2e_co2 || '0';
+    baseData.co2_percent = baseData.co2_percent || '0';
+    baseData.ch4_mass = baseData.ch4_mass || '0';
+    baseData.co2e_ch4 = baseData.co2e_ch4 || '0';
+    baseData.ch4_percent = baseData.ch4_percent || '0';
+    baseData.n2o_mass = baseData.n2o_mass || '0';
+    baseData.co2e_n2o = baseData.co2e_n2o || '0';
+    baseData.n2o_percent = baseData.n2o_percent || '0';
+    baseData.hfc_mass = baseData.hfc_mass || '0';
+    baseData.hfc_gwp = baseData.hfc_gwp || '0';
+    baseData.co2e_hfc = baseData.co2e_hfc || '0';
+    baseData.hfc_percent = baseData.hfc_percent || '0';
+    baseData.pfc_mass = baseData.pfc_mass || '0';
+    baseData.pfc_gwp = baseData.pfc_gwp || '0';
+    baseData.co2e_pfc = baseData.co2e_pfc || '0';
+    baseData.pfc_percent = baseData.pfc_percent || '0';
+    baseData.sf6_mass = baseData.sf6_mass || '0';
+    baseData.co2e_sf6 = baseData.co2e_sf6 || '0';
+    baseData.sf6_percent = baseData.sf6_percent || '0';
+    baseData.total_co2e = baseData.total_co2e || '0';
+    
+    // Процессы (заполняем базовыми значениями если не указаны)
+    baseData.proc_1_code = baseData.proc_1_code || 'Не указано';
+    baseData.proc_1_desc = baseData.proc_1_desc || 'Не указано';
+    baseData.proc_1_nvos = baseData.proc_1_nvos || 'Не указано';
+    baseData.proc_1_capacity = baseData.proc_1_capacity || '0';
+    baseData.proc_1_unit = baseData.proc_1_unit || 'шт.';
+    
+    baseData.proc_2_code = baseData.proc_2_code || '';
+    baseData.proc_2_desc = baseData.proc_2_desc || '';
+    baseData.proc_2_nvos = baseData.proc_2_nvos || '';
+    baseData.proc_2_capacity = baseData.proc_2_capacity || '';
+    baseData.proc_2_unit = baseData.proc_2_unit || '';
+    
+    baseData.proc_3_code = baseData.proc_3_code || '';
+    baseData.proc_3_desc = baseData.proc_3_desc || '';
+    baseData.proc_3_nvos = baseData.proc_3_nvos || '';
+    baseData.proc_3_capacity = baseData.proc_3_capacity || '';
+    baseData.proc_3_unit = baseData.proc_3_unit || '';
+  }
+  
   return baseData;
 }
 

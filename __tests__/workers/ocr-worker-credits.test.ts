@@ -80,7 +80,7 @@ describe('OCR Worker Credit Integration', () => {
         balanceDecimal: new Decimal(0.05),
         totalPurchased: 1000,
         totalUsed: 999.95,
-        planType: 'LITE_ANNUAL',
+        planType: 'LITE',
         planExpiry: new Date('2025-12-31'),
         lastTopUp: new Date('2025-01-01'),
         lastUpdated: new Date()

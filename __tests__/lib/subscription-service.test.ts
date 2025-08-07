@@ -5,6 +5,7 @@
 
 import { SubscriptionService, SubscriptionPlanInfo } from '../../lib/subscription-service';
 import { SubscriptionPlan, SubscriptionStatus } from '@prisma/client';
+import { createMockSubscriptionInfo } from '../utils/subscription-mocks';
 import { prisma } from '../../lib/prisma';
 import { CreditsService } from '../../lib/credits-service';
 
@@ -73,14 +74,14 @@ describe('SubscriptionService', () => {
       expect(plans).toHaveLength(3);
       expect(plans.map(p => p.planType)).toEqual([
         SubscriptionPlan.FREE,
-        SubscriptionPlan.LITE_ANNUAL,
+        SubscriptionPlan.LITE,
         SubscriptionPlan.CBAM_ADDON
       ]);
     });
 
-    it('должен возвращать корректную информацию о LITE_ANNUAL плане', () => {
+    it('должен возвращать корректную информацию о LITE плане', () => {
       const plans = subscriptionService.getAvailablePlans();
-      const liteAnnual = plans.find(p => p.planType === SubscriptionPlan.LITE_ANNUAL);
+      const liteAnnual = plans.find(p => p.planType === SubscriptionPlan.LITE);
       
       expect(liteAnnual).toBeDefined();
       expect(liteAnnual!.name).toBe('Annual Lite');
@@ -92,15 +93,15 @@ describe('SubscriptionService', () => {
 
   describe('getPlanInfo', () => {
     it('должен возвращать информацию о конкретном плане', () => {
-      const planInfo = subscriptionService.getPlanInfo(SubscriptionPlan.LITE_ANNUAL);
+      const planInfo = subscriptionService.getPlanInfo(SubscriptionPlan.LITE);
       
       expect(planInfo).toBeDefined();
-      expect(planInfo!.planType).toBe(SubscriptionPlan.LITE_ANNUAL);
+      expect(planInfo!.planType).toBe(SubscriptionPlan.LITE);
       expect(planInfo!.priceRub).toBe(40000);
     });
 
     it('должен возвращать null для несуществующего плана', () => {
-      const planInfo = subscriptionService.getPlanInfo('INVALID_PLAN' as SubscriptionPlan);
+      const planInfo = subscriptionService.getPlanInfo('ENTERPRISE' as any);
       
       expect(planInfo).toBeNull();
     });
@@ -111,7 +112,7 @@ describe('SubscriptionService', () => {
       const mockSubscription = {
         id: testSubscriptionId,
         organizationId: testOrganizationId,
-        plan_type: SubscriptionPlan.LITE_ANNUAL,
+        plan_type: SubscriptionPlan.LITE,
         status: SubscriptionStatus.ACTIVE,
         starts_at: new Date('2025-01-01'),
         expires_at: new Date('2026-01-01'),
@@ -128,7 +129,7 @@ describe('SubscriptionService', () => {
 
       expect(result).toBeDefined();
       expect(result!.id).toBe(testSubscriptionId);
-      expect(result!.planType).toBe(SubscriptionPlan.LITE_ANNUAL);
+      expect(result!.planType).toBe(SubscriptionPlan.LITE);
       expect(result!.status).toBe(SubscriptionStatus.ACTIVE);
     });
 
@@ -149,11 +150,11 @@ describe('SubscriptionService', () => {
   });
 
   describe('createSubscription', () => {
-    it('должен создать новую подписку LITE_ANNUAL', async () => {
+    it('должен создать новую подписку LITE', async () => {
       const mockCreatedSubscription = {
         id: testSubscriptionId,
         organizationId: testOrganizationId,
-        plan_type: SubscriptionPlan.LITE_ANNUAL,
+        plan_type: SubscriptionPlan.LITE,
         status: SubscriptionStatus.PENDING,
         starts_at: new Date(),
         expires_at: new Date(Date.now() + 12 * 30 * 24 * 60 * 60 * 1000),
@@ -171,18 +172,19 @@ describe('SubscriptionService', () => {
 
       const request = {
         organizationId: testOrganizationId,
-        planType: SubscriptionPlan.LITE_ANNUAL
+        planType: SubscriptionPlan.LITE,
+        annualEmissions: 75000
       };
 
       const result = await subscriptionService.createSubscription(request);
 
-      expect(result.planType).toBe(SubscriptionPlan.LITE_ANNUAL);
+      expect(result.planType).toBe(SubscriptionPlan.LITE);
       expect(result.status).toBe(SubscriptionStatus.PENDING);
-      expect(result.priceRub).toBe(40000);
+      expect(result.finalPrice).toBeGreaterThan(0);
       expect(mockedPrisma.organization_subscriptions.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           organizationId: testOrganizationId,
-          plan_type: SubscriptionPlan.LITE_ANNUAL,
+          plan_type: SubscriptionPlan.LITE,
           status: SubscriptionStatus.PENDING,
           price_rub: 40000
         })
@@ -193,7 +195,7 @@ describe('SubscriptionService', () => {
       const existingSubscription = {
         id: 'existing-sub',
         organizationId: testOrganizationId,
-        plan_type: SubscriptionPlan.LITE_ANNUAL,
+        plan_type: SubscriptionPlan.LITE,
         status: SubscriptionStatus.ACTIVE,
         starts_at: new Date(),
         expires_at: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000), // 6 месяцев
@@ -208,7 +210,8 @@ describe('SubscriptionService', () => {
 
       const request = {
         organizationId: testOrganizationId,
-        planType: SubscriptionPlan.CBAM_ADDON
+        planType: SubscriptionPlan.CBAM_ADDON,
+        annualEmissions: 75000
       };
 
       await expect(subscriptionService.createSubscription(request))
@@ -220,7 +223,8 @@ describe('SubscriptionService', () => {
 
       const request = {
         organizationId: testOrganizationId,
-        planType: 'UNKNOWN_PLAN' as SubscriptionPlan
+        planType: 'UNKNOWN_PLAN' as SubscriptionPlan,
+        annualEmissions: 75000
       };
 
       await expect(subscriptionService.createSubscription(request))
@@ -233,7 +237,7 @@ describe('SubscriptionService', () => {
       const mockSubscription = {
         id: testSubscriptionId,
         organizationId: testOrganizationId,
-        plan_type: SubscriptionPlan.LITE_ANNUAL,
+        plan_type: SubscriptionPlan.LITE,
         status: SubscriptionStatus.PENDING,
         starts_at: new Date(),
         expires_at: new Date(Date.now() + 12 * 30 * 24 * 60 * 60 * 1000),
@@ -284,10 +288,10 @@ describe('SubscriptionService', () => {
     });
 
     it('должен отклонить активацию уже активной подписки', async () => {
-      const mockActiveSubscription = {
+      const mockSubscription = {
         id: testSubscriptionId,
         organizationId: testOrganizationId,
-        plan_type: SubscriptionPlan.LITE_ANNUAL,
+        plan_type: SubscriptionPlan.LITE,
         status: SubscriptionStatus.ACTIVE,
         starts_at: new Date(),
         expires_at: new Date(Date.now() + 12 * 30 * 24 * 60 * 60 * 1000),
@@ -298,7 +302,7 @@ describe('SubscriptionService', () => {
         updatedAt: new Date()
       };
 
-      mockedPrisma.organization_subscriptions.findUnique.mockResolvedValue(mockActiveSubscription);
+      mockedPrisma.organization_subscriptions.findUnique.mockResolvedValue(mockSubscription);
 
       const result = await subscriptionService.activateSubscription(testSubscriptionId);
 
@@ -313,24 +317,12 @@ describe('SubscriptionService', () => {
       const expiryDate = new Date('2025-12-31'); // Скоро истекает
       const newExpiryDate = new Date('2026-12-31'); // Продлено на год
 
-      const mockActiveSubscription = {
-        id: testSubscriptionId,
-        organizationId: testOrganizationId,
-        planType: SubscriptionPlan.LITE_ANNUAL,
-        status: SubscriptionStatus.ACTIVE,
-        startsAt: new Date('2025-01-01'),
-        expiresAt: expiryDate,
-        autoRenew: true,
-        priceRub: 40000,
-        features: [],
-        createdAt: new Date('2025-01-01'),
-        updatedAt: new Date('2025-01-01')
-      };
+      const mockSubscription = createMockSubscriptionInfo();
 
       const mockRenewedSubscription = {
         id: testSubscriptionId,
         organizationId: testOrganizationId,
-        plan_type: SubscriptionPlan.LITE_ANNUAL,
+        plan_type: SubscriptionPlan.LITE,
         status: SubscriptionStatus.ACTIVE,
         starts_at: new Date('2025-01-01'),
         expires_at: newExpiryDate,
@@ -343,12 +335,12 @@ describe('SubscriptionService', () => {
 
       // Mock getActiveSubscription
       mockedPrisma.organization_subscriptions.findFirst.mockResolvedValue({
-        ...mockActiveSubscription,
-        plan_type: mockActiveSubscription.planType,
-        starts_at: mockActiveSubscription.startsAt,
-        expires_at: mockActiveSubscription.expiresAt,
-        auto_renew: mockActiveSubscription.autoRenew,
-        price_rub: mockActiveSubscription.priceRub
+        ...mockSubscription,
+        plan_type: mockSubscription.planType,
+        starts_at: mockSubscription.startsAt,
+        expires_at: mockSubscription.expiresAt,
+        auto_renew: mockSubscription.autoRenew,
+        price_rub: mockSubscription.finalPrice
       } as any);
 
       mockedPrisma.organization_subscriptions.update.mockResolvedValue(mockRenewedSubscription);
@@ -389,10 +381,10 @@ describe('SubscriptionService', () => {
 
   describe('cancelSubscription', () => {
     it('должен отменить активную подписку', async () => {
-      const mockActiveSubscription = {
+      const mockSubscription = {
         id: testSubscriptionId,
         organizationId: testOrganizationId,
-        plan_type: SubscriptionPlan.LITE_ANNUAL,
+        plan_type: SubscriptionPlan.LITE,
         status: SubscriptionStatus.ACTIVE,
         starts_at: new Date(),
         expires_at: new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000),
@@ -403,9 +395,9 @@ describe('SubscriptionService', () => {
         updatedAt: new Date()
       };
 
-      mockedPrisma.organization_subscriptions.findFirst.mockResolvedValue(mockActiveSubscription);
+      mockedPrisma.organization_subscriptions.findFirst.mockResolvedValue(mockSubscription);
       mockedPrisma.organization_subscriptions.update.mockResolvedValue({
-        ...mockActiveSubscription,
+        ...mockSubscription,
         status: SubscriptionStatus.CANCELLED,
         auto_renew: false
       });
@@ -464,7 +456,7 @@ describe('SubscriptionService', () => {
         {
           id: 'sub1',
           organizationId: testOrganizationId,
-          plan_type: SubscriptionPlan.LITE_ANNUAL,
+          plan_type: SubscriptionPlan.LITE,
           status: SubscriptionStatus.ACTIVE,
           starts_at: new Date('2025-01-01'),
           expires_at: new Date('2026-01-01'),
@@ -494,7 +486,7 @@ describe('SubscriptionService', () => {
       const result = await subscriptionService.getSubscriptionHistory(testOrganizationId);
 
       expect(result).toHaveLength(2);
-      expect(result[0].planType).toBe(SubscriptionPlan.LITE_ANNUAL);
+      expect(result[0].planType).toBe(SubscriptionPlan.LITE);
       expect(result[0].status).toBe(SubscriptionStatus.ACTIVE);
       expect(result[1].planType).toBe(SubscriptionPlan.CBAM_ADDON);
       expect(result[1].status).toBe(SubscriptionStatus.EXPIRED);

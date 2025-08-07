@@ -103,7 +103,7 @@ export class QueueManager {
       await this.boss.createQueue(QUEUE_NAMES.CLEANUP, {
         retryLimit: 1,
         retryDelay: 10000,
-        expireInHours: 24
+        expireInHours: 23
       });
       
       console.log('✅ Queue Manager инициализирован успешно');

@@ -31,9 +31,9 @@ async function getOCRResult(documentId: string): Promise<OCRResult | null> {
   }
 }
 
-export default async function ReportPage({ params }: { params: PageParams }) {
+export default async function OCRReportPage({ params }: { params: PageParams }) {
   const { documentId } = await params
-  console.log('🔍 ReportPage loading for documentId:', documentId)
+  console.log('🔍 OCRReportPage loading for documentId:', documentId)
   
   const data = await getOCRResult(documentId)
   console.log('📊 OCR data received:', data)
@@ -75,4 +75,4 @@ export default async function ReportPage({ params }: { params: PageParams }) {
       </div>
     </div>
   )
-} 
+}
