@@ -19,7 +19,7 @@ async function runSimpleMigration() {
     console.log('✅ Подключение к БД успешно');
 
     // Читаем SQL файл миграции
-    const migrationPath = path.join(__dirname, 'simple-migration.sql');
+    const migrationPath = path.join(__dirname, 'add-report-snapshots.sql');
     const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
     
     console.log('📄 Выполнение простой миграции...');
