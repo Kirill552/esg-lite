@@ -61,7 +61,10 @@ services:
       
       # Queue System
       - QUEUE_STORAGE_TYPE=postgres
-      - QUEUE_DATABASE_URL=${DATABASE_URL}
+      - QUEUE_DATABASE_URL=${QUEUE_DATABASE_URL}
+      - CLAMAV_HOST=${CLAMAV_HOST}
+      - CLAMAV_PORT=${CLAMAV_PORT}
+      - CLAMAV_SOCKET=${CLAMAV_SOCKET}
       - BULLMQ_CONCURRENCY=5
       - RATE_LIMIT_WINDOW=90000
       - RATE_LIMIT_MAX_REQUESTS=10
@@ -76,6 +79,8 @@ services:
       - uploads-volume:/app/uploads
       - ./authorized_key.json:/app/authorized_key.json:ro
       - /etc/ssl/esg-lite/root.crt:/etc/ssl/esg-lite/root.crt:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - esg-lite-network
     depends_on:
@@ -135,6 +140,8 @@ services:
       - uploads-volume:/app/uploads
       - ./authorized_key.json:/app/authorized_key.json:ro
       - /etc/ssl/esg-lite/root.crt:/etc/ssl/esg-lite/root.crt:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - esg-lite-network
     depends_on:
