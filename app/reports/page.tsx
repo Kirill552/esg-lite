@@ -266,6 +266,19 @@ export default function ReportsPage() {
     setOpenMenuId(null);
   };
 
+  const handleSign = async (reportId: string) => {
+    try {
+      const res = await fetch(`/api/reports/${reportId}/sign`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Ошибка подписания');
+      toast.success('Отчет подписан и заморожен');
+      await fetchReports();
+    } catch (e: any) {
+      toast.error(e.message || 'Ошибка подписания');
+    }
+    setOpenMenuId(null);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background p-8">
@@ -567,6 +580,12 @@ export default function ReportsPage() {
                         
                         {openMenuId === report.id && (
                           <div className="absolute right-0 top-full mt-1 w-48 bg-card border border-border rounded-xl shadow-lg z-10">
+                            <button
+                              onClick={() => handleSign(report.id)}
+                              className="w-full px-4 py-2 text-left hover:bg-emerald-50 dark:hover:bg-emerald-950/20 rounded-t-xl flex items-center gap-2 text-emerald-700 dark:text-emerald-300"
+                            >
+                              Подписать и заморозить
+                            </button>
                             <button
                               onClick={() => handleDelete(report.id)}
                               className="w-full px-4 py-2 text-left text-destructive hover:bg-destructive/10 rounded-xl flex items-center gap-2"
