@@ -10,6 +10,7 @@
  */
 
 import { z } from 'zod';
+import crypto from 'crypto';
 
 // Схемы валидации для версионирования
 export const MethodVersionSchema = z.object({
@@ -140,7 +141,10 @@ export class VersionManager {
       report_id: `${methodId}_${Date.now()}`,
       method_versions: [methodVersion],
       factor_versions: [], // Будет заполнено из validatedDataPoints
-      input_data_hash: crypto.randomUUID(), // В реальности - хеш от входных данных
+      input_data_hash: crypto
+        .createHash('sha256')
+        .update(JSON.stringify(validatedDataPoints))
+        .digest('hex'),
       calculation_timestamp: metadata.calculation_timestamp,
       approved_by: metadata.operator,
       approval_timestamp: null,
@@ -238,9 +242,8 @@ export class VersionManager {
    * Генерация hash входных данных для обеспечения неизменности
    */
   static generateInputDataHash(inputData: any): string {
-    // В реальной реализации использовать crypto.subtle.digest
     const jsonString = JSON.stringify(inputData, Object.keys(inputData).sort());
-    return btoa(jsonString).substring(0, 32);
+    return crypto.createHash('sha256').update(jsonString).digest('hex');
   }
 
   /**

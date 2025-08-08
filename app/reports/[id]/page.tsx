@@ -44,6 +44,7 @@ export default function ReportDetailPage() {
   const [report, setReport] = useState<Report | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [signing, setSigning] = useState(false);
 
   useEffect(() => {
     if (reportId) {
@@ -97,6 +98,22 @@ export default function ReportDetailPage() {
       toast.success('Файл загружен');
     } catch (err: any) {
       toast.error(err.message || 'Ошибка скачивания');
+    }
+  };
+
+  const handleSign = async () => {
+    if (!report) return;
+    try {
+      setSigning(true);
+      const res = await fetch(`/api/reports/${reportId}/sign`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Ошибка подписания');
+      toast.success('Отчет подписан и заморожен');
+      await fetchReport();
+    } catch (e: any) {
+      toast.error(e.message || 'Ошибка подписания');
+    } finally {
+      setSigning(false);
     }
   };
 
@@ -322,6 +339,11 @@ export default function ReportDetailPage() {
                 <Button variant="secondary" className="w-full">
                   <Eye className="h-4 w-4 mr-2" />
                   Предпросмотр
+                </Button>
+
+                <Button onClick={handleSign} disabled={signing} className="w-full">
+                  <Shield className="h-4 w-4 mr-2" />
+                  Подписать и заморозить
                 </Button>
               </div>
             </Card>

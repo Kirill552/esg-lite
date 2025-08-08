@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { signReportAndFreeze } from '@/lib/report-signing';
 import { auth } from '@clerk/nextjs/server';
 
 const prisma = new PrismaClient();
@@ -69,6 +70,10 @@ export async function DELETE(
       return NextResponse.json({ error: 'Report not found' }, { status: 404 });
     }
 
+    if ((report as any).isLocked) {
+      return NextResponse.json({ error: 'Отчет подписан и не может быть удален' }, { status: 400 });
+    }
+
     // Удаляем отчет
     await prisma.report.delete({
       where: { id }
@@ -86,3 +91,30 @@ export async function DELETE(
     );
   }
 } 
+
+// POST /api/reports/[id]/sign — подписать и заморозить отчет
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    const result = await signReportAndFreeze({ reportId: id, userId });
+
+    return NextResponse.json({
+      success: true,
+      ...result
+    });
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error?.message || 'Ошибка подписания отчета' },
+      { status: 400 }
+    );
+  }
+}

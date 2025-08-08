@@ -76,13 +76,41 @@ model Report {
   methodology   String             @default("296-ФЗ от 02.07.2021")
   downloadCount Int                @default(0)
   lastDownload  DateTime?
+  // Версионирование и подпись
+  version       Int                @default(1)
+  isLocked      Boolean            @default(false)
+  signedAt      DateTime?
+  signedBy      String?
+  dataHash      String?
+  currentSnapshotId String?
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
   document      Document?          @relation(fields: [documentId], references: [id], onDelete: Cascade)
   user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   validations   ReportValidation[]
+  snapshots     ReportSnapshot[]
 
   @@map("reports")
+}
+
+/// Неизменяемые снапшоты подписанных отчетов
+model ReportSnapshot {
+  id             String   @id @default(cuid())
+  reportId       String
+  version        Int      @default(1)
+  dataHash       String
+  methodVersions String[]
+  factorVersions String[]
+  signedBy       String
+  signedAt       DateTime @default(now())
+  signature      String
+  payload        Json?
+  createdAt      DateTime @default(now())
+
+  report         Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId, version])
+  @@map("report_snapshots")
 }
 
 model Payment {

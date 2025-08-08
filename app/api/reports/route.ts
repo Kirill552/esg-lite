@@ -168,6 +168,8 @@ export async function POST(request: NextRequest) {
         emissionData: body.emissionData || {},
         methodology: reportType === 'CBAM' ? 'CBAM-2025' : '296-FZ-2025',
         downloadCount: 0,
+        version: 1,
+        isLocked: false
       };
 
       const report = await tx.report.create({
