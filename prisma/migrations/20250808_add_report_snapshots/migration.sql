@@ -28,7 +28,7 @@ CREATE INDEX IF NOT EXISTS "report_snapshots_reportId_version_idx"
   ON "report_snapshots" ("reportId", "version");
 
 ALTER TABLE "report_snapshots"
-  ADD CONSTRAINT IF NOT EXISTS "report_snapshots_report_fk"
+  ADD CONSTRAINT "report_snapshots_report_fk"
   FOREIGN KEY ("reportId") REFERENCES "reports"("id") ON DELETE CASCADE;
 
 
