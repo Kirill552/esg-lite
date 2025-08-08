@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { uploadFile, generateFileKey } from '@/lib/s3';
 import { prisma } from '@/lib/prisma';
+import { scanBuffer } from '@/lib/antivirus';
 import { getUserInternalId } from '@/lib/user-utils';
 import { RateLimiter } from '@/lib/rate-limiter';
 
@@ -99,6 +100,19 @@ export async function POST(request: NextRequest) {
     const fileType = file.type === 'application/pdf' ? 'pdf' : 'csv';
     const fileKey = generateFileKey(file.name, fileType);
     const buffer = Buffer.from(await file.arrayBuffer());
+
+    // Антивирусная проверка (clamav)
+    try {
+      const av = await scanBuffer(buffer);
+      if (av.isInfected) {
+        return NextResponse.json(
+          { error: 'Файл отклонён антивирусом', details: av.viruses },
+          { status: 400 }
+        );
+      }
+    } catch (e) {
+      console.warn('⚠️ Антивирус недоступен, пропускаем сканирование:', e);
+    }
     const fileUrl = await uploadFile(fileKey, buffer, file.type);
 
     console.log('✅ File uploaded to S3. URL:', fileUrl);
