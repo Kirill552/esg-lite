@@ -16,8 +16,8 @@ WORKDIR /app
 # Копируем XSD схемы
 COPY schemas/ ./schemas/
 
-# Копируем package.json для зависимостей валидатора
-COPY package.json ./
+# Копируем package.json и package-lock.json для зависимостей валидатора  
+COPY package.json package-lock.json ./
 RUN npm ci --only=production
 
 # Копируем скрипты валидации
