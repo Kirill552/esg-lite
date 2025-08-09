@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { Webhook } from 'svix';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 /**
  * Clerk webhook endpoint для синхронизации пользователей
@@ -88,16 +91,109 @@ export async function POST(request: NextRequest) {
 
 // Функции для обработки событий пользователей
 async function handleUserCreated(userData: any) {
-  // TODO: Интегрировать с Prisma для создания пользователя в БД
-  console.log('Creating user:', userData);
+  try {
+    console.log('📝 Создание пользователя в БД:', userData.id);
+    
+    const email = userData.email_addresses?.[0]?.email_address;
+    if (!email) {
+      throw new Error('У пользователя отсутствует email адрес');
+    }
+
+    // Проверяем, не существует ли уже пользователь с таким email
+    const existingUser = await prisma.user.findUnique({
+      where: { email }
+    });
+
+    if (existingUser) {
+      // Обновляем clerkId для существующего пользователя
+      await prisma.user.update({
+        where: { email },
+        data: {
+          clerkId: userData.id,
+          firstName: userData.first_name || existingUser.firstName,
+          lastName: userData.last_name || existingUser.lastName,
+        }
+      });
+      console.log('✅ Обновлен существующий пользователь с email:', email);
+    } else {
+      // Создаем нового пользователя
+      await prisma.user.create({
+        data: {
+          clerkId: userData.id,
+          email,
+          firstName: userData.first_name || null,
+          lastName: userData.last_name || null,
+        }
+      });
+      console.log('✅ Создан новый пользователь:', userData.id);
+    }
+  } catch (error) {
+    console.error('❌ Ошибка создания пользователя:', error);
+    throw error;
+  }
 }
 
 async function handleUserUpdated(userData: any) {
-  // TODO: Интегрировать с Prisma для обновления пользователя
-  console.log('Updating user:', userData);
+  try {
+    console.log('🔄 Обновление пользователя в БД:', userData.id);
+    
+    const email = userData.email_addresses?.[0]?.email_address;
+    if (!email) {
+      throw new Error('У пользователя отсутствует email адрес');
+    }
+
+    // Ищем пользователя по clerkId
+    const existingUser = await prisma.user.findUnique({
+      where: { clerkId: userData.id }
+    });
+
+    if (existingUser) {
+      await prisma.user.update({
+        where: { clerkId: userData.id },
+        data: {
+          email,
+          firstName: userData.first_name || null,
+          lastName: userData.last_name || null,
+        }
+      });
+      console.log('✅ Пользователь обновлен:', userData.id);
+    } else {
+      // Если пользователь не найден по clerkId, создаем его
+      await handleUserCreated(userData);
+    }
+  } catch (error) {
+    console.error('❌ Ошибка обновления пользователя:', error);
+    throw error;
+  }
 }
 
 async function handleUserDeleted(userData: any) {
-  // TODO: Интегрировать с Prisma для удаления пользователя
-  console.log('Deleting user:', userData);
+  try {
+    console.log('🗑️ Удаление пользователя из БД:', userData.id);
+    
+    // Находим пользователя по clerkId
+    const existingUser = await prisma.user.findUnique({
+      where: { clerkId: userData.id }
+    });
+
+    if (existingUser) {
+      // Вместо полного удаления, помечаем пользователя как удаленный
+      // или можно сделать мягкое удаление (soft delete)
+      await prisma.user.update({
+        where: { clerkId: userData.id },
+        data: {
+          // Можно добавить поле deletedAt или isActive: false
+          firstName: null,
+          lastName: null,
+          // Сохраняем email для возможного восстановления
+        }
+      });
+      console.log('✅ Пользователь помечен как удаленный:', userData.id);
+    } else {
+      console.log('⚠️ Пользователь не найден для удаления:', userData.id);
+    }
+  } catch (error) {
+    console.error('❌ Ошибка удаления пользователя:', error);
+    throw error;
+  }
 } 

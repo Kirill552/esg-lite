@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
+import { QueueManager } from '../../../../lib/queue';
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,25 +13,29 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Здесь должна быть логика получения статуса очереди
-    // Пока возвращаем моковые данные
-    const queueStatus = {
-      total: 0,
-      active: 0,
-      waiting: 0,
-      completed: 0,
-      failed: 0,
-      userTasks: 0
+    // Инициализируем Queue Manager
+    const queueManager = new QueueManager();
+    await queueManager.initialize();
+
+    // Получаем реальную статистику очереди из pg-boss
+    const queueStats = await queueManager.getQueueStats();
+
+    // Получаем дополнительную информацию о задачах пользователя (если нужно)
+    // TODO: Добавить фильтрацию по пользователю в будущем
+    const userTasks = 0; // Пока заглушка
+    
+    const response = {
+      success: true,
+      data: {
+        ...queueStats,
+        userTasks
+      }
     };
 
-    // TODO: Подключить реальную логику очереди
-    // const queue = await getQueue();
-    // const queueStatus = await queue.getWaiting();
+    // Закрываем соединение с очередью
+    await queueManager.stop();
 
-    return NextResponse.json({
-      success: true,
-      data: queueStatus
-    });
+    return NextResponse.json(response);
 
   } catch (error) {
     console.error('❌ Queue status error:', error);
