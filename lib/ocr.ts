@@ -85,16 +85,16 @@ export async function processS3File(fileKey: string): Promise<string> {
     if (mime === 'application/vnd.ms-excel' || fileName.endsWith('.xls') || 
         mime === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || fileName.endsWith('.xlsx')) {
       log('Processing as Excel file (.xls/.xlsx)');
-      return processExcelBuffer(buffer);
+      return processExcelBuffer(Buffer.from(buffer));
     }
     
     if (mime === 'application/pdf' || fileName.endsWith('.pdf')) {
       log('Processing as PDF file');
-      return processPdfBuffer(buffer);
+      return processPdfBuffer(Buffer.from(buffer));
     }
     
     log('Processing as image file');
-    return processImage(buffer);
+    return processImage(Buffer.from(buffer));
   } catch (e: any) {
     log('S3 file processing failed:', e.message);
     throw new Error(`S3_FILE_PROCESS_FAILED: ${e.message}`);
