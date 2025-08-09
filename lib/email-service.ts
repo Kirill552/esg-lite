@@ -5,7 +5,7 @@
  * Отправляет email уведомления о сезонном повышении цен и изменениях тарифов
  */
 
-import type { PricingNotification } from '@/lib/pricing-notifications';
+import type { PricingNotification } from './pricing-notifications';
 
 export interface EmailTemplate {
   subject: string;

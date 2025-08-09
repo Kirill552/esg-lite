@@ -6,24 +6,13 @@ require('dotenv').config();
 
 async function startWorker() {
   console.log('🚀 Запуск OCR Worker процесса...');
+  console.log('📂 Текущая директория:', process.cwd());
   
   try {
-    // В production используем скомпилированные JS файлы или fallback на TS
-    let ocrWorkerModule;
-    try {
-      // Пробуем загрузить скомпилированный JS файл
-      ocrWorkerModule = require('../dist/workers/ocr-worker.js');
-    } catch (err) {
-      try {
-        // Fallback на скомпилированный файл в другой директории
-        ocrWorkerModule = require('../workers/ocr-worker.js');
-      } catch (err2) {
-        // Fallback на TypeScript файл (если есть ts-node)
-        ocrWorkerModule = require('../workers/ocr-worker.ts');
-      }
-    }
-    
-    const { startOcrWorker } = ocrWorkerModule;
+        // Загружаем скомпилированный OCR Worker модуль
+        console.log('🔍 Загружаем модуль по абсолютному пути: /app/dist/workers/ocr-worker.js');
+        const ocrWorkerModule = require('/app/dist/workers/ocr-worker.js');
+        console.log('✅ OCR Worker модуль успешно загружен');    const { startOcrWorker } = ocrWorkerModule;
     
     // Конфигурация worker'а из переменных окружения
     const config = {

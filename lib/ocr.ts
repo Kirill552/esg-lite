@@ -1,7 +1,7 @@
 // lib/ocr.ts
 import { createWorker, Worker } from 'tesseract.js';
 import ExcelJS from 'exceljs';
-import { getFileBuffer } from '@/lib/s3';
+import { getFileBuffer } from './s3';
 
 const DEBUG = process.env.DEBUG_OCR === 'true';
 const log = (...args: any[]) => DEBUG && console.log('🔍 OCR:', ...args);
@@ -107,7 +107,7 @@ export async function processExcelBuffer(buf: Buffer): Promise<string> {
     
     // Читаем Excel файл с помощью ExcelJS
     const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(buf);
+    await workbook.xlsx.load(buf as any);
     
     log(`Excel workbook loaded successfully. Sheets: ${workbook.worksheets.length}`);
     
@@ -180,9 +180,9 @@ export function extractEsgData(text: string): Record<string, any> {
   const esg: Record<string, any> = {};
   try {
     const num = (s: string) => parseFloat(s.replace(/[^\d.,]/g, '').replace(',', '.'));
-    const eMatch = text.match(/(\d+(?:[.,]\d+)?)\s*(?:кВт[·\s]*ч|kwh|квтч)/i);
+    const eMatch = text.match(/(\d+(?:[.,]\d+)?)\s*(?:kw[h·]\s*|kwh|kw)/i);
     if (eMatch) esg.energyConsumption = num(eMatch[0]);
-    const co2Match = text.match(/(\d+(?:[.,]\d+)?)\s*(?:тонн?\s*co2|т\s*со2|kg\s*co2)/i);
+    const co2Match = text.match(/(\d+(?:[.,]\d+)?)\s*(?:tonn?\s*co2|t\s*co2|kg\s*co2)/i);
     if (co2Match) esg.co2Emissions = num(co2Match[0]);
     log('ESG data extracted:', esg);
   } catch (e) { /* ignore */ }

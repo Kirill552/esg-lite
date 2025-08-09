@@ -6,7 +6,7 @@
  * скидки и изменения тарифов
  */
 
-import { surgePricingService } from '@/lib/surge-pricing';
+import { surgePricingService } from './surge-pricing';
 
 export interface PricingNotification {
   id: string;

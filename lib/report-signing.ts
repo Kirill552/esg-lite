@@ -1,7 +1,7 @@
 import crypto from 'crypto';
-import { prisma } from '@/lib/prisma';
-import { VersionManager } from '@/lib/versioning';
-import { getActiveEmissionFactors } from '@/lib/emission-factors-service';
+import { prisma } from './prisma';
+import { VersionManager } from './versioning';
+import { getActiveEmissionFactors } from './emission-factors-service';
 
 export interface ReportSigningResult {
   snapshotId: string;

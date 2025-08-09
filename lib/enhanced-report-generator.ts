@@ -247,7 +247,7 @@ export async function generateCBAMReportWithPricing(
     
     // Фильтруем только совместимые поля для базового генератора
     const baseData: ReportGenerationData = Object.keys(restData).reduce((acc, key) => {
-      const value = restData[key];
+      const value = (restData as any)[key];
       if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || value === undefined) {
         acc[key] = value;
       }

@@ -34,6 +34,9 @@ RUN npx prisma generate
 # Собираем приложение и компилируем TypeScript
 RUN npm run build
 
+# Очищаем dist перед компиляцией worker файлов
+RUN rm -rf dist
+
 # Дополнительно компилируем worker файлы
 RUN npx tsc --project tsconfig.worker.json
 
@@ -101,4 +104,4 @@ HEALTHCHECK --interval=60s --timeout=10s --start-period=30s --retries=3 \
 ENTRYPOINT ["dumb-init", "--"]
 
 # Команда запуска worker
-CMD ["node", "scripts/start-ocr-worker.js"]
+CMD ["node", "dist/scripts/start-ocr-worker.js"]

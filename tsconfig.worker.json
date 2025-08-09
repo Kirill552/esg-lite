@@ -11,7 +11,11 @@
     "incremental": false,
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
-    "strict": false
+    "strict": false,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./"]
+    }
   },
   "include": [
     "workers/**/*",
